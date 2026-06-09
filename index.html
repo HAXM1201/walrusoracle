@@ -278,6 +278,7 @@
         };
 
         const officialMatches = [
+            // --- TAB 1: VÒNG BẢNG ---
             { id: "1", group: "Bảng A", groupEn: "Group A", date: "Thứ 6, 12/06/2026", dateEn: "Fri, 12/06/2026", time: "2:00", stadium: "Mexico City Stadium", teamA: "Mexico", teamAEn: "Mexico", codeA: "mx", teamB: "Nam Phi", teamBEn: "South Africa", codeB: "za", type: "vong-bang", isHot: true },
             { id: "2", group: "Bảng A", groupEn: "Group A", date: "Thứ 6, 12/06/2026", dateEn: "Fri, 12/06/2026", time: "9:00", stadium: "Guadalajara Stadium", teamA: "Hàn Quốc", teamAEn: "South Korea", codeA: "kr", teamB: "CH Séc", teamBEn: "Czech Republic", codeB: "cz", type: "vong-bang" },
             { id: "3", group: "Bảng B", groupEn: "Group B", date: "Thứ 7, 13/06/2026", dateEn: "Sat, 13/06/2026", time: "2:00", stadium: "Toronto Stadium", teamA: "Canada", teamAEn: "Canada", codeA: "ca", teamB: "Bosnia/Herzeg.", teamBEn: "Bosnia/Herzeg.", codeB: "ba", type: "vong-bang" },
@@ -394,7 +395,6 @@
             { id: "104", group: "Chung Kết Tổng", groupEn: "World Cup Grand Final", date: "Thứ 2, 20/07/2026", dateEn: "Mon, 20/07/2026", time: "2:00", stadium: "New York/New Jersey Stadium", teamA: "Thắng Trận M101", teamAEn: "Winner M101", codeA: "placeholder", teamB: "Thắng Trận M102", teamBEn: "Winner M102", codeB: "placeholder", type: "chung-ket" }
         ];
 
-        // MOCK DATA CHO LEADERBOARD
         const mockLeaderboard = [
             { name: "0xSlush...f302", score: 850, countryCode: "br" },
             { name: "HuyenAnh_Oracle", score: 790, countryCode: "mx" },
@@ -448,7 +448,6 @@
             filtered.forEach(match => {
                 const card = document.createElement('div');
                 
-                // LỚP CSS ĐẶC BIỆT NẾU LÀ TRẬN HOT MATCH KÈO CĂNG
                 if (match.isHot) {
                     card.className = "bg-walrus-card border border-amber-500 hot-match-card rounded-2xl p-6 shadow-2xl relative overflow-hidden transition";
                 } else {
@@ -460,10 +459,10 @@
                 
                 let displayDate = currentLang === "en" && match.dateEn ? match.dateEn : match.date;
                 
-                let displayTeamA = currentLang === "en" && match.teamAEn ? match.teamAEn : match.teamA;
-                let displayTeamB = currentLang === "en" && match.teamBEn ? match.teamBEn : match.teamB;
+                //  thì dùng name gốc để tránh lỗi Undefined đứng web
+                let displayTeamA = currentLang === "en" ? (match.teamAEn || match.teamA) : match.teamA;
+                let displayTeamB = currentLang === "en" ? (match.teamBEn || match.teamB) : match.teamB;
 
-                // THÀNH PHẦN HIỂN THỊ DẢI RUY-BĂNG CHỮ CHẠY CỦA TRẬN HOT MATCH 
                 let hotBadgeHTML = match.isHot 
                     ? `<div class="absolute top-0 left-0 bg-gradient-to-r from-red-600 to-amber-500 text-white font-extrabold text-[9px] px-3 py-0.5 uppercase tracking-widest shadow-md z-10">
                             🔥 HOT MATCH
@@ -530,7 +529,6 @@
             renderMatches(type);
         }
 
-        // RENDER MODULE BẢNG VÀNG TIÊN TRI LEADERBOARD
         function renderLeaderboard() {
             const container = document.getElementById('leaderboard-container');
             if (!container) return;
@@ -558,7 +556,7 @@
         }
 
         // =========================================================
-        // 🌐 TÍCH HỢP ĐỒNG BỘ DỮ LIỆU TỰ ĐỘNG QHA FOOTBALL-DATA.ORG
+        // 🌐 ĐỒNG BỘ DỮ LIỆU TỰ ĐỘNG QUA FOOTBALL-DATA.ORG 
         // =========================================================
         const FOOTBALL_DATA_API_KEY = "1287e361b6fe45d49685debe16b7561f"; 
 
@@ -568,7 +566,6 @@
             
             currentApiStatus = "connecting";
             if (aiAgentText) aiAgentText.innerHTML = translations[currentLang].aiConnecting;
-            // AVATAR HẢI LY KHI ĐANG LOAD
             if (aiAvatarBox) aiAvatarBox.innerText = "🔍";
 
             try {
@@ -592,13 +589,14 @@
                             }
                         }
 
+                        // ĐỒNG BỘ NGÔN NGỮ
                         if (apiMatch.homeTeam && apiMatch.homeTeam.name && localMatch.id > 72) {
-                            localMatch.teamA = apiMatch.homeTeam.name;
+                            localMatch.teamA = apiMatch.homeTeam.shortName || apiMatch.homeTeam.name;
                             localMatch.teamAEn = apiMatch.homeTeam.shortName || apiMatch.homeTeam.name;
                             localMatch.codeA = apiMatch.homeTeam.tla ? apiMatch.homeTeam.tla.toLowerCase() : "placeholder";
                         }
                         if (apiMatch.awayTeam && apiMatch.awayTeam.name && localMatch.id > 72) {
-                            localMatch.teamB = apiMatch.awayTeam.name;
+                            localMatch.teamB = apiMatch.awayTeam.shortName || apiMatch.awayTeam.name;
                             localMatch.teamBEn = apiMatch.awayTeam.shortName || apiMatch.awayTeam.name;
                             localMatch.codeB = apiMatch.awayTeam.tla ? apiMatch.awayTeam.tla.toLowerCase() : "placeholder";
                         }
@@ -607,7 +605,6 @@
 
                 currentApiStatus = "success";
                 if (aiAgentText) aiAgentText.innerHTML = translations[currentLang].aiSuccess;
-                // ĐỔI AVATAR HẢI LY KHI THÀNH CÔNG
                 if (aiAvatarBox) aiAvatarBox.innerText = "🏆";
 
                 const activeTab = document.querySelector('.bg-walrus-aqua')?.id.replace('tab-', '') || 'vong-bang';
@@ -617,13 +614,55 @@
                 console.log("API Error or rate limit hit. Falling back to internal data.");
                 currentApiStatus = "fallback";
                 if (aiAgentText) aiAgentText.innerHTML = translations[currentLang].aiFallback;
-                // Ý TƯỞNG 4: ĐỔI AVATAR HẢI LY KHI GẶP LỖI/DÙNG BACKUP
                 if (aiAvatarBox) aiAvatarBox.innerText = "🛡️";
             }
         }
 
+        function updateUINonDynamicText() {
+            const lang = translations[currentLang];
+            document.getElementById('hero-title').innerHTML = lang.heroTitle;
+            document.getElementById('hero-desc').innerText = lang.heroDesc;
+            document.getElementById('section-groups-title').innerHTML = lang.secGroups;
+            document.getElementById('section-matches-title').innerHTML = lang.secMatches;
+            document.getElementById('section-ai-title').innerHTML = lang.secAi;
+            document.getElementById('section-prizes-title').innerHTML = lang.secPrizes;
+            document.getElementById('section-leaderboard-title').innerHTML = lang.secLeaderboard;
+            
+            document.getElementById('tab-vong-bang').innerText = lang.tabVongBang;
+            document.getElementById('tab-vong-32').innerText = lang.tabVong32;
+            document.getElementById('tab-vong-16').innerText = lang.tabVong16;
+            document.getElementById('tab-tu-ket').innerText = lang.tabTuKet;
+            document.getElementById('tab-ban-ket').innerText = lang.tabBanKet;
+            document.getElementById('tab-chung-ket').innerText = lang.tabChungKet;
+
+            document.getElementById('prize-1-title').innerHTML = lang.prize1;
+            document.getElementById('prize-1-val').innerText = lang.prize1Val;
+            document.getElementById('prize-2-title').innerHTML = lang.prize2;
+            document.getElementById('prize-2-val').innerText = lang.prize2Val;
+
+            const aiAgentText = document.getElementById('ai-roast-text');
+            const aiStatusText = document.getElementById('ai-status-text');
+            if (aiStatusText) aiStatusText.innerText = lang.aiReading;
+            
+            if (aiAgentText) {
+                if (currentApiStatus === "welcome") aiAgentText.innerHTML = lang.aiWelcome;
+                else if (currentApiStatus === "connecting") aiAgentText.innerHTML = lang.aiConnecting;
+                else if (currentApiStatus === "success") aiAgentText.innerHTML = lang.aiSuccess;
+                else if (currentApiStatus === "fallback") aiAgentText.innerHTML = lang.aiFallback;
+            }
+
+            const gmailText = document.getElementById('gmailText');
+            if (gmailText && (gmailText.innerText === "Đăng nhập Gmail" || gmailText.innerText === "Sign in with Gmail")) {
+                gmailText.innerText = lang.btnGmail;
+            }
+            const walletText = document.getElementById('walletText');
+            if (walletText && (walletText.innerText === "Kết nối ví Slush" || walletText.innerText === "Connect Slush Wallet")) {
+                walletText.innerText = lang.btnWallet;
+            }
+        }
+
         // =========================================================
-        // 🛠️ MÔ-ĐUN QUẢN LÝ TÀI KHOẢN & ĐĂNG NHẬP 
+        // 🛠️ MÔ-ĐUN QUẢN LÝ ĐĂNG NHẬP / VÍ 
         // =========================================================
         let isGmailLoggedIn = true; 
         let isWalletConnected = false;
@@ -657,7 +696,7 @@
         }
 
         // =========================================================
-        // 🎆 MÔ-ĐUN XỬ LÝ HIỆU ỨNG PHÁO HOA CONFETTI 
+        // 🎆 MÔ-ĐUN HIỆU ỨNG PHÁO HOA CANVAS
         // =========================================================
         const canvas = document.getElementById('effect-canvas');
         const ctx = canvas.getContext('2d');
@@ -705,13 +744,9 @@
             if (particles.length > 0) requestAnimationFrame(animateParticles);
         }
 
-        // INTERCEPT SUBMIT ĐỂ KÍCH HOẠT HIỆU ỨNG (MÔ-ĐUN HÓA LOGIC TIÊN TRI)
         function handleSubmissionWithEffects(id) {
-            // Kích hoạt hiệu ứng bắn pháo hoa giấy (Ý tưởng 2)
             createConfetti();
             animateParticles();
-
-            // Thực thi lệnh lưu trữ ví/mạng gốc
             mockSubmit(id);
         }
 
@@ -722,13 +757,12 @@
             alert(successMsg); 
         }
 
-        // KHỞI CHẠY HỆ THỐNG TRANG WEB VÀ ĐỒNG BỘ BAN ĐẦU
         document.addEventListener("DOMContentLoaded", function() {
             currentApiStatus = "welcome";
             updateUINonDynamicText();
             renderGroups();
             renderMatches('vong-bang');
-            renderLeaderboard(); // Chạy bảng vàng
+            renderLeaderboard();
             fetchWorldCupData(); 
         });
     </script>

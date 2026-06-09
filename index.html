@@ -66,7 +66,6 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <!-- NÚT CHUYỂN ĐỔI NGÔN NGỮ QUỐC TẾ -->
                 <button onclick="toggleLanguage()" id="langBtn" class="flex items-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-bold rounded-xl border border-gray-700 transition">
                     <img id="langFlag" src="https://flagcdn.com/w20/gb.png" class="w-5 h-3.5 object-cover rounded-sm" alt="English">
                     <span id="langText">EN</span>
@@ -235,7 +234,6 @@
             }
         };
 
-        // Bổ sung song ngữ Anh - Việt cho toàn bộ 48 quốc gia tham gia giải đấu
         const worldCupGroups = {
             "Bảng A": [{ name: "Mexico", nameEn: "Mexico", code: "mx" }, { name: "Nam Phi", nameEn: "South Africa", code: "za" }, { name: "Hàn Quốc", nameEn: "South Korea", code: "kr" }, { name: "CH Séc", nameEn: "Czech Republic", code: "cz" }],
             "Bảng B": [{ name: "Canada", nameEn: "Canada", code: "ca" }, { name: "Bosnia/Herzeg.", nameEn: "Bosnia/Herzeg.", code: "ba" }, { name: "Qatar", nameEn: "Qatar", code: "qa" }, { name: "Thụy Sĩ", nameEn: "Switzerland", code: "ch" }],
@@ -252,6 +250,7 @@
         };
 
         const officialMatches = [
+            // --- TAB 1: VÒNG BẢNG ---
             { id: "1", group: "Bảng A", groupEn: "Group A", date: "Thứ 6, 12/06/2026", dateEn: "Fri, 12/06/2026", time: "2:00", stadium: "Mexico City Stadium", teamA: "Mexico", teamAEn: "Mexico", codeA: "mx", teamB: "Nam Phi", teamBEn: "South Africa", codeB: "za", type: "vong-bang" },
             { id: "2", group: "Bảng A", groupEn: "Group A", date: "Thứ 6, 12/06/2026", dateEn: "Fri, 12/06/2026", time: "9:00", stadium: "Guadalajara Stadium", teamA: "Hàn Quốc", teamAEn: "South Korea", codeA: "kr", teamB: "CH Séc", teamBEn: "Czech Republic", codeB: "cz", type: "vong-bang" },
             { id: "3", group: "Bảng B", groupEn: "Group B", date: "Thứ 7, 13/06/2026", dateEn: "Sat, 13/06/2026", time: "2:00", stadium: "Toronto Stadium", teamA: "Canada", teamAEn: "Canada", codeA: "ca", teamB: "Bosnia/Herzeg.", teamBEn: "Bosnia/Herzeg.", codeB: "ba", type: "vong-bang" },
@@ -285,9 +284,9 @@
             { id: "31", group: "Bảng D", groupEn: "Group D", date: "Thứ 7, 20/06/2026", dateEn: "Sat, 20/06/2026", time: "10:00", stadium: "San Francisco Bay Area Stadium", teamA: "Thổ Nhĩ Kỳ", teamAEn: "Turkey", codeA: "tr", teamB: "Paraguay", teamBEn: "Paraguay", codeB: "py", type: "vong-bang" },
             { id: "32", group: "Bảng D", groupEn: "Group D", date: "Thứ 7, 20/06/2026", dateEn: "Sat, 20/06/2026", time: "2:00", stadium: "Seattle Stadium", teamA: "Mỹ", teamAEn: "USA", codeA: "us", teamB: "Australia", teamBEn: "Australia", codeB: "au", type: "vong-bang" },
             { id: "33", group: "Bảng E", groupEn: "Group E", date: "CN, 21/06/2026", dateEn: "Sun, 21/06/2026", time: "3:00", stadium: "Toronto Stadium", teamA: "Đức", teamAEn: "Germany", codeA: "de", teamB: "Ivory Coast", teamBEn: "Ivory Coast", codeB: "ci", type: "vong-bang" },
-            { id: "34", group: "Bảng E", groupEn: "Group E", date: "CN, 21/06/2026", time: "7:00", stadium: "Kansas City Stadium", teamA: "Ecuador", teamAEn: "Ecuador", codeA: "ec", teamB: "Curacao", teamBEn: "Curacao", codeB: "cw", type: "vong-bang" },
-            { id: "35", group: "Bảng F", groupEn: "Group F", date: "CN, 21/06/2026", time: "0:00", stadium: "Houston Stadium", teamA: "Hà Lan", teamAEn: "Netherlands", codeA: "nl", teamB: "Thụy Điển", teamBEn: "Sweden", codeB: "se", type: "vong-bang" },
-            { id: "36", group: "Bảng F", groupEn: "Group F", date: "CN, 21/06/2026", time: "11:00", stadium: "Monterrey Stadium", teamA: "Tunisia", teamAEn: "Tunisia", codeA: "tn", teamB: "Nhật Bản", teamBEn: "Japan", codeB: "jp", type: "vong-bang" },
+            { id: "34", group: "Bảng E", groupEn: "Group E", date: "CN, 21/06/2026", dateEn: "Sun, 21/06/2026", time: "7:00", stadium: "Kansas City Stadium", teamA: "Ecuador", teamAEn: "Ecuador", codeA: "ec", teamB: "Curacao", teamBEn: "Curacao", codeB: "cw", type: "vong-bang" },
+            { id: "35", group: "Bảng F", groupEn: "Group F", date: "CN, 21/06/2026", dateEn: "Sun, 21/06/2026", time: "0:00", stadium: "Houston Stadium", teamA: "Hà Lan", teamAEn: "Netherlands", codeA: "nl", teamB: "Thụy Điển", teamBEn: "Sweden", codeB: "se", type: "vong-bang" },
+            { id: "36", group: "Bảng F", groupEn: "Group F", date: "CN, 21/06/2026", dateEn: "Sun, 21/06/2026", time: "11:00", stadium: "Monterrey Stadium", teamA: "Tunisia", teamAEn: "Tunisia", codeA: "tn", teamB: "Nhật Bản", teamBEn: "Japan", codeB: "jp", type: "vong-bang" },
             { id: "37", group: "Bảng H", groupEn: "Group H", date: "Thứ 2, 22/06/2026", dateEn: "Mon, 22/06/2026", time: "5:00", stadium: "Miami Stadium", teamA: "Uruguay", teamAEn: "Uruguay", codeA: "uy", teamB: "Cape Verde", teamBEn: "Cape Verde", codeB: "cv", type: "vong-bang" },
             { id: "38", group: "Bảng H", groupEn: "Group H", date: "CN, 21/06/2026", dateEn: "Sun, 21/06/2026", time: "23:00", stadium: "Atlanta Stadium", teamA: "Tây Ban Nha", teamAEn: "Spain", codeA: "es", teamB: "Ả Rập Xê Út", teamBEn: "Saudi Arabia", codeB: "sa", type: "vong-bang" },
             { id: "39", group: "Bảng G", groupEn: "Group G", date: "Thứ 2, 22/06/2026", dateEn: "Mon, 22/06/2026", time: "2:00", stadium: "Los Angeles Stadium", teamA: "Bỉ", teamAEn: "Belgium", codeA: "be", teamB: "Iran", teamBEn: "Iran", codeB: "ir", type: "vong-bang" },
@@ -298,13 +297,13 @@
             { id: "43", group: "Bảng J", groupEn: "Group J", date: "Thứ 3, 23/06/2026", dateEn: "Tue, 23/06/2026", time: "0:00", stadium: "Dallas Stadium", teamA: "Argentina", teamAEn: "Argentina", codeA: "ar", teamB: "Áo", teamBEn: "Austria", codeB: "at", type: "vong-bang" },
             { id: "45", group: "Bảng L", groupEn: "Group L", date: "Thứ 4, 24/06/2026", dateEn: "Wed, 24/06/2026", time: "3:00", stadium: "Boston Stadium", teamA: "Anh", teamAEn: "England", codeA: "gb-eng", teamB: "Ghana", teamBEn: "Ghana", codeB: "gh", type: "vong-bang" },
             { id: "46", group: "Bảng L", groupEn: "Group L", date: "Thứ 4, 24/06/2026", dateEn: "Wed, 24/06/2026", time: "6:00", stadium: "Toronto Stadium", teamA: "Panama", teamAEn: "Panama", codeA: "pa", teamB: "Croatia", teamBEn: "Croatia", codeB: "hr", type: "vong-bang" },
-            { id: "47", group: "Bảng K", groupEn: "Group K", date: "Thứ 4, 24/06/2026", dateEn: "Wed, 24/06/2026", time: "0:00", stadium: "Houston Stadium", teamA: "Bồ Đào Nha", teamAEn: "Portugal", codeA: "pt", teamB: "Uzbekistan", teamBEn: "Uzbekistan", codeB: "uz", teamB: "Colombia", teamBEn: "Colombia", codeB: "co", type: "vong-bang" },
+            { id: "47", group: "Bảng K", groupEn: "Group K", date: "Thứ 4, 24/06/2026", dateEn: "Wed, 24/06/2026", time: "0:00", stadium: "Houston Stadium", teamA: "Bồ Đào Nha", teamAEn: "Portugal", codeA: "pt", teamB: "Uzbekistan", teamBEn: "Uzbekistan", codeB: "uz", type: "vong-bang" },
             { id: "48", group: "Bảng K", groupEn: "Group K", date: "Thứ 4, 24/06/2026", dateEn: "Wed, 24/06/2026", time: "9:00", stadium: "Guadalajara Stadium", teamA: "Colombia", teamAEn: "Colombia", codeA: "co", teamB: "Congo", teamBEn: "Congo", codeB: "cg", type: "vong-bang" },
             { id: "49", group: "Bảng C", groupEn: "Group C", date: "Thứ 5, 25/06/2026", dateEn: "Thu, 25/06/2026", time: "5:00", stadium: "Miami Stadium", teamA: "Scotland", teamAEn: "Scotland", codeA: "gb-sct", teamB: "Brazil", teamBEn: "Brazil", codeB: "br", type: "vong-bang" },
             { id: "50", group: "Bảng C", groupEn: "Group C", date: "Thứ 5, 25/06/2026", dateEn: "Thu, 25/06/2026", time: "5:00", stadium: "Atlanta Stadium", teamA: "Ma Rốc", teamAEn: "Morocco", codeA: "ma", teamB: "Haiti", teamBEn: "Haiti", codeB: "ht", type: "vong-bang" },
             { id: "51", group: "Bảng B", groupEn: "Group B", date: "Thứ 5, 25/06/2026", dateEn: "Thu, 25/06/2026", time: "2:00", stadium: "Vancouver Stadium", teamA: "Thụy Sĩ", teamAEn: "Switzerland", codeA: "ch", teamB: "Canada", teamBEn: "Canada", codeB: "ca", type: "vong-bang" },
             { id: "52", group: "Bảng B", groupEn: "Group B", date: "Thứ 5, 25/06/2026", dateEn: "Thu, 25/06/2026", time: "2:00", stadium: "Seattle Stadium", teamA: "Bosnia/Herzeg.", teamAEn: "Bosnia/Herzeg.", codeA: "ba", teamB: "Qatar", teamBEn: "Qatar", codeB: "qa", type: "vong-bang" },
-            { id: "53", group: "Bảng A", groupEn: "Group A", date: "Thứ 5, 25/06/2026", dateEn: "Thu, 25/06/2026", time: "8:00", stadium: "Mexico City Stadium", teamA: "CH Séc", teamAEn: "Czech Republic", codeA: "cz", teamB: "Mexico", teamAEn: "Mexico", codeB: "mx", type: "vong-bang" },
+            { id: "53", group: "Bảng A", groupEn: "Group A", date: "Thứ 5, 25/06/2026", dateEn: "Thu, 25/06/2026", time: "8:00", stadium: "Mexico City Stadium", teamA: "CH Séc", teamAEn: "Czech Republic", codeA: "cz", teamB: "Mexico", teamBEn: "Mexico", codeB: "mx", type: "vong-bang" },
             { id: "54", group: "Bảng A", groupEn: "Group A", date: "Thứ 5, 25/06/2026", dateEn: "Thu, 25/06/2026", time: "8:00", stadium: "Monterrey Stadium", teamA: "Nam Phi", teamAEn: "South Africa", codeA: "za", teamB: "Hàn Quốc", teamBEn: "South Korea", codeB: "kr", type: "vong-bang" },
             { id: "55", group: "Bảng E", groupEn: "Group E", date: "Thứ 6, 26/06/2026", dateEn: "Fri, 26/06/2026", time: "3:00", stadium: "Philadelphia Stadium", teamA: "Curacao", teamAEn: "Curacao", codeA: "cw", teamB: "Ivory Coast", teamBEn: "Ivory Coast", codeB: "ci", type: "vong-bang" },
             { id: "56", group: "Bảng E", groupEn: "Group E", date: "Thứ 6, 26/06/2026", dateEn: "Fri, 26/06/2026", time: "3:00", stadium: "New York/New Jersey Stadium", teamA: "Ecuador", teamAEn: "Ecuador", codeA: "ec", teamB: "Đức", teamBEn: "Germany", codeB: "de", type: "vong-bang" },
@@ -321,7 +320,7 @@
             { id: "67", group: "Bảng L", groupEn: "Group L", date: "CN, 28/06/2026", dateEn: "Sun, 28/06/2026", time: "4:00", stadium: "New York/New Jersey Stadium", teamA: "Panama", teamAEn: "Panama", codeA: "pa", teamB: "Anh", teamBEn: "England", codeB: "gb-eng", type: "vong-bang" },
             { id: "68", group: "Bảng L", groupEn: "Group L", date: "CN, 28/06/2026", dateEn: "Sun, 28/06/2026", time: "4:00", stadium: "Philadelphia Stadium", teamA: "Croatia", teamAEn: "Croatia", codeA: "hr", teamB: "Ghana", teamBEn: "Ghana", codeB: "gh", type: "vong-bang" },
             { id: "69", group: "Bảng J", groupEn: "Group J", date: "CN, 28/06/2026", dateEn: "Sun, 28/06/2026", time: "9:00", stadium: "Kansas City Stadium", teamA: "Algeria", teamAEn: "Algeria", codeA: "dz", teamB: "Áo", teamBEn: "Austria", codeB: "at", type: "vong-bang" },
-            { id: "70", group: "Bảng J", groupEn: "Group J", date: "CN, 28/06/2026", dateEn: "Sun, 28/06/2026", time: "9:00", stadium: "Dallas Stadium", teamA: "Jordan", teamAEn: "Jordan", codeA: "jo", teamB: "Argentina", teamAEn: "Argentina", codeB: "ar", type: "vong-bang" },
+            { id: "70", group: "Bảng J", groupEn: "Group J", date: "CN, 28/06/2026", dateEn: "Sun, 28/06/2026", time: "9:00", stadium: "Dallas Stadium", teamA: "Jordan", teamAEn: "Jordan", codeA: "jo", teamB: "Argentina", teamBEn: "Argentina", codeB: "ar", type: "vong-bang" },
             { id: "71", group: "Bảng K", groupEn: "Group K", date: "CN, 28/06/2026", dateEn: "Sun, 28/06/2026", time: "6:30", stadium: "Miami Stadium", teamA: "Colombia", teamAEn: "Colombia", codeA: "co", teamB: "Bồ Đào Nha", teamBEn: "Portugal", codeB: "pt", type: "vong-bang" },
             { id: "72", group: "Bảng K", groupEn: "Group K", date: "CN, 28/06/2026", dateEn: "Sun, 28/06/2026", time: "6:30", stadium: "Atlanta Stadium", teamA: "Congo", teamAEn: "Congo", codeA: "cg", teamB: "Uzbekistan", teamBEn: "Uzbekistan", codeB: "uz", type: "vong-bang" },
 
@@ -390,7 +389,7 @@
             document.getElementById('prize-2-title').innerHTML = lang.prize2;
             document.getElementById('prize-2-val').innerText = lang.prize2Val;
 
-            // Đồng bộ trạng thái Lời thoại AI theo biến tiến trình kết nối API hiện tại
+            // Đồng bộ trạng thái Lời thoại AI theo tiến trình kết nối API
             const aiAgentText = document.getElementById('ai-roast-text');
             const aiStatusText = document.getElementById('ai-status-text');
             if (aiStatusText) aiStatusText.innerText = lang.aiReading;
@@ -449,7 +448,6 @@
                 const groupCard = document.createElement('div');
                 groupCard.className = "bg-walrus-card border border-gray-800/80 rounded-xl p-3 text-xs shadow-md";
                 
-                // Chuyển đổi tên Bảng/Group động
                 let dynamicGroupName = currentLang === "en" ? groupName.replace("Bảng", "Group") : groupName;
                 
                 let teamsHTML = `<h3 class="font-bold text-walrus-aqua border-b border-gray-700/50 pb-1.5 mb-2">${dynamicGroupName}</h3><ul class="space-y-1.5">`;
@@ -481,14 +479,15 @@
                 const card = document.createElement('div');
                 card.className = "bg-walrus-card border border-gray-800 rounded-2xl p-6 shadow-xl relative overflow-hidden transition hover:border-gray-700";
                 
-                // Đồng bộ hóa tên vòng đấu động 100%
+                // FIXED LOGIC CHUYỂN ĐỔI NGÔN NGỮ ĐỘNG 100% CHO CÁC VÒNG ĐẤU KNOCKOUT
                 let displayGroup = currentLang === "en" && match.groupEn ? match.groupEn : match.group;
                 if (currentLang === "en" && displayGroup.includes("Bảng")) { displayGroup = displayGroup.replace("Bảng", "Group"); }
                 
-                // Đồng bộ hóa ngày tháng động 100%
                 let displayDate = currentLang === "en" && match.dateEn ? match.dateEn : match.date;
+                if (currentLang === "en" && !match.dateEn) {
+                    displayDate = displayDate.replace("Thứ 6", "Fri").replace("Thứ 7", "Sat").replace("CN", "Sun").replace("Thứ 2", "Mon").replace("Thứ 3", "Tue").replace("Thứ 4", "Wed").replace("Thứ 5", "Thu");
+                }
                 
-                // Đồng bộ hóa tên đội bóng động 100%
                 let displayTeamA = currentLang === "en" && match.teamAEn ? match.teamAEn : match.teamA;
                 let displayTeamB = currentLang === "en" && match.teamBEn ? match.teamBEn : match.teamB;
 
@@ -541,7 +540,16 @@
             container.scrollTop = 0;
         }
 
-        // HÀM TRIGGER GIẢ LẬP KHI BẤM NÚT ORACLE ĐỂ ĐỒNG BỘ ĐỘI BÓNG ĐÃ ĐƯỢC GIỮ LẠI ĐỂ LOGIC HỆ THỐNG KHÔNG BỊ LỖI
+        function filterMatches(type) {
+            const tabs = ['vong-bang', 'vong-32', 'vong-16', 'tu-ket', 'ban-ket', 'chung-ket'];
+            tabs.forEach(t => {
+                const tabBtn = document.getElementById(`tab-${t}`);
+                if (t === type) tabBtn.className = "px-3 py-2 rounded-lg font-bold bg-walrus-aqua text-walrus-dark transition duration-150";
+                else tabBtn.className = "px-3 py-2 rounded-lg font-bold text-gray-400 hover:text-white transition duration-150";
+            });
+            renderMatches(type);
+        }
+
         function triggerAutomatedOracle() {
             const realTimeTournamentState = {
                 "73": { teamA: "Mexico", teamAEn: "Mexico", codeA: "mx", teamB: "Thụy Sĩ", teamBEn: "Switzerland", codeB: "ch" },

@@ -99,6 +99,9 @@
                     <i class="fa-solid fa-wallet"></i>
                     <span id="walletText">Kết nối ví Slush</span>
                 </button>
+                <button onclick="fetchMyPredictions()" id="btn-history" class="bg-gray-800 text-walrus-aqua px-4 py-2.5 rounded-xl border border-walrus-aqua/30 text-sm font-bold transition hover:bg-walrus-aqua hover:text-walrus-dark">
+                    <i class="fa-solid fa-clock-rotate-left"></i> <span id="btn-history-text">Lịch sử dự đoán</span>
+                </button> 
             </div>
         </div>
     </header>
@@ -236,6 +239,7 @@
                 aiSuccess: '"Đã đồng bộ thành công dữ liệu từ FIFA! Sơ đồ Vòng 32 Đội và kết quả các trận đấu đã được cập nhật chính xác theo thời gian thực. Vào gáy tiếp đi sếp!"',
                 aiFallback: '"Không kết nối được API bên ngoài, tôi đang sử dụng dữ liệu bộ nhớ dự phòng có sẵn trên mạng lưới Walrus cho sếp nhé!"',
                 btnGmail: 'Đăng nhập Gmail', btnWallet: 'Kết nối ví Slush',
+                btnHistory: 'Lịch sử dự đoán',
                 prize1: '<i class="fa-solid fa-award text-yellow-500"></i> Tiên Tri Tỷ Số Đúng', prize1Val: '500 WAL / Vòng',
                 prize2: '<i class="fa-solid fa-face-laugh-squint text-orange-400"></i> Phân Tích Hài Hước Nhất', prize2Val: '300 WAL / Trận',
                 labelScore: 'Dự đoán Tỷ số', labelAnalysis: 'Lý do phân tích / Câu gáy hài hước', placeholderAnalysis: 'Nhập nhận định lầy lội của bạn tại đây...', btnSubmit: '<i class="fa-solid fa-cloud-arrow-up"></i> Nộp Dự Đoán',
@@ -256,6 +260,7 @@
                 aiSuccess: '"FIFA data sync successful! Round of 32 configurations and real-time scores updated via Walrus Memory. Let the roasted games begin!"',
                 aiFallback: '"External API offline, I am actively recovering backup tournament state from the secure Walrus decentralized nodes!"',
                 btnGmail: 'Sign in with Gmail', btnWallet: 'Connect Slush Wallet',
+                btnHistory: 'Prediction History',
                 prize1: '<i class="fa-solid fa-award text-yellow-500"></i> Correct Score Predictor', prize1Val: '500 WAL / Round',
                 prize2: '<i class="fa-solid fa-face-laugh-squint text-orange-400"></i> Funniest Match Analyst', prize2Val: '300 WAL / Match',
                 labelScore: 'Score Prediction', labelAnalysis: 'Analysis / Banter Comment', placeholderAnalysis: 'Type your funny, trash-talk prediction here...', btnSubmit: '<i class="fa-solid fa-cloud-arrow-up"></i> Submit Prediction',
@@ -628,6 +633,7 @@
 
         function updateUINonDynamicText() {
             const lang = translations[currentLang];
+            document.getElementById('btn-history-text').innerText = lang.btnHistory;
             document.getElementById('hero-title').innerHTML = lang.heroTitle;
             document.getElementById('hero-desc').innerText = lang.heroDesc;
             document.getElementById('section-groups-title').innerHTML = lang.secGroups;

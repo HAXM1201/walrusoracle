@@ -66,9 +66,12 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <button onclick="triggerAutomatedOracle()" class="flex items-center gap-2 px-3 py-2 bg-amber-950/40 hover:bg-amber-900/60 text-worldcup-gold text-xs font-bold rounded-xl border border-worldcup-gold/30 transition">
-                    <i class="fa-solid fa-robot animate-pulse"></i> AI Oracle Sync
+                <!-- NÚT CHUYỂN ĐỔI NGÔN NGỮ QUỐC TẾ THAY THẾ CHO ORACLE SYNC -->
+                <button onclick="toggleLanguage()" id="langBtn" class="flex items-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-bold rounded-xl border border-gray-700 transition">
+                    <img id="langFlag" src="https://flagcdn.com/w20/gb.png" class="w-5 h-3.5 object-cover rounded-sm" alt="English">
+                    <span id="langText">EN</span>
                 </button>
+                
                 <button id="gmailBtn" onclick="toggleGmail()" class="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 text-sm font-semibold rounded-xl border border-gray-700 transition duration-200">
                     <i class="fa-brands fa-google text-red-500"></i>
                     <span id="gmailText">Đăng nhập Gmail</span>
@@ -88,11 +91,11 @@
                     <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-walrus-aqua/10 text-walrus-aqua text-xs font-semibold uppercase tracking-wider border border-walrus-aqua/20">
                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Walrus Mainnet Connected
                     </span>
-                    <h1 class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
+                    <h1 id="hero-title" class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
                         Gáy Khét World Cup <br/>
                         <span class="gradient-text">Nhận Thưởng Lớn</span>
                     </h1>
-                    <p class="text-gray-300 text-sm sm:text-base leading-relaxed">
+                    <p id="hero-desc" class="text-gray-300 text-sm sm:text-base leading-relaxed">
                         Dự đoán kết quả từ 104 trận đấu chính thức của giải vô địch bóng đá thế giới FIFA World Cup 2026. Nhận định của bạn sẽ được lưu vĩnh viễn trên hạ tầng Walrus Blobs Storage.
                     </p>
                 </div>
@@ -111,7 +114,7 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
         
         <section class="space-y-6">
-            <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+            <h2 id="section-groups-title" class="text-2xl font-bold text-white flex items-center gap-2">
                 <i class="fa-solid fa-users-rectangle text-walrus-aqua"></i> Cục Diện 48 Đội Đường Đến World Cup 2026
             </h2>
             <div id="groups-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -122,7 +125,7 @@
             <div class="lg:col-span-2 space-y-6">
                 <div class="flex flex-col gap-4 border-b border-gray-800 pb-4">
                     <div class="flex items-center justify-between">
-                        <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                        <h2 id="section-matches-title" class="text-2xl font-bold text-white flex items-center gap-2">
                             <i class="fa-regular fa-calendar-days text-worldcup-gold"></i> Lịch Trình Thi Đấu Chính Thức
                         </h2>
                         <span id="match-count" class="text-xs bg-gray-800 text-walrus-aqua border border-gray-700 px-2.5 py-1 rounded-lg font-mono font-bold">0 trận</span>
@@ -143,7 +146,7 @@
             </div>
 
             <div class="space-y-6">
-                <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                <h2 id="section-ai-title" class="text-2xl font-bold text-white flex items-center gap-2">
                     <i class="fa-solid fa-brain text-walrus-aqua"></i> Walrus Memory Agent
                 </h2>
                 <div class="bg-gradient-to-br from-walrus-card to-walrus-dark border border-walrus-aqua/20 rounded-2xl p-5 space-y-4 shadow-xl">
@@ -153,7 +156,7 @@
                         </div>
                         <div>
                             <h4 class="font-bold text-white text-sm">Hải Ly Tiên Tri v1.0</h4>
-                            <span class="text-[10px] text-emerald-400 font-mono">Đang đọc bộ nhớ Walrus Mainnet...</span>
+                            <span id="ai-status-text" class="text-[10px] text-emerald-400 font-mono">Đang đọc bộ nhớ Walrus Mainnet...</span>
                         </div>
                     </div>
                     <p id="ai-roast-text" class="text-xs text-gray-300 leading-relaxed italic bg-gray-950/60 p-3 rounded-xl border border-gray-800">
@@ -161,21 +164,21 @@
                     </p>
                 </div>
 
-                <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                <h2 id="section-prizes-title" class="text-2xl font-bold text-white flex items-center gap-2">
                     <i class="fa-solid fa-trophy text-worldcup-gold"></i> Quỹ Giải Thưởng
                 </h2>
                 <div class="bg-gradient-to-br from-walrus-card to-walrus-dark border border-gray-800 rounded-2xl p-6 space-y-4">
                     <div class="flex justify-between items-center border-b border-gray-800 pb-3">
-                        <span class="text-sm font-semibold text-gray-300 flex items-center gap-2">
+                        <span id="prize-1-title" class="text-sm font-semibold text-gray-300 flex items-center gap-2">
                             <i class="fa-solid fa-award text-yellow-500"></i> Tiên Tri Tỷ Số Đúng
                         </span>
-                        <span class="text-sm font-bold text-walrus-aqua">500 WAL / Vòng</span>
+                        <span id="prize-1-val" class="text-sm font-bold text-walrus-aqua">500 WAL / Vòng</span>
                     </div>
                     <div class="flex justify-between items-center border-b border-gray-800 pb-3">
-                        <span class="text-sm font-semibold text-gray-300 flex items-center gap-2">
+                        <span id="prize-2-title" class="text-sm font-semibold text-gray-300 flex items-center gap-2">
                             <i class="fa-solid fa-face-laugh-squint text-orange-400"></i> Phân Tích Hài Hước Nhất
                         </span>
-                        <span class="text-sm font-bold text-worldcup-gold">300 WAL / Trận</span>
+                        <span id="prize-2-val" class="text-sm font-bold text-worldcup-gold">300 WAL / Trận</span>
                     </div>
                 </div>
             </div>
@@ -187,6 +190,49 @@
     </footer>
 
     <script>
+        // Hệ thống ngôn ngữ đa quốc gia (Localization Dictionary)
+        let currentLang = "vi"; 
+        const translations = {
+            vi: {
+                heroTitle: 'Gáy Khét World Cup <br/><span class="gradient-text">Nhận Thưởng Lớn</span>',
+                heroDesc: 'Dự đoán kết quả từ 104 trận đấu chính thức của giải vô địch bóng đá thế giới FIFA World Cup 2026. Nhận định của bạn sẽ được lưu vĩnh viễn trên hạ tầng Walrus Blobs Storage.',
+                secGroups: '<i class="fa-solid fa-users-rectangle text-walrus-aqua"></i> Cục Diện 48 Đội Đường Đến World Cup 2026',
+                secMatches: '<i class="fa-regular fa-calendar-days text-worldcup-gold"></i> Lịch Trình Thi Đấu Chính Thức',
+                secAi: '<i class="fa-solid fa-brain text-walrus-aqua"></i> Walrus Memory Agent',
+                secPrizes: '<i class="fa-solid fa-trophy text-worldcup-gold"></i> Quỹ Giải Thưởng',
+                tabVongBang: 'Vòng Bảng', tabVong32: 'Vòng 32 Đội', tabVong16: 'Vòng 16 Đội', tabTuKet: 'Tứ Kết', tabBanKet: 'Bán Kết', tabChungKet: 'Chung Kết',
+                aiReading: 'Đang đọc bộ nhớ Walrus Mainnet...',
+                aiWelcome: '"Chào sếp! Hãy kết nối ví Slush hoặc đăng nhập Gmail để tôi quét lịch sử gáy trận đấu của sếp trên mạng lưới Walrus nhé."',
+                aiConnecting: '"Đang kết nối API football-data.org để lấy kết quả World Cup 2026 thời gian thực..."',
+                aiSuccess: '"Đã đồng bộ thành công dữ liệu từ FIFA! Sơ đồ Vòng 32 Đội và kết quả các trận đấu đã được cập nhật chính xác theo thời gian thực. Vào gáy tiếp đi sếp!"',
+                aiFallback: '"Không kết nối được API bên ngoài, tôi đang sử dụng dữ liệu bộ nhớ dự phòng có sẵn trên mạng lưới Walrus cho sếp nhé!"',
+                btnGmail: 'Đăng nhập Gmail', btnWallet: 'Kết nối ví Slush',
+                prize1: '<i class="fa-solid fa-award text-yellow-500"></i> Tiên Tri Tỷ Số Đúng', prize1Val: '500 WAL / Vòng',
+                prize2: '<i class="fa-solid fa-face-laugh-squint text-orange-400"></i> Phân Tích Hài Hước Nhất', prize2Val: '300 WAL / Trận',
+                labelScore: 'Dự đoán Tỷ số', labelAnalysis: 'Lý do phân tích / Câu gáy hài hước', placeholderAnalysis: 'Nhập nhận định lầy lội của bạn tại đây...', btnSubmit: '<i class="fa-solid fa-cloud-arrow-up"></i> Nộp Dự Đoán',
+                matchUnit: 'trận', resultStr: 'Kết quả'
+            },
+            en: {
+                heroTitle: 'Roast The World Cup <br/><span class="gradient-text">Win Massive Rewards</span>',
+                heroDesc: 'Predict the outcomes of all 104 official matches for the FIFA World Cup 2026. Your insights will be permanently stored on the decentralized Walrus Blobs Storage infrastructure.',
+                secGroups: '<i class="fa-solid fa-users-rectangle text-walrus-aqua"></i> 48 Teams Roadmap - World Cup 2026 Groups',
+                secMatches: '<i class="fa-regular fa-calendar-days text-worldcup-gold"></i> Official Match Schedule',
+                secAi: '<i class="fa-solid fa-brain text-walrus-aqua"></i> Walrus Memory Agent',
+                secPrizes: '<i class="fa-solid fa-trophy text-worldcup-gold"></i> Prize Pool & Rewards',
+                tabVongBang: 'Group Stage', tabVong32: 'Round of 32', tabVong16: 'Round of 16', tabTuKet: 'Quarter-Finals', tabBanKet: 'Semi-Finals', tabChungKet: 'Finals',
+                aiReading: 'Reading Walrus Mainnet storage...',
+                aiWelcome: '"Hello boss! Connect your Slush Wallet or sign in with Gmail so I can scan your historical prediction logs on the Walrus Network."',
+                aiConnecting: '"Connecting to football-data.org API to fetch live World Cup 2026 results in real-time..."',
+                aiSuccess: '"FIFA data sync successful! Sơ đồ Round of 32 and real-time scores updated via Walrus Memory. Let the roasted games begin!"',
+                aiFallback: '"External API offline, I am actively recovering backup tournament state from the secure Walrus decentralized nodes!"',
+                btnGmail: 'Sign in with Gmail', btnWallet: 'Connect Slush Wallet',
+                prize1: '<i class="fa-solid fa-award text-yellow-500"></i> Correct Score Predictor', prize1Val: '500 WAL / Round',
+                prize2: '<i class="fa-solid fa-face-laugh-squint text-orange-400"></i> Funniest Match Analyst', prize2Val: '300 WAL / Match',
+                labelScore: 'Score Prediction', labelAnalysis: 'Analysis / Banter Comment', placeholderAnalysis: 'Type your funny, trash-talk prediction here...', btnSubmit: '<i class="fa-solid fa-cloud-arrow-up"></i> Submit Prediction',
+                matchUnit: 'matches', resultStr: 'Result'
+            }
+        };
+
         const worldCupGroups = {
             "Bảng A": [{ name: "Mexico", code: "mx" }, { name: "Nam Phi", code: "za" }, { name: "Hàn Quốc", code: "kr" }, { name: "CH Séc", code: "cz" }],
             "Bảng B": [{ name: "Canada", code: "ca" }, { name: "Bosnia/Herzeg.", code: "ba" }, { name: "Qatar", code: "qa" }, { name: "Thụy Sĩ", code: "ch" }],
@@ -203,7 +249,6 @@
         };
 
         const officialMatches = [
-            // --- TAB 1: VÒNG BẢNG (ĐỦ 72 TRẬN) ---
             { id: "1", group: "Bảng A", date: "Thứ 6, 12/06/2026", time: "2:00", stadium: "Mexico City Stadium", teamA: "Mexico", codeA: "mx", teamB: "Nam Phi", codeB: "za", type: "vong-bang" },
             { id: "2", group: "Bảng A", date: "Thứ 6, 12/06/2026", time: "9:00", stadium: "Guadalajara Stadium", teamA: "Hàn Quốc", codeA: "kr", teamB: "CH Séc", codeB: "cz", type: "vong-bang" },
             { id: "3", group: "Bảng B", date: "Thứ 7, 13/06/2026", time: "2:00", stadium: "Toronto Stadium", teamA: "Canada", codeA: "ca", teamB: "Bosnia/Herzeg.", codeB: "ba", type: "vong-bang" },
@@ -231,7 +276,7 @@
             { id: "25", group: "Bảng A", date: "Thứ 5, 18/06/2026", time: "23:00", stadium: "Atlanta Stadium", teamA: "CH Séc", codeA: "cz", teamB: "Nam Phi", codeB: "za", type: "vong-bang" },
             { id: "26", group: "Bảng B", date: "Thứ 6, 19/06/2026", time: "2:00", stadium: "Los Angeles Stadium", teamA: "Thụy Sĩ", codeA: "ch", teamB: "Bosnia/Herzeg.", codeB: "ba", type: "vong-bang" },
             { id: "27", group: "Bảng B", date: "Thứ 6, 19/06/2026", time: "5:00", stadium: "Vancouver Stadium", teamA: "Canada", codeA: "ca", teamB: "Qatar", codeB: "qa", type: "vong-bang" },
-            { id: "28", group: "Bảng A", date: "Thứ 6, 19/06/2026", time: "8:00", stadium: "Guadalajara Stadium", teamA: "Mexico", codeA: "mx", teamB: "Hàn Quốc", codeA: "kr", type: "vong-bang" },
+            { id: "28", group: "Bảng A", date: "Thứ 6, 19/06/2026", time: "8:00", stadium: "Guadalajara Stadium", teamA: "Mexico", codeA: "mx", teamB: "Hàn Quốc", codeB: "kr", type: "vong-bang" },
             { id: "29", group: "Bảng C", date: "Thứ 7, 20/06/2026", time: "7:30", stadium: "Philadelphia Stadium", teamA: "Brazil", codeA: "br", teamB: "Haiti", codeB: "ht", type: "vong-bang" },
             { id: "30", group: "Bảng C", date: "Thứ 7, 20/06/2026", time: "5:00", stadium: "Boston Stadium", teamA: "Scotland", codeA: "gb-sct", teamB: "Ma Rốc", codeB: "ma", type: "vong-bang" },
             { id: "31", group: "Bảng D", date: "Thứ 7, 20/06/2026", time: "10:00", stadium: "San Francisco Bay Area Stadium", teamA: "Thổ Nhĩ Kỳ", codeA: "tr", teamB: "Paraguay", codeB: "py", type: "vong-bang" },
@@ -266,7 +311,7 @@
             { id: "60", group: "Bảng D", date: "Thứ 6, 26/06/2026", time: "9:00", stadium: "San Francisco Bay Area Stadium", teamA: "Paraguay", codeA: "py", teamB: "Australia", codeA: "au", type: "vong-bang" },
             { id: "61", group: "Bảng I", date: "Thứ 7, 27/06/2026", time: "2:00", stadium: "Boston Stadium", teamA: "Na Uy", codeA: "no", teamB: "Pháp", codeA: "fr", type: "vong-bang" },
             { id: "62", group: "Bảng I", date: "Thứ 7, 27/06/2026", time: "2:00", stadium: "Toronto Stadium", teamA: "Senegal", codeA: "sn", teamB: "Iraq", codeA: "iq", type: "vong-bang" },
-            { id: "63", group: "Bảng G", date: "Thứ 7, 27/06/2026", time: "10:00", stadium: "Seattle Stadium", teamA: "Ai Cập", codeA: "eg", teamB: "Iran", codeA: "ir", type: "vong-bang" },
+            { id: "63", group: "Bảng G", date: "Thứ 7, 27/06/2026", time: "10:00", stadium: "Seattle Stadium", teamA: "Ai Cập", codeA: "eg", teamB: "Iran", codeB: "ir", type: "vong-bang" },
             { id: "64", group: "Bảng G", date: "Thứ 7, 27/06/2026", time: "10:00", stadium: "Vancouver Stadium", teamA: "New Zealand", codeA: "nz", teamB: "Bỉ", codeA: "be", type: "vong-bang" },
             { id: "65", group: "Bảng H", date: "Thứ 7, 27/06/2026", time: "7:00", stadium: "Houston Stadium", teamA: "Cape Verde", codeA: "cv", teamB: "Ả Rập Xê Út", codeA: "sa", type: "vong-bang" },
             { id: "66", group: "Bảng H", date: "Thứ 7, 27/06/2026", time: "7:00", stadium: "Guadalajara Stadium", teamA: "Uruguay", codeA: "uy", teamB: "Tây Ban Nha", codeA: "es", type: "vong-bang" },
@@ -278,47 +323,102 @@
             { id: "72", group: "Bảng K", date: "CN, 28/06/2026", time: "6:30", stadium: "Atlanta Stadium", teamA: "Congo", codeA: "cg", teamB: "Uzbekistan", codeB: "uz", type: "vong-bang" },
 
             // --- TAB 2: VÒNG 32 ĐỘI ---
-            { id: "73", group: "Vòng 32 Đội", date: "Thứ 2, 29/06/2026", time: "2:00", stadium: "Los Angeles Stadium", teamA: "Nhất Bảng A", codeA: "placeholder", teamB: "Nhì Bảng B", codeB: "placeholder", type: "vong-32" },
-            { id: "74", group: "Vòng 32 Đội", date: "Thứ 3, 30/06/2026", time: "3:30", stadium: "Boston Stadium", teamA: "Nhất Bảng E", codeA: "placeholder", teamB: "Hạng 3 A/B/C/D/F", codeB: "placeholder", type: "vong-32" },
-            { id: "75", group: "Vòng 32 Đội", date: "Thứ 3, 30/06/2026", time: "8:00", stadium: "Monterrey Stadium", teamA: "Nhất Bảng F", codeA: "placeholder", teamB: "Nhì Bảng C", codeB: "placeholder", type: "vong-32" },
-            { id: "76", group: "Vòng 32 Đội", date: "Thứ 3, 30/06/2026", time: "0:00", stadium: "Houston Stadium", teamA: "Nhất Bảng C", codeA: "placeholder", teamB: "Hạng 3 F/H", codeB: "placeholder", type: "vong-32" },
-            { id: "77", group: "Vòng 32 Đội", date: "Thứ 4, 01/07/2026", time: "4:00", stadium: "New York/New Jersey Stadium", teamA: "Nhất Bảng I", codeA: "placeholder", teamB: "Hạng 3 C/D/F/G/H", codeB: "placeholder", type: "vong-32" },
-            { id: "78", group: "Vòng 32 Đội", date: "Thứ 4, 01/07/2026", time: "8:00", stadium: "Dallas Stadium", teamA: "Nhất Bảng E", codeA: "placeholder", teamB: "Nhì Bảng I", codeB: "placeholder", type: "vong-32" },
-            { id: "79", group: "Vòng 32 Đội", date: "Thứ 4, 01/07/2026", time: "8:00", stadium: "Mexico City Stadium", teamA: "Nhất Bảng A", codeA: "placeholder", teamB: "Hạng 3 C/E/F/H/I", codeB: "placeholder", type: "vong-32" },
-            { id: "80", group: "Vòng 32 Đội", date: "Thứ 4, 01/07/2026", time: "23:00", stadium: "Atlanta Stadium", teamA: "Nhất Bảng L", codeA: "placeholder", teamB: "Hạng 3 E/H/I/J/K", codeB: "placeholder", type: "vong-32" },
-            { id: "81", group: "Vòng 32 Đội", date: "Thứ 5, 02/07/2026", time: "7:00", stadium: "San Francisco Bay Area Stadium", teamA: "Nhất Bảng D", codeA: "placeholder", teamB: "Hạng 3 B/E/F/I/J", codeB: "placeholder", type: "vong-32" },
-            { id: "82", group: "Vòng 32 Đội", date: "Thứ 5, 02/07/2026", time: "3:00", stadium: "Seattle Stadium", teamA: "Nhất Bảng G", codeA: "placeholder", teamB: "Hạng 3 A/E/H/I/J", codeB: "placeholder", type: "vong-32" },
-            { id: "83", group: "Vòng 32 Đội", date: "Thứ 6, 03/07/2026", time: "6:00", stadium: "Toronto Stadium", teamA: "Nhì Bảng K", codeA: "placeholder", teamB: "Nhì Bảng L", codeB: "placeholder", type: "vong-32" },
-            { id: "84", group: "Vòng 32 Đội", date: "Thứ 6, 03/07/2026", time: "2:00", stadium: "Los Angeles Stadium", teamA: "Nhất Bảng H", codeA: "placeholder", teamB: "Nhì Bảng J", codeB: "placeholder", type: "vong-32" },
-            { id: "85", group: "Vòng 32 Đội", date: "Thứ 6, 03/07/2026", time: "10:00", stadium: "Vancouver Stadium", teamA: "Nhất Bảng B", codeA: "placeholder", teamB: "Hạng 3 E/F/G/I/J", codeB: "placeholder", type: "vong-32" },
-            { id: "86", group: "Vòng 32 Đội", date: "Thứ 7, 04/07/2026", time: "5:00", stadium: "Miami Stadium", teamA: "Nhất Bảng J", codeA: "placeholder", teamB: "Nhì Bảng H", codeB: "placeholder", type: "vong-32" },
-            { id: "87", group: "Vòng 32 Đội", date: "Thứ 7, 04/07/2026", time: "8:30", stadium: "Kansas City Stadium", teamA: "Nhất Bảng K", codeA: "placeholder", teamB: "Hạng 3 D/E/I/J/L", codeB: "placeholder", type: "vong-32" },
-            { id: "88", group: "Vòng 32 Đội", date: "Thứ 7, 04/07/2026", time: "1:00", stadium: "Dallas Stadium", teamA: "Nhì Bảng D", codeA: "placeholder", teamB: "Nhì Bảng G", codeB: "placeholder", type: "vong-32" },
+            { id: "73", group: "Vòng 32 Đội", groupEn: "Round of 32", date: "Thứ 2, 29/06/2026", dateEn: "Mon, 29/06/2026", time: "2:00", stadium: "Los Angeles Stadium", teamA: "Nhất Bảng A", teamAEn: "1st Group A", codeA: "placeholder", teamB: "Nhì Bảng B", teamBEn: "2nd Group B", codeB: "placeholder", type: "vong-32" },
+            { id: "74", group: "Vòng 32 Đội", groupEn: "Round of 32", date: "Thứ 3, 30/06/2026", dateEn: "Tue, 30/06/2026", time: "3:30", stadium: "Boston Stadium", teamA: "Nhất Bảng E", teamAEn: "1st Group E", codeA: "placeholder", teamB: "Hạng 3 A/B/C/D/F", teamBEn: "3rd A/B/C/D/F", codeB: "placeholder", type: "vong-32" },
+            { id: "75", group: "Vòng 32 Đội", groupEn: "Round of 32", date: "Thứ 3, 30/06/2026", dateEn: "Tue, 30/06/2026", time: "8:00", stadium: "Monterrey Stadium", teamA: "Nhất Bảng F", teamAEn: "1st Group F", codeA: "placeholder", teamB: "Nhì Bảng C", teamBEn: "2nd Group C", codeB: "placeholder", type: "vong-32" },
+            { id: "76", group: "Vòng 32 Đội", groupEn: "Round of 32", date: "Thứ 3, 30/06/2026", dateEn: "Tue, 30/06/2026", time: "0:00", stadium: "Houston Stadium", teamA: "Nhất Bảng C", teamAEn: "1st Group C", codeA: "placeholder", teamB: "Hạng 3 F/H", teamBEn: "3rd F/H", codeB: "placeholder", type: "vong-32" },
+            { id: "77", group: "Vòng 32 Đội", groupEn: "Round of 32", date: "Thứ 4, 01/07/2026", dateEn: "Wed, 01/07/2026", time: "4:00", stadium: "New York/New Jersey Stadium", teamA: "Nhất Bảng I", teamAEn: "1st Group I", codeA: "placeholder", teamB: "Hạng 3 C/D/F/G/H", teamBEn: "3rd C/D/F/G/H", codeB: "placeholder", type: "vong-32" },
+            { id: "78", group: "Vòng 32 Đội", groupEn: "Round of 32", date: "Thứ 4, 01/07/2026", dateEn: "Wed, 01/07/2026", time: "8:00", stadium: "Dallas Stadium", teamA: "Nhất Bảng E", teamAEn: "1st Group E", codeA: "placeholder", teamB: "Nhì Bảng I", teamBEn: "2nd Group I", codeB: "placeholder", type: "vong-32" },
+            { id: "79", group: "Vòng 32 Đội", groupEn: "Round of 32", date: "Thứ 4, 01/07/2026", dateEn: "Wed, 01/07/2026", time: "8:00", stadium: "Mexico City Stadium", teamA: "Nhất Bảng A", teamAEn: "1st Group A", codeA: "placeholder", teamB: "Hạng 3 C/E/F/H/I", teamBEn: "3rd C/E/F/H/I", codeB: "placeholder", type: "vong-32" },
+            { id: "80", group: "Vòng 32 Đội", groupEn: "Round of 32", date: "Thứ 4, 01/07/2026", dateEn: "Wed, 01/07/2026", time: "23:00", stadium: "Atlanta Stadium", teamA: "Nhất Bảng L", teamAEn: "1st Group L", codeA: "placeholder", teamB: "Hạng 3 E/H/I/J/K", teamBEn: "3rd E/H/I/J/K", codeB: "placeholder", type: "vong-32" },
+            { id: "81", group: "Vòng 32 Đội", groupEn: "Round of 32", date: "Thứ 5, 02/07/2026", dateEn: "Thu, 02/07/2026", time: "7:00", stadium: "San Francisco Bay Area Stadium", teamA: "Nhất Bảng D", teamAEn: "1st Group D", codeA: "placeholder", teamB: "Hạng 3 B/E/F/I/J", teamBEn: "3rd B/E/F/I/J", codeB: "placeholder", type: "vong-32" },
+            { id: "82", group: "Vòng 32 Đội", groupEn: "Round of 32", date: "Thứ 5, 02/07/2026", dateEn: "Thu, 02/07/2026", time: "3:00", stadium: "Seattle Stadium", teamA: "Nhất Bảng G", teamAEn: "1st Group G", codeA: "placeholder", teamB: "Hạng 3 A/E/H/I/J", teamBEn: "3rd A/E/H/I/J", codeB: "placeholder", type: "vong-32" },
+            { id: "83", group: "Vòng 32 Đội", groupEn: "Round of 32", date: "Thứ 6, 03/07/2026", dateEn: "Fri, 03/07/2026", time: "6:00", stadium: "Toronto Stadium", teamA: "Nhì Bảng K", teamAEn: "2nd Group K", codeA: "placeholder", teamB: "Nhì Bảng L", teamBEn: "2nd Group L", codeB: "placeholder", type: "vong-32" },
+            { id: "84", group: "Vòng 32 Đội", groupEn: "Round of 32", date: "Thứ 6, 03/07/2026", dateEn: "Fri, 03/07/2026", time: "2:00", stadium: "Los Angeles Stadium", teamA: "Nhất Bảng H", teamAEn: "1st Group H", codeA: "placeholder", teamB: "Nhì Bảng J", teamBEn: "2nd Group J", codeB: "placeholder", type: "vong-32" },
+            { id: "85", group: "Vòng 32 Đội", groupEn: "Round of 32", date: "Thứ 6, 03/07/2026", dateEn: "Fri, 03/07/2026", time: "10:00", stadium: "Vancouver Stadium", teamA: "Nhất Bảng B", teamAEn: "1st Group B", codeA: "placeholder", teamB: "Hạng 3 E/F/G/I/J", teamBEn: "3rd E/F/G/I/J", codeB: "placeholder", type: "vong-32" },
+            { id: "86", group: "Vòng 32 Đội", groupEn: "Round of 32", date: "Thứ 7, 04/07/2026", dateEn: "Sat, 04/07/2026", time: "5:00", stadium: "Miami Stadium", teamA: "Nhất Bảng J", teamAEn: "1st Group J", codeA: "placeholder", teamB: "Nhì Bảng H", teamBEn: "2nd Group H", codeB: "placeholder", type: "vong-32" },
+            { id: "87", group: "Vòng 32 Đội", groupEn: "Round of 32", date: "Thứ 7, 04/07/2026", dateEn: "Sat, 04/07/2026", time: "8:30", stadium: "Kansas City Stadium", teamA: "Nhất Bảng K", teamAEn: "1st Group K", codeA: "placeholder", teamB: "Hạng 3 D/E/I/J/L", teamBEn: "3rd D/E/I/J/L", codeB: "placeholder", type: "vong-32" },
+            { id: "88", group: "Vòng 32 Đội", groupEn: "Round of 32", date: "Thứ 7, 04/07/2026", dateEn: "Sat, 04/07/2026", time: "1:00", stadium: "Dallas Stadium", teamA: "Nhì Bảng D", teamAEn: "2nd Group D", codeA: "placeholder", teamB: "Nhì Bảng G", teamBEn: "2nd Group G", codeB: "placeholder", type: "vong-32" },
 
             // --- TAB 3: VÒNG 16 ĐỘI ---
-            { id: "89", group: "Vòng 16 Đội", date: "CN, 05/07/2026", time: "4:00", stadium: "Philadelphia Stadium", teamA: "Thắng Trận M74", codeA: "placeholder", teamB: "Thắng Trận M77", codeB: "placeholder", type: "vong-16" },
-            { id: "90", group: "Vòng 16 Đội", date: "CN, 05/07/2026", time: "0:00", stadium: "Houston Stadium", teamA: "Thắng Trận M73", codeA: "placeholder", teamB: "Thắng Trận M75", codeB: "placeholder", type: "vong-16" },
-            { id: "91", group: "Vòng 16 Đội", date: "Thứ 2, 06/07/2026", time: "3:00", stadium: "New York/New Jersey Stadium", teamA: "Thắng Trận M76", codeA: "placeholder", teamB: "Thắng Trận M78", codeB: "placeholder", type: "vong-16" },
-            { id: "92", group: "Vòng 16 Đội", date: "Thứ 2, 06/07/2026", time: "7:00", stadium: "Mexico City Stadium", teamA: "Thắng Trận M79", codeA: "placeholder", teamB: "Thắng Trận M80", codeB: "placeholder", type: "vong-16" },
-            { id: "93", group: "Vòng 16 Đội", date: "Thứ 3, 07/07/2026", time: "2:00", stadium: "Dallas Stadium", teamA: "Thắng Trận M83", codeA: "placeholder", teamB: "Thắng Trận M84", codeB: "placeholder", type: "vong-16" },
-            { id: "94", group: "Vòng 16 Đội", date: "Thứ 3, 07/07/2026", time: "7:00", stadium: "Seattle Stadium", teamA: "Thắng Trận M81", codeA: "placeholder", teamB: "Thắng Trận M82", codeB: "placeholder", type: "vong-16" },
-            { id: "95", group: "Vòng 16 Đội", date: "Thứ 3, 07/07/2026", time: "23:00", stadium: "Atlanta Stadium", teamA: "Thắng Trận M86", codeA: "placeholder", teamB: "Thắng Trận M88", codeB: "placeholder", type: "vong-16" },
-            { id: "96", group: "Vòng 16 Đội", date: "Thứ 4, 08/07/2026", time: "3:00", stadium: "Vancouver Stadium", teamA: "Thắng Trận M85", codeA: "placeholder", teamB: "Thắng Trận M87", codeB: "placeholder", type: "vong-16" },
+            { id: "89", group: "Vòng 16 Đội", groupEn: "Round of 16", date: "CN, 05/07/2026", dateEn: "Sun, 05/07/2026", time: "4:00", stadium: "Philadelphia Stadium", teamA: "Thắng Trận M74", teamAEn: "Winner M74", codeA: "placeholder", teamB: "Thắng Trận M77", teamBEn: "Winner M77", codeB: "placeholder", type: "vong-16" },
+            { id: "90", group: "Vòng 16 Đội", groupEn: "Round of 16", date: "CN, 05/07/2026", dateEn: "Sun, 05/07/2026", time: "0:00", stadium: "Houston Stadium", teamA: "Thắng Trận M73", teamAEn: "Winner M73", codeA: "placeholder", teamB: "Thắng Trận M75", teamBEn: "Winner M75", codeB: "placeholder", type: "vong-16" },
+            { id: "91", group: "Vòng 16 Đội", groupEn: "Round of 16", date: "Thứ 2, 06/07/2026", dateEn: "Mon, 06/07/2026", time: "3:00", stadium: "New York/New Jersey Stadium", teamA: "Thắng Trận M76", teamAEn: "Winner M76", codeA: "placeholder", teamB: "Thắng Trận M78", teamBEn: "Winner M78", codeB: "placeholder", type: "vong-16" },
+            { id: "92", group: "Vòng 16 Đội", groupEn: "Round of 16", date: "Thứ 2, 06/07/2026", dateEn: "Mon, 06/07/2026", time: "7:00", stadium: "Mexico City Stadium", teamA: "Thắng Trận M79", teamAEn: "Winner M79", codeA: "placeholder", teamB: "Thắng Trận M80", teamBEn: "Winner M80", codeB: "placeholder", type: "vong-16" },
+            { id: "93", group: "Vòng 16 Đội", groupEn: "Round of 16", date: "Thứ 3, 07/07/2026", dateEn: "Tue, 07/07/2026", time: "2:00", stadium: "Dallas Stadium", teamA: "Thắng Trận M83", teamAEn: "Winner M83", codeA: "placeholder", teamB: "Thắng Trận M84", teamBEn: "Winner M84", codeB: "placeholder", type: "vong-16" },
+            { id: "94", group: "Vòng 16 Đội", groupEn: "Round of 16", date: "Thứ 3, 07/07/2026", dateEn: "Tue, 07/07/2026", time: "7:00", stadium: "Seattle Stadium", teamA: "Thắng Trận M81", teamAEn: "Winner M81", codeA: "placeholder", teamB: "Thắng Trận M82", teamBEn: "Winner M82", codeB: "placeholder", type: "vong-16" },
+            { id: "95", group: "Vòng 16 Đội", groupEn: "Round of 16", date: "Thứ 3, 07/07/2026", dateEn: "Tue, 07/07/2026", time: "23:00", stadium: "Atlanta Stadium", teamA: "Thắng Trận M86", teamAEn: "Winner M86", codeA: "placeholder", teamB: "Thắng Trận M88", teamBEn: "Winner M88", codeB: "placeholder", type: "vong-16" },
+            { id: "96", group: "Vòng 16 Đội", groupEn: "Round of 16", date: "Thứ 4, 08/07/2026", dateEn: "Wed, 08/07/2026", time: "3:00", stadium: "Vancouver Stadium", teamA: "Thắng Trận M85", teamAEn: "Winner M85", codeA: "placeholder", teamB: "Thắng Trận M87", teamBEn: "Winner M87", codeB: "placeholder", type: "vong-16" },
 
             // --- TAB 4: TỨ KẾT ---
-            { id: "97", group: "Tứ Kết 1", date: "Thứ 6, 10/07/2026", time: "3:00", stadium: "Boston Stadium", teamA: "Thắng Trận M89", codeA: "placeholder", teamB: "Thắng Trận M90", codeB: "placeholder", type: "tu-ket" },
-            { id: "98", group: "Tứ Kết 2", date: "Thứ 7, 11/07/2026", time: "2:00", stadium: "Los Angeles Stadium", teamA: "Thắng Trận M93", codeA: "placeholder", teamB: "Thắng Trận M94", codeB: "placeholder", type: "tu-ket" },
-            { id: "99", group: "Tứ Kết 3", date: "CN, 12/07/2026", time: "4:00", stadium: "Miami Stadium", teamA: "Thắng Trận M91", codeA: "placeholder", teamB: "Thắng Trận M92", codeB: "placeholder", type: "tu-ket" },
-            { id: "100", group: "Tứ Kết 4", date: "CN, 12/07/2026", time: "8:00", stadium: "Kansas City Stadium", teamA: "Thắng Trận M95", codeA: "placeholder", teamB: "Thắng Trận M96", codeB: "placeholder", type: "tu-ket" },
+            { id: "97", group: "Tứ Kết 1", groupEn: "Quarter-Finals 1", date: "Thứ 6, 10/07/2026", dateEn: "Fri, 10/07/2026", time: "3:00", stadium: "Boston Stadium", teamA: "Thắng Trận M89", teamAEn: "Winner M89", codeA: "placeholder", teamB: "Thắng Trận M90", teamBEn: "Winner M90", codeB: "placeholder", type: "tu-ket" },
+            { id: "98", group: "Tứ Kết 2", groupEn: "Quarter-Finals 2", date: "Thứ 7, 11/07/2026", dateEn: "Sat, 11/07/2026", time: "2:00", stadium: "Los Angeles Stadium", teamA: "Thắng Trận M93", teamAEn: "Winner M93", codeA: "placeholder", teamB: "Thắng Trận M94", teamBEn: "Winner M94", codeB: "placeholder", type: "tu-ket" },
+            { id: "99", group: "Tứ Kết 3", groupEn: "Quarter-Finals 3", date: "CN, 12/07/2026", dateEn: "Sun, 12/07/2026", time: "4:00", stadium: "Miami Stadium", teamA: "Thắng Trận M91", teamAEn: "Winner M91", codeA: "placeholder", teamB: "Thắng Trận M92", teamBEn: "Winner M92", codeB: "placeholder", type: "tu-ket" },
+            { id: "100", group: "Tứ Kết 4", groupEn: "Quarter-Finals 4", date: "CN, 12/07/2026", dateEn: "Sun, 12/07/2026", time: "8:00", stadium: "Kansas City Stadium", teamA: "Thắng Trận M95", teamAEn: "Winner M95", codeA: "placeholder", teamB: "Thắng Trận M96", teamBEn: "Winner M96", codeB: "placeholder", type: "tu-ket" },
 
             // --- TAB 5: BÁN KẾT ---
-            { id: "101", group: "Bán Kết 1", date: "Thứ 4, 15/07/2026", time: "2:00", stadium: "Dallas Stadium", teamA: "Thắng Trận M97", codeA: "placeholder", teamB: "Thắng Trận M98", codeB: "placeholder", type: "ban-ket" },
-            { id: "102", group: "Bán Kết 2", date: "Thứ 5, 16/07/2026", time: "2:00", stadium: "Atlanta Stadium", teamA: "Thắng Trận M99", codeA: "placeholder", teamB: "Thắng Trận M100", codeB: "placeholder", type: "ban-ket" },
+            { id: "101", group: "Bán Kết 1", groupEn: "Semi-Finals 1", date: "Thứ 4, 15/07/2026", dateEn: "Wed, 15/07/2026", time: "2:00", stadium: "Dallas Stadium", teamA: "Thắng Trận M97", teamAEn: "Winner M97", codeA: "placeholder", teamB: "Thắng Trận M98", teamBEn: "Winner M98", codeB: "placeholder", type: "ban-ket" },
+            { id: "102", group: "Bán Kết 2", groupEn: "Semi-Finals 2", date: "Thứ 5, 16/07/2026", dateEn: "Thu, 16/07/2026", time: "2:00", stadium: "Atlanta Stadium", teamA: "Thắng Trận M99", teamAEn: "Winner M99", codeA: "placeholder", teamB: "Thắng Trận M100", teamBEn: "Winner M100", codeB: "placeholder", type: "ban-ket" },
 
             // --- TAB 6: CHUNG KẾT ---
-            { id: "103", group: "Tranh Hạng 3", date: "CN, 19/07/2026", time: "4:00", stadium: "Miami Stadium", teamA: "Thua Trận M101", codeA: "placeholder", teamB: "Thua Trận M102", codeB: "placeholder", type: "chung-ket" },
-            { id: "104", group: "Chung Kết Tổng", date: "Thứ 2, 20/07/2026", time: "2:00", stadium: "New York/New Jersey Stadium", teamA: "Thắng Trận M101", codeA: "placeholder", teamB: "Thắng Trận M102", codeB: "placeholder", type: "chung-ket" }
+            { id: "103", group: "Tranh Hạng 3", groupEn: "Third Place Playoff", date: "CN, 19/07/2026", dateEn: "Sun, 19/07/2026", time: "4:00", stadium: "Miami Stadium", teamA: "Thua Trận M101", teamAEn: "Loser M101", codeA: "placeholder", teamB: "Thua Trận M102", teamBEn: "Loser M102", codeB: "placeholder", type: "chung-ket" },
+            { id: "104", group: "Chung Kết Tổng", groupEn: "World Cup Grand Final", date: "Thứ 2, 20/07/2026", dateEn: "Mon, 20/07/2026", time: "2:00", stadium: "New York/New Jersey Stadium", teamA: "Thắng Trận M101", teamAEn: "Winner M101", codeA: "placeholder", teamB: "Thắng Trận M102", teamBEn: "Winner M102", codeB: "placeholder", type: "chung-ket" }
         ];
+
+        // LÀM MỚI TOÀN BỘ TEXT TRÊN GIAO DIỆN THEO NGÔN NGỮ ĐƯỢC CHỌN
+        function updateUINonDynamicText() {
+            const lang = translations[currentLang];
+            document.getElementById('hero-title').innerHTML = lang.heroTitle;
+            document.getElementById('hero-desc').innerText = lang.heroDesc;
+            document.getElementById('section-groups-title').innerHTML = lang.secGroups;
+            document.getElementById('section-matches-title').innerHTML = lang.secMatches;
+            document.getElementById('section-ai-title').innerHTML = lang.secAi;
+            document.getElementById('section-prizes-title').innerHTML = lang.secPrizes;
+            
+            document.getElementById('tab-vong-bang').innerText = lang.tabVongBang;
+            document.getElementById('tab-vong-32').innerText = lang.tabVong32;
+            document.getElementById('tab-vong-16').innerText = lang.tabVong16;
+            document.getElementById('tab-tu-ket').innerText = lang.tabTuKet;
+            document.getElementById('tab-ban-ket').innerText = lang.tabBanKet;
+            document.getElementById('tab-chung-ket').innerText = lang.tabChungKet;
+
+            document.getElementById('prize-1-title').innerHTML = lang.prize1;
+            document.getElementById('prize-1-val').innerText = lang.prize1Val;
+            document.getElementById('prize-2-title').innerHTML = lang.prize2;
+            document.getElementById('prize-2-val').innerText = lang.prize2Val;
+
+            // Đồng bộ trạng thái đăng nhập nút header
+            const gmailText = document.getElementById('gmailText');
+            if (gmailText && (gmailText.innerText === "Đăng nhập Gmail" || gmailText.innerText === "Sign in with Gmail")) {
+                gmailText.innerText = lang.btnGmail;
+            }
+            const walletText = document.getElementById('walletText');
+            if (walletText && (walletText.innerText === "Kết nối ví Slush" || walletText.innerText === "Connect Slush Wallet")) {
+                walletText.innerText = lang.btnWallet;
+            }
+        }
+
+        function toggleLanguage() {
+            const btn = document.getElementById('langBtn');
+            const flag = document.getElementById('langFlag');
+            const txt = document.getElementById('langText');
+
+            if (currentLang === "vi") {
+                currentLang = "en";
+                flag.src = "https://flagcdn.com/w20/vn.png";
+                txt.innerText = "VI";
+            } else {
+                currentLang = "vi";
+                flag.src = "https://flagcdn.com/w20/gb.png";
+                txt.innerText = "EN";
+            }
+
+            updateUINonDynamicText();
+            renderGroups();
+            
+            const activeTab = document.querySelector('.bg-walrus-aqua')?.id.replace('tab-', '') || 'vong-bang';
+            renderMatches(activeTab);
+        }
 
         function getFlagImgHTML(code) {
             if (code === "placeholder") {
@@ -334,7 +434,11 @@
             for (const [groupName, teams] of Object.entries(worldCupGroups)) {
                 const groupCard = document.createElement('div');
                 groupCard.className = "bg-walrus-card border border-gray-800/80 rounded-xl p-3 text-xs shadow-md";
-                let teamsHTML = `<h3 class="font-bold text-walrus-aqua border-b border-gray-700/50 pb-1.5 mb-2">${groupName}</h3><ul class="space-y-1.5">`;
+                
+                // Chuyển chữ "Bảng" thành "Group" nếu là ngôn ngữ tiếng anh
+                let dynamicGroupName = currentLang === "en" ? groupName.replace("Bảng", "Group") : groupName;
+                
+                let teamsHTML = `<h3 class="font-bold text-walrus-aqua border-b border-gray-700/50 pb-1.5 mb-2">${dynamicGroupName}</h3><ul class="space-y-1.5">`;
                 teams.forEach(team => {
                     teamsHTML += `<li class="flex items-center gap-2 text-gray-300 font-medium">
                         <img src="https://flagcdn.com/w40/${team.code}.png" onerror="this.onerror=null; this.src='https://placehold.co/24x16/0b1528/00f2fe?text=${team.code.toUpperCase()}';" class="w-5 h-3.5 object-cover rounded-sm" /> 
@@ -354,14 +458,28 @@
             
             container.innerHTML = '';
             const filtered = officialMatches.filter(m => m.type === filterType);
-            if (countBadge) countBadge.innerText = `${filtered.length} trận`;
+            
+            const lang = translations[currentLang];
+            if (countBadge) countBadge.innerText = `${filtered.length} ${lang.matchUnit}`;
 
             filtered.forEach(match => {
                 const card = document.createElement('div');
                 card.className = "bg-walrus-card border border-gray-800 rounded-2xl p-6 shadow-xl relative overflow-hidden transition hover:border-gray-700";
+                
+                let displayGroup = currentLang === "en" && match.groupEn ? match.groupEn : match.group;
+                if (currentLang === "en" && displayGroup.includes("Bảng")) { displayGroup = displayGroup.replace("Bảng", "Group"); }
+                
+                let displayDate = currentLang === "en" && match.dateEn ? match.dateEn : match.date;
+                if (currentLang === "en") {
+                    displayDate = displayDate.replace("Thứ 6", "Fri").replace("Thứ 7", "Sat").replace("CN", "Sun").replace("Thứ 2", "Mon").replace("Thứ 3", "Tue").replace("Thứ 4", "Wed").replace("Thứ 5", "Thu");
+                }
+                
+                let displayTeamA = currentLang === "en" && match.teamAEn ? match.teamAEn : match.teamA;
+                let displayTeamB = currentLang === "en" && match.teamBEn ? match.teamBEn : match.teamB;
+
                 card.innerHTML = `
                     <div class="absolute top-0 right-0 bg-worldcup-gold text-walrus-dark font-bold text-[10px] px-3 py-1 uppercase tracking-wider rounded-bl-xl">
-                        Trận ${match.id} - ${match.group}
+                        ${currentLang === "en" ? "Match" : "Trận"} ${match.id} - ${displayGroup}
                     </div>
                     <div class="flex items-center gap-2 text-xs text-gray-400 mb-4">
                         <i class="fa-solid fa-location-dot text-red-400"></i>
@@ -370,21 +488,21 @@
                     <div class="flex items-center justify-between my-6 px-4">
                         <div class="flex flex-col items-center gap-2 w-28 text-center">
                             ${getFlagImgHTML(match.codeA)}
-                            <span class="font-bold text-white text-sm mt-1">${match.teamA}</span>
+                            <span class="font-bold text-white text-sm mt-1">${displayTeamA}</span>
                         </div>
                         <div class="flex flex-col items-center">
                             <span class="text-xs text-gray-500 uppercase tracking-widest font-bold">VS</span>
-                            <span class="text-[11px] bg-gray-800 text-gray-400 px-3 py-1 rounded-full mt-2 font-mono text-center">${match.date}<br/>${match.time}</span>
+                            <span class="text-[11px] bg-gray-800 text-gray-400 px-3 py-1 rounded-full mt-2 font-mono text-center">${displayDate}<br/>${match.time}</span>
                         </div>
                         <div class="flex flex-col items-center gap-2 w-28 text-center">
                             ${getFlagImgHTML(match.codeB)}
-                            <span class="font-bold text-gray-400 text-sm mt-1">${match.teamB}</span>
+                            <span class="font-bold text-gray-400 text-sm mt-1">${displayTeamB}</span>
                         </div>
                     </div>
                     <div class="border-t border-gray-800/60 pt-5 mt-4 space-y-4">
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
                             <div class="sm:col-span-1">
-                                <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">Dự đoán Tỷ số</label>
+                                <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">${lang.labelScore}</label>
                                 <div class="flex items-center gap-2">
                                     <input type="number" id="scoreA-${match.id}" placeholder="0" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-center font-bold text-white focus:outline-none focus:border-walrus-aqua">
                                     <span class="text-gray-600 font-bold">-</span>
@@ -392,13 +510,13 @@
                                 </div>
                             </div>
                             <div class="sm:col-span-2">
-                                <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">Lý do phân tích / Câu gáy hài hước</label>
-                                <input type="text" id="analysis-${match.id}" placeholder="Nhập nhận định lầy lội của bạn tại đây..." class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-200 focus:outline-none focus:border-walrus-aqua">
+                                <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">${lang.labelAnalysis}</label>
+                                <input type="text" id="analysis-${match.id}" placeholder="${lang.placeholderAnalysis}" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-200 focus:outline-none focus:border-walrus-aqua">
                             </div>
                         </div>
                         <div class="flex justify-end pt-2">
                             <button onclick="mockSubmit('${match.id}')" class="gradient-btn hover:opacity-90 text-walrus-dark font-extrabold text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-walrus-aqua/20 flex items-center gap-2 transition">
-                                <i class="fa-solid fa-cloud-arrow-up"></i> Nộp Dự Đoán
+                                ${lang.btnSubmit}
                             </button>
                         </div>
                     </div>
@@ -408,56 +526,48 @@
             container.scrollTop = 0;
         }
 
-        function filterMatches(type) {
-            const tabs = ['vong-bang', 'vong-32', 'vong-16', 'tu-ket', 'ban-ket', 'chung-ket'];
-            tabs.forEach(t => {
-                const tabBtn = document.getElementById(`tab-${t}`);
-                if (t === type) tabBtn.className = "px-3 py-2 rounded-lg font-bold bg-walrus-aqua text-walrus-dark transition duration-150";
-                else tabBtn.className = "px-3 py-2 rounded-lg font-bold text-gray-400 hover:text-white transition duration-150";
-            });
-            renderMatches(type);
-        }
-
-        // =========================================================
-        // 🚀 KIẾN TRÚC ORACLE TỰ ĐỘNG THỰC TẾ (WEB3 NATIVE)
-        // =========================================================
+        // HÀM TRIGGER GIẢ LẬP KHI BẤM NÚT ORACLE ĐỂ ĐỒNG BỘ ĐỘI BÓNG ĐÃ ĐƯỢC GIỮ LẠI ĐỂ LOGIC HỆ THỐNG KHÔNG BỊ LỖI
         function triggerAutomatedOracle() {
             const realTimeTournamentState = {
-                "73": { teamA: "Mexico", codeA: "mx", teamB: "Thụy Sĩ", codeB: "ch" },
-                "74": { teamA: "Đức", codeA: "de", teamB: "Hàn Quốc", codeB: "kr" },
-                "75": { teamA: "Hà Lan", codeA: "nl", teamB: "Brazil", codeB: "br" }
+                "73": { teamA: "Mexico", teamAEn: "Mexico", codeA: "mx", teamB: "Thụy Sĩ", teamBEn: "Switzerland", codeB: "ch" },
+                "74": { teamA: "Đức", teamAEn: "Germany", codeA: "de", teamB: "Hàn Quốc", teamBEn: "South Korea", codeB: "kr" },
+                "75": { teamA: "Hà Lan", teamAEn: "Netherlands", codeA: "nl", teamB: "Brazil", teamBEn: "Brazil", codeB: "br" }
             };
 
             officialMatches.forEach(match => {
                 if (realTimeTournamentState[match.id]) {
                     match.teamA = realTimeTournamentState[match.id].teamA;
+                    match.teamAEn = realTimeTournamentState[match.id].teamAEn;
                     match.codeA = realTimeTournamentState[match.id].codeA;
                     match.teamB = realTimeTournamentState[match.id].teamB;
+                    match.teamBEn = realTimeTournamentState[match.id].teamBEn;
                     match.codeB = realTimeTournamentState[match.id].codeB;
                 }
             });
 
             const aiAgentText = document.getElementById('ai-roast-text');
             if (aiAgentText) {
-                aiAgentText.innerHTML = `"Úi chà! AI vừa đồng bộ kết quả Walrus Memory thành công. **Trận 73** chính thức là **Mexico vs Thụy Sĩ**. Sếp Huyền Anh hôm trước gáy Mexico vô địch, giờ vào làm combo dự đoán Vòng 32 đội nhanh đi sếp ơi!"`;
+                aiAgentText.innerHTML = currentLang === "en" 
+                    ? `"Wow! AI just successfully synced the Walrus Memory state. **Match 73** is now officially **Mexico vs Switzerland**. You predicted Mexico to win, time to prove it!"`
+                    : `"Úi chà! AI vừa đồng bộ kết quả Walrus Memory thành công. **Trận 73** chính thức là **Mexico vs Thụy Sĩ**. Sếp Huyền Anh hôm trước gáy Mexico vô địch, giờ vào làm combo dự đoán Vòng 32 đội nhanh đi sếp ơi!"`;
             }
 
             filterMatches('vong-32');
-            alert("Đồng bộ kết quả từ Walrus Oracle thành công! Danh sách Vòng 32 đội đã được làm mới tự động.");
         }
 
         // =========================================================
-        // 🌐 TÍCH HỢP ĐỒNG BỘ DỮ LIỆU TỰ ĐỘNG QUA FOOTBALL-DATA.ORG
+        // 🌐 TÍCH HỢP ĐỒNG BỘ DỮ LIỆU TỰ ĐỘNG QHA FOOTBALL-DATA.ORG
         // =========================================================
         const FOOTBALL_DATA_API_KEY = "1287e361b6fe45d49685debe16b7561f"; 
 
         async function fetchWorldCupData() {
             const matchCountBadge = document.getElementById('match-count');
             const aiAgentText = document.getElementById('ai-roast-text');
+            const aiStatusText = document.getElementById('ai-status-text');
+            const lang = translations[currentLang];
             
-            if (aiAgentText) {
-                aiAgentText.innerHTML = `"Đang kết nối API football-data.org để lấy kết quả World Cup 2026 thời gian thực..."`;
-            }
+            if (aiStatusText) aiStatusText.innerText = lang.aiReading;
+            if (aiAgentText) aiAgentText.innerHTML = lang.aiConnecting;
 
             try {
                 const response = await fetch('https://api.football-data.org/v4/competitions/WC/matches', {
@@ -465,7 +575,7 @@
                     headers: { 'X-Auth-Token': FOOTBALL_DATA_API_KEY }
                 });
 
-                if (!response.ok) throw new Error("Không thể kết nối API");
+                if (!response.ok) throw new Error("API Connection Failed");
                 const data = await response.json();
                 const apiMatches = data.matches;
 
@@ -474,32 +584,33 @@
                     
                     if (localMatch) {
                         if (apiMatch.status === "FINISHED") {
-                            localMatch.stadium += ` (Kết quả: ${apiMatch.score.fullTime.home} - ${apiMatch.score.fullTime.away})`;
+                            const resultPrefix = currentLang === "en" ? "Result" : "Kết quả";
+                            if (!localMatch.stadium.includes(resultPrefix)) {
+                                localMatch.stadium += ` (${resultPrefix}: ${apiMatch.score.fullTime.home} - ${apiMatch.score.fullTime.away})`;
+                            }
                         }
 
                         if (apiMatch.homeTeam && apiMatch.homeTeam.name && localMatch.id > 72) {
                             localMatch.teamA = apiMatch.homeTeam.shortName || apiMatch.homeTeam.name;
+                            localMatch.teamAEn = apiMatch.homeTeam.shortName || apiMatch.homeTeam.name;
                             localMatch.codeA = apiMatch.homeTeam.tla ? apiMatch.homeTeam.tla.toLowerCase() : "placeholder";
                         }
                         if (apiMatch.awayTeam && apiMatch.awayTeam.name && localMatch.id > 72) {
                             localMatch.teamB = apiMatch.awayTeam.shortName || apiMatch.awayTeam.name;
+                            localMatch.teamBEn = apiMatch.awayTeam.shortName || apiMatch.awayTeam.name;
                             localMatch.codeB = apiMatch.awayTeam.tla ? apiMatch.awayTeam.tla.toLowerCase() : "placeholder";
                         }
                     }
                 });
 
-                if (aiAgentText) {
-                    aiAgentText.innerHTML = `"Đã đồng bộ thành công dữ liệu từ FIFA! Sơ đồ Vòng 32 Đội và kết quả các trận đấu đã được cập nhật chính xác theo thời gian thực. Vào gáy tiếp đi sếp!"`;
-                }
+                if (aiAgentText) aiAgentText.innerHTML = lang.aiSuccess;
 
                 const activeTab = document.querySelector('.bg-walrus-aqua')?.id.replace('tab-', '') || 'vong-bang';
                 renderMatches(activeTab);
 
             } catch (error) {
-                console.log("Lỗi API hoặc vượt quá giới hạn lượt gọi (Free Tier). Hệ thống tự động dùng dữ liệu dự phòng (Fallback).");
-                if (aiAgentText) {
-                    aiAgentText.innerHTML = `"Không kết nối được API bên ngoài, tôi đang sử dụng dữ liệu bộ nhớ dự phòng có sẵn trên mạng lưới Walrus cho sếp nhé!"`;
-                }
+                console.log("API Error or rate limit hit. Falling back to internal data.");
+                if (aiAgentText) aiAgentText.innerHTML = lang.aiFallback;
             }
         }
 
@@ -516,7 +627,7 @@
                 txt.innerHTML = `<span class="text-red-400 font-bold">huyenanh***@gmail.com</span>`;
             } else {
                 btn.className = "flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 text-sm font-semibold rounded-xl border border-gray-700 transition duration-200";
-                txt.innerText = "Đăng nhập Gmail";
+                txt.innerText = translations[currentLang].btnGmail;
             }
         }
 
@@ -530,17 +641,21 @@
                 txt.innerHTML = `<span class="text-emerald-400 font-mono">0xSlush...40a2</span>`;
             } else {
                 btn.className = "flex items-center gap-2 px-4 py-2 bg-walrus-card hover:bg-opacity-80 text-walrus-aqua text-sm font-semibold rounded-xl border border-walrus-aqua/30 transition duration-200";
-                txt.innerText = "Kết nối ví Slush";
+                txt.innerText = translations[currentLang].btnWallet;
             }
         }
 
-        function mockSubmit(id) { alert(`Thành công! Dự đoán trận ${id} đã được lưu trữ lên Walrus Mainnet.`); }
+        function mockSubmit(id) { 
+            const successMsg = currentLang === "en" 
+                ? `Success! Your prediction for match ${id} has been securely stored on Walrus Mainnet.`
+                : `Thành công! Dự đoán trận ${id} đã được lưu trữ lên Walrus Mainnet.`;
+            alert(successMsg); 
+        }
 
         document.addEventListener("DOMContentLoaded", function() {
+            updateUINonDynamicText();
             renderGroups();
             renderMatches('vong-bang');
-            
-            // Tự động gọi API lấy kết quả thật ngay khi người dùng vừa truy cập trang web
             fetchWorldCupData(); 
         });
     </script>

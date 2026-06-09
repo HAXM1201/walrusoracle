@@ -215,6 +215,11 @@
     </footer>
 
     <script>
+        // ==================== GLOBAL VARIABLES & DICTIONARY ====================
+        let currentLang = "vi"; 
+        let currentApiStatus = "welcome"; 
+        let activeTabGlobal = "vong-bang";
+
         const translations = {
             vi: {
                 heroTitle: 'Gáy Khét World Cup <br/><span class="gradient-text">Nhận Thưởng Lớn</span>',
@@ -285,7 +290,7 @@
             { id: "8", group: "Bảng B", groupEn: "Group B", date: "CN, 14/06/2026", time: "2:00", stadium: "San Francisco Bay Area Stadium", teamA: "Qatar", teamAEn: "Qatar", codeA: "qa", teamB: "Thụy Sĩ", teamBEn: "Switzerland", codeB: "ch", type: "vong-bang" },
             { id: "9", group: "Bảng E", groupEn: "Group E", date: "Thứ 2, 15/06/2026", time: "6:00", stadium: "Philadelphia Stadium", teamA: "Ivory Coast", teamAEn: "Ivory Coast", codeA: "ci", teamB: "Ecuador", teamBEn: "Ecuador", codeB: "ec", type: "vong-bang" },
             { id: "10", group: "Bảng E", groupEn: "Group E", date: "Thứ 2, 15/06/2026", time: "0:00", stadium: "Houston Stadium", teamA: "Đức", teamAEn: "Germany", codeA: "de", teamB: "Curacao", teamBEn: "Curacao", codeB: "cw", type: "vong-bang" },
-            { id: "11", group: "Bảng F", groupEn: "Group F", date: "Thứ 2, 15/06/2026", time: "3:00", stadium: "Dallas Stadium", teamA: "Hà Lan", teamAEn: "Netherlands", codeA: "nl", teamB: "Nhật Bản", teamAEn: "Japan", codeB: "jp", type: "vong-bang", isHot: true },
+            { id: "11", group: "Bảng F", groupEn: "Group F", date: "Thứ 2, 15/06/2026", time: "3:00", stadium: "Dallas Stadium", teamA: "Hà Lan", teamAEn: "Netherlands", codeA: "nl", teamB: "Nhật Bản", teamBEn: "Japan", codeB: "jp", type: "vong-bang", isHot: true },
             { id: "12", group: "Bảng F", groupEn: "Group F", date: "Thứ 2, 15/06/2026", time: "9:00", stadium: "Monterrey Stadium", teamA: "Thụy Điển", teamAEn: "Sweden", codeA: "se", teamB: "Tunisia", teamBEn: "Tunisia", codeB: "tn", type: "vong-bang" },
             { id: "13", group: "Bảng H", groupEn: "Group H", date: "Thứ 3, 16/06/2026", time: "5:00", stadium: "Miami Stadium", teamA: "Ả Rập Xê Út", teamAEn: "Saudi Arabia", codeA: "sa", teamB: "Uruguay", teamBEn: "Uruguay", codeB: "uy", type: "vong-bang" },
             { id: "14", group: "Bảng H", groupEn: "Group H", date: "Thứ 2, 15/06/2026", time: "23:00", stadium: "Atlanta Stadium", teamA: "Tây Ban Nha", teamAEn: "Spain", codeA: "es", teamB: "Cape Verde", teamBEn: "Cape Verde", codeB: "cv", type: "vong-bang" },
@@ -330,7 +335,7 @@
             { id: "53", group: "Bảng A", groupEn: "Group A", date: "Thứ 5, 25/06/2026", time: "8:00", stadium: "Mexico City Stadium", teamA: "CH Séc", teamAEn: "Czech Republic", codeA: "cz", teamB: "Mexico", teamBEn: "Mexico", codeB: "mx", type: "vong-bang" },
             { id: "54", group: "Bảng A", groupEn: "Group A", date: "Thứ 5, 25/06/2026", time: "8:00", stadium: "Monterrey Stadium", teamA: "Nam Phi", teamAEn: "South Africa", codeA: "za", teamB: "Hàn Quốc", teamBEn: "South Korea", codeB: "kr", type: "vong-bang" },
             { id: "55", group: "Bảng E", groupEn: "Group E", date: "Thứ 6, 26/06/2026", time: "3:00", stadium: "Philadelphia Stadium", teamA: "Curacao", teamAEn: "Curacao", codeA: "cw", teamB: "Ivory Coast", teamBEn: "Ivory Coast", codeB: "ci", type: "vong-bang" },
-            { id: "56", group: "Bảng E", groupEn: "Group E", date: "Thứ 6, 26/06/2026", time: "3:00", stadium: "New York/New Jersey Stadium", teamA: "Ecuador", teamAEn: "Ecuador", codeA: "ec", teamB: "Đức", teamBEn: "Germany", codeB: "de", type: "vong-bang" },
+            { id: "56", group: "Bảng E", groupEn: "Group E", date: "Thứ 6, 26/06/2026", time: "3:00", stadium: "New York/New Jersey Stadium", teamA: "Ecuador", teamAEn: "Ecuador", codeA: "ec", teamB: "Đức", teamAEn: "Germany", codeB: "de", type: "vong-bang" },
             { id: "57", group: "Bảng F", groupEn: "Group F", date: "Thứ 6, 26/06/2026", time: "6:00", stadium: "Dallas Stadium", teamA: "Nhật Bản", teamAEn: "Japan", codeA: "jp", teamB: "Thụy Điển", teamBEn: "Sweden", codeB: "se", type: "vong-bang" },
             { id: "58", group: "Bảng F", groupEn: "Group F", date: "Thứ 6, 26/06/2026", time: "6:00", stadium: "Kansas City Stadium", teamA: "Tunisia", teamAEn: "Tunisia", codeA: "tn", teamB: "Hà Lan", teamBEn: "Netherlands", codeB: "nl", type: "vong-bang" },
             { id: "59", group: "Bảng D", groupEn: "Group D", date: "Thứ 6, 26/06/2026", time: "9:00", stadium: "Los Angeles Stadium", teamA: "Thổ Nhĩ Kỳ", teamAEn: "Turkey", codeA: "tr", teamB: "Mỹ", teamBEn: "USA", codeB: "us", type: "vong-bang" },
@@ -348,7 +353,7 @@
             { id: "71", group: "Bảng K", groupEn: "Group K", date: "CN, 28/06/2026", time: "6:30", stadium: "Miami Stadium", teamA: "Colombia", teamAEn: "Colombia", codeA: "co", teamB: "Bồ Đào Nha", teamBEn: "Portugal", codeB: "pt", type: "vong-bang" },
             { id: "72", group: "Bảng K", groupEn: "Group K", date: "CN, 28/06/2026", time: "6:30", stadium: "Atlanta Stadium", teamA: "Congo", teamAEn: "Congo", codeA: "cg", teamB: "Uzbekistan", teamBEn: "Uzbekistan", codeB: "uz", type: "vong-bang" },
 
-            // --- TAB 2: VÒNG KO ---
+            // --- TAB 2: VÒNG 32 ĐỘI ---
             { id: "73", group: "Vòng 32 Đội", groupEn: "Round of 32", date: "Thứ 2, 29/06/2026", time: "2:00", stadium: "Los Angeles Stadium", teamA: "Nhất Bảng A", teamAEn: "1st Group A", codeA: "placeholder", teamB: "Nhì Bảng B", teamBEn: "2nd Group B", codeB: "placeholder", type: "vong-32" },
             { id: "74", group: "Vòng 32 Đội", groupEn: "Round of 32", date: "Thứ 3, 30/06/2026", time: "3:30", stadium: "Boston Stadium", teamA: "Nhất Bảng E", teamAEn: "1st Group E", codeA: "placeholder", teamB: "Hạng 3 A/B/C/D/F", teamBEn: "3rd A/B/C/D/F", codeB: "placeholder", type: "vong-32" },
             { id: "75", group: "Vòng 32 Đội", groupEn: "Round of 32", date: "Thứ 3, 30/06/2026", time: "8:00", stadium: "Monterrey Stadium", teamA: "Nhất Bảng F", teamAEn: "1st Group F", codeA: "placeholder", teamB: "Nhì Bảng C", teamBEn: "2nd Group C", codeB: "placeholder", type: "vong-32" },
@@ -391,21 +396,6 @@
             { id: "104", group: "Chung Kết Tổng", groupEn: "World Cup Grand Final", date: "Thứ 2, 20/07/2026", time: "2:00", stadium: "New York/New Jersey Stadium", teamA: "Thắng Trận M101", teamAEn: "Winner M101", codeA: "placeholder", teamB: "Thắng Trận M102", teamBEn: "Winner M102", codeB: "placeholder", type: "chung-ket" }
         ];
 
-        const mockLeaderboard = [
-            { name: "0xSlush...f302", score: 850, countryCode: "br" },
-            { name: "HuyenAnh_Oracle", score: 790, countryCode: "mx" },
-            { name: "Walrus_Dev_99", score: 720, countryCode: "de" },
-            { name: "CryptoGod_WC", score: 680, countryCode: "ar" },
-            { name: "Sui_Master_Node", score: 610, countryCode: "jp" }
-        ];
-
-        function getFlagImgHTML(code) {
-            if (code === "placeholder") {
-                return `<div class="w-12 h-8 rounded bg-gray-800 border border-gray-700 flex items-center justify-center text-[10px] text-gray-500 font-bold uppercase">TBD</div>`;
-            }
-            return `<img src="https://flagcdn.com/w80/${code}.png" onerror="this.onerror=null; this.src='https://placehold.co/48x32/162238/00f2fe?text=${code.toUpperCase()}';" class="w-12 h-8 object-cover rounded shadow-md border border-gray-700/50" alt="${code}" />`;
-        }
-
         // HÀM CHUYỂN ĐỔI NGÀY THÁNG SANG TIẾNG ANH / TIẾNG VIỆT AN TOÀN 100%
         function getLocalizedDate(match) {
             let dateStr = match.date || "";
@@ -420,6 +410,13 @@
                     .replace(/CN|cn/g, "Sun");
             }
             return dateStr;
+        }
+
+        function getFlagImgHTML(code) {
+            if (code === "placeholder") {
+                return `<div class="w-12 h-8 rounded bg-gray-800 border border-gray-700 flex items-center justify-center text-[10px] text-gray-500 font-bold uppercase">TBD</div>`;
+            }
+            return `<img src="https://flagcdn.com/w80/${code}.png" onerror="this.onerror=null; this.src='https://placehold.co/48x32/162238/00f2fe?text=${code.toUpperCase()}';" class="w-12 h-8 object-cover rounded shadow-md border border-gray-700/50" alt="${code}" />`;
         }
 
         function renderGroups() {
@@ -469,7 +466,6 @@
                 let displayGroup = currentLang === "en" && match.groupEn ? match.groupEn : match.group;
                 if (currentLang === "en" && displayGroup.includes("Bảng")) { displayGroup = displayGroup.replace("Bảng", "Group"); }
                 
-                // Gọi hàm format ngày an toàn phòng lỗi replace chuỗi trống
                 let displayDate = getLocalizedDate(match);
                 
                 let displayTeamA = currentLang === "en" ? (match.teamAEn || match.teamA) : match.teamA;
@@ -528,15 +524,17 @@
                 `;
                 container.appendChild(card);
             });
-            container.scrollTop = 0;
         }
 
         function filterMatches(type) {
+            activeTabGlobal = type; // Lưu trạng thái tab hiện tại vào biến global
             const tabs = ['vong-bang', 'vong-32', 'vong-16', 'tu-ket', 'ban-ket', 'chung-ket'];
             tabs.forEach(t => {
                 const tabBtn = document.getElementById(`tab-${t}`);
-                if (t === type) tabBtn.className = "px-3 py-2 rounded-lg font-bold bg-walrus-aqua text-walrus-dark transition duration-150";
-                else tabBtn.className = "px-3 py-2 rounded-lg font-bold text-gray-400 hover:text-white transition duration-150";
+                if (tabBtn) {
+                    if (t === type) tabBtn.className = "px-3 py-2 rounded-lg font-bold transition bg-walrus-aqua text-walrus-dark";
+                    else tabBtn.className = "px-3 py-2 rounded-lg font-bold text-gray-400 hover:text-white transition";
+                }
             });
             renderMatches(type);
         }
@@ -601,7 +599,6 @@
                             }
                         }
 
-                        // KHẮC PHỤC LỖI THUỘC TÍNH: Ghi đè đồng thời cả hai thuộc tính ngôn ngữ của Vòng KO
                         if (apiMatch.homeTeam && apiMatch.homeTeam.name && localMatch.id > 72) {
                             localMatch.teamA = apiMatch.homeTeam.shortName || apiMatch.homeTeam.name;
                             localMatch.teamAEn = apiMatch.homeTeam.shortName || apiMatch.homeTeam.name;
@@ -619,8 +616,7 @@
                 if (aiAgentText) aiAgentText.innerHTML = translations[currentLang].aiSuccess;
                 if (aiAvatarBox) aiAvatarBox.innerText = "🏆";
 
-                const activeTab = document.querySelector('.bg-walrus-aqua')?.id.replace('tab-', '') || 'vong-bang';
-                renderMatches(activeTab);
+                renderMatches(activeTabGlobal);
 
             } catch (error) {
                 console.log("API Error or rate limit hit. Falling back to internal data.");
@@ -652,24 +648,15 @@
             document.getElementById('prize-2-title').innerHTML = lang.prize2;
             document.getElementById('prize-2-val').innerText = lang.prize2Val;
 
-            const aiAgentText = document.getElementById('ai-roast-text');
             const aiStatusText = document.getElementById('ai-status-text');
             if (aiStatusText) aiStatusText.innerText = lang.aiReading;
             
+            const aiAgentText = document.getElementById('ai-roast-text');
             if (aiAgentText) {
                 if (currentApiStatus === "welcome") aiAgentText.innerHTML = lang.aiWelcome;
                 else if (currentApiStatus === "connecting") aiAgentText.innerHTML = lang.aiConnecting;
                 else if (currentApiStatus === "success") aiAgentText.innerHTML = lang.aiSuccess;
                 else if (currentApiStatus === "fallback") aiAgentText.innerHTML = lang.aiFallback;
-            }
-
-            const gmailText = document.getElementById('gmailText');
-            if (gmailText && (gmailText.innerText === "Đăng nhập Gmail" || gmailText.innerText === "Sign in with Gmail")) {
-                gmailText.innerText = lang.btnGmail;
-            }
-            const walletText = document.getElementById('walletText');
-            if (walletText && (walletText.innerText === "Kết nối ví Slush" || walletText.innerText === "Connect Slush Wallet")) {
-                walletText.innerText = lang.btnWallet;
             }
         }
 
@@ -689,11 +676,7 @@
 
             updateUINonDynamicText();
             renderGroups();
-            
-            // Tìm xem tab nào đang active bằng cách quét nút có màu nền aqua
-            const activeTabButton = document.querySelector('button[onclick^="filterMatches"].bg-walrus-aqua');
-            const activeTab = activeTabButton ? activeTabButton.getAttribute('onclick').match(/'([^']+)'/)[1] : 'vong-bang';
-            renderMatches(activeTab);
+            renderMatches(activeTabGlobal); // Render mượt mà không lỗi đứng màn hình
         }
 
         // =========================================================
@@ -797,7 +780,7 @@
             currentApiStatus = "welcome";
             updateUINonDynamicText();
             renderGroups();
-            renderMatches('vong-bang');
+            filterMatches('vong-bang'); // Kích hoạt tab vòng bảng chuẩn mặc định
             renderLeaderboard();
             fetchWorldCupData(); 
         });

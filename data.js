@@ -252,11 +252,11 @@ const officialMatches = [
     { id: "104", group: "Chung Kết Tổng", groupEn: "World Cup Grand Final", date: "Thứ 2, 20/07/2026", time: "2:00", stadium: "New York/New Jersey Stadium", teamA: "Thắng Trận M101", teamAEn: "Winner M101", codeA: "placeholder", teamB: "Thắng Trận M102", teamBEn: "Winner M102", codeB: "placeholder", type: "chung-ket" }
 ];
 const mockLeaderboard = [
-    { name: "WalrusKing99", score: 1240, countryCode: "vn" },
-    { name: "HuyenAnhFC", score: 1180, countryCode: "vn" },
-    { name: "SlushMaster", score: 1090, countryCode: "us" },
-    { name: "BongDaTienTri", score: 980, countryCode: "br" },
-    { name: "GáyKhétPro", score: 920, countryCode: "th" }
+    { name: "TayBew", score: 1240, countryCode: "vn" },
+    { name: "HALN", score: 1180, countryCode: "vn" },
+    { name: "Jack", score: 1090, countryCode: "us" },
+    { name: "Puchi", score: 980, countryCode: "br" },
+    { name: "Stravia", score: 920, countryCode: "th" }
 ];
 
 const userPredictionMemory = [];

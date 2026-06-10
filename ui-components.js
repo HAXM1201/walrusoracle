@@ -1,95 +1,183 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Walrus Cup Oracle - World Cup 2026 Predictions</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <script>
-        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] }, colors: { walrus: { dark: "#0b1528", card: "#162238", aqua: "#00f2fe", lightAqua: "#4facfe" }, worldcup: { gold: "#f59e0b", grass: "#10b981" } }, animation: { 'border-glow': 'borderGlow 4s linear infinite' }, keyframes: { borderGlow: { '0%, 100%': { 'border-color': 'rgba(245, 158, 11, 0.4)' }, '50%': { 'border-color': 'rgba(0, 242, 254, 1)' } } } } } }
-    </script>
-    <style>
-        .gradient-text { background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .gradient-btn { background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); }
-        .hero-bg { background: linear-gradient(to bottom, rgba(11, 21, 40, 0.85), rgba(11, 21, 40, 1)), url('wc1.png'); background-size: cover; background-position: center; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #0b1528; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #162238; border: 1px solid rgba(0, 242, 254, 0.2); border-radius: 10px; }
-        .hot-match-card { animation: border-glow 4s linear infinite; border-width: 2px !important; }
-    </style>
-</head>
-<body class="bg-walrus-dark text-gray-100 min-h-screen font-sans antialiased relative overflow-x-hidden">
+// ui-components.js
 
-    <canvas id="effect-canvas" class="absolute top-0 left-0 w-full h-full pointer-events-none z-50"></canvas>
+// =========================================================
+// 🎆 MÔ-ĐUN HIỆU ỨNG PHÁO HOA CANVAS
+// =========================================================
+const canvas = document.getElementById('effect-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
 
-    <header class="border-b border-gray-800 bg-walrus-dark/80 backdrop-blur sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl gradient-btn flex items-center justify-center text-walrus-dark shadow-lg shadow-walrus-aqua/20"><i class="fa-solid fa-trophy text-xl"></i></div>
-                <div>
-                    <span class="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">WALRUS<span class="gradient-text">CUP</span>ORACLE</span>
-                    <span class="text-[10px] text-worldcup-gold block font-semibold tracking-wider uppercase">World Cup 2026 Edition</span>
-                </div>
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function createConfetti() {
+    const colors = ['#00f2fe', '#4facfe', '#f59e0b', '#10b981', '#ef4444'];
+    for (let i = 0; i < 100; i++) {
+        particles.push({
+            x: window.innerWidth / 2,
+            y: window.innerHeight / 2 + window.scrollY - 200,
+            radius: Math.random() * 4 + 2,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            vx: (Math.random() - 0.5) * 10,
+            vy: (Math.random() - 0.5) * 10 - 5,
+            opacity: 1,
+            gravity: 0.15
+        });
+    }
+}
+
+function animateParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.vy += p.gravity;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.opacity -= 0.015;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y - window.scrollY, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.opacity;
+        ctx.fill();
+        if (p.opacity <= 0) particles.splice(i, 1);
+    }
+    if (particles.length > 0) requestAnimationFrame(animateParticles);
+}
+
+// =========================================================
+// 🧩 CÁC HÀM RENDER GIAO DIỆN
+// =========================================================
+
+function getLocalizedDate(match) {
+    let dateStr = match.date || "";
+    if (currentLang === "en") {
+        return dateStr
+            .replace(/Thứ 2|thứ 2/g, "Mon")
+            .replace(/Thứ 3|thứ 3/g, "Tue")
+            .replace(/Thứ 4|thứ 4/g, "Wed")
+            .replace(/Thứ 5|thứ 5/g, "Thu")
+            .replace(/Thứ 6|thứ 6/g, "Fri")
+            .replace(/Thứ 7|thứ 7/g, "Sat")
+            .replace(/CN|cn/g, "Sun");
+    }
+    return dateStr;
+}
+
+function getFlagImgHTML(code) {
+    if (code === "placeholder") {
+        return `<div class="w-12 h-8 rounded bg-gray-800 border border-gray-700 flex items-center justify-center text-[10px] text-gray-500 font-bold uppercase">TBD</div>`;
+    }
+    return `<img src="https://flagcdn.com/w80/${code}.png" onerror="this.onerror=null; this.src='https://placehold.co/48x32/162238/00f2fe?text=${code.toUpperCase()}';" class="w-12 h-8 object-cover rounded shadow-md border border-gray-700/50" alt="${code}" />`;
+}
+
+function renderGroups() {
+    const container = document.getElementById('groups-container');
+    if (!container || typeof worldCupGroups === 'undefined') return;
+    container.innerHTML = '';
+    for (const [groupName, teams] of Object.entries(worldCupGroups)) {
+        const groupCard = document.createElement('div');
+        groupCard.className = "bg-walrus-card border border-gray-800/80 rounded-xl p-3 text-xs shadow-md";
+        let dynamicGroupName = currentLang === "en" ? groupName.replace("Bảng", "Group") : groupName;
+        let teamsHTML = `<h3 class="font-bold text-walrus-aqua border-b border-gray-700/50 pb-1.5 mb-2">${dynamicGroupName}</h3><ul class="space-y-1.5">`;
+        teams.forEach(team => {
+            let displayName = currentLang === "en" ? team.nameEn : team.name;
+            teamsHTML += `<li class="flex items-center gap-2 text-gray-300 font-medium">
+                <img src="https://flagcdn.com/w40/${team.code}.png" onerror="this.onerror=null; this.src='https://placehold.co/24x16/0b1528/00f2fe?text=${team.code.toUpperCase()}';" class="w-5 h-3.5 object-cover rounded-sm" /> 
+                ${displayName}
+            </li>`;
+        });
+        teamsHTML += `</ul>`;
+        groupCard.innerHTML = teamsHTML;
+        container.appendChild(groupCard);
+    }
+}
+
+function renderMatches(filterType = 'vong-bang') {
+    const container = document.getElementById('match-list-container');
+    const countBadge = document.getElementById('match-count');
+    if (!container || typeof officialMatches === 'undefined') return;
+    container.innerHTML = '';
+    const filtered = officialMatches.filter(m => m.type === filterType);
+    const lang = translations[currentLang];
+    if (countBadge) countBadge.innerText = `${filtered.length} ${lang.matchUnit}`;
+
+    filtered.forEach(match => {
+        const card = document.createElement('div');
+        card.className = match.isHot ? "bg-walrus-card border border-amber-500 hot-match-card rounded-2xl p-6 shadow-2xl relative overflow-hidden transition" : "bg-walrus-card border border-gray-800 rounded-2xl p-6 shadow-xl relative overflow-hidden transition hover:border-gray-700";
+        
+        let displayGroup = currentLang === "en" && match.groupEn ? match.groupEn : match.group;
+        if (currentLang === "en" && displayGroup.includes("Bảng")) displayGroup = displayGroup.replace("Bảng", "Group");
+        let displayDate = getLocalizedDate(match);
+        let displayTeamA = currentLang === "en" ? (match.teamAEn || match.teamA) : match.teamA;
+        let displayTeamB = currentLang === "en" ? (match.teamBEn || match.teamB) : match.teamB;
+        let hotBadgeHTML = match.isHot ? `<div class="absolute top-0 left-0 bg-gradient-to-r from-red-600 to-amber-500 text-white font-extrabold text-[9px] px-3 py-0.5 uppercase tracking-widest shadow-md z-10">🔥 HOT MATCH</div>` : '';
+
+        card.innerHTML = `
+            ${hotBadgeHTML}
+            <div class="absolute top-0 right-0 bg-worldcup-gold text-walrus-dark font-bold text-[10px] px-3 py-1 uppercase tracking-wider rounded-bl-xl z-10">
+                ${currentLang === "en" ? "Match" : "Trận"} ${match.id} - ${displayGroup}
             </div>
-            <div class="flex items-center gap-3">
-                <button onclick="toggleLanguage()" id="langBtn" class="flex items-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-bold rounded-xl border border-gray-700 transition">
-                    <img id="langFlag" src="https://flagcdn.com/w20/gb.png" class="w-5 h-3.5 object-cover rounded-sm" alt="Lang">
-                    <span id="langText">EN</span>
-                </button>
-                <button id="gmailBtn" onclick="toggleGmail()" class="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 text-sm font-semibold rounded-xl border border-gray-700 transition"><i class="fa-brands fa-google text-red-500"></i> <span id="gmailText">Đăng nhập Gmail</span></button>
-                <button id="walletBtn" onclick="toggleWallet()" class="flex items-center gap-2 px-4 py-2 bg-walrus-card hover:bg-opacity-80 text-walrus-aqua text-sm font-semibold rounded-xl border border-walrus-aqua/30 transition"><i class="fa-solid fa-wallet"></i> <span id="walletText">Kết nối ví Slush</span></button>
-                <button onclick="fetchMyPredictions()" id="btn-history" class="bg-gray-800 text-walrus-aqua px-4 py-2.5 rounded-xl border border-walrus-aqua/30 text-sm font-bold transition hover:bg-walrus-aqua hover:text-walrus-dark"><i class="fa-solid fa-clock-rotate-left"></i> <span id="btn-history-text">Lịch sử dự đoán</span></button> 
+            <div class="flex items-center gap-2 text-xs text-gray-400 mb-4 mt-1"><i class="fa-solid fa-location-dot text-red-400"></i><span class="font-semibold text-gray-300">${match.stadium}</span></div>
+            <div class="flex items-center justify-between my-6 px-4">
+                <div class="flex flex-col items-center gap-2 w-28 text-center">${getFlagImgHTML(match.codeA)}<span class="font-bold text-white text-sm mt-1">${displayTeamA}</span></div>
+                <div class="flex flex-col items-center"><span class="text-xs text-gray-500 uppercase tracking-widest font-bold">VS</span><span class="text-[11px] bg-gray-800 text-gray-400 px-3 py-1 rounded-full mt-2 font-mono text-center">${displayDate}<br/>${match.time}</span></div>
+                <div class="flex flex-col items-center gap-2 w-28 text-center">${getFlagImgHTML(match.codeB)}<span class="font-bold text-gray-400 text-sm mt-1">${displayTeamB}</span></div>
             </div>
-        </div>
-    </header>
-
-    <section class="hero-bg relative py-16 sm:py-24 border-b border-gray-800/50 overflow-hidden">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <h1 id="hero-title" class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight">Gáy Khét World Cup</h1>
-            <p id="hero-desc" class="text-gray-300 mt-6 text-sm sm:text-base leading-relaxed">Dự đoán kết quả từ 104 trận đấu chính thức của FIFA World Cup 2026.</p>
-        </div>
-    </section>
-
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
-        <section class="space-y-6">
-            <h2 id="section-groups-title" class="text-2xl font-bold text-white flex items-center gap-2">Cục Diện 48 Đội</h2>
-            <div id="groups-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
-        </section>
-
-        <div id="voting-section" class="grid grid-cols-1 lg:grid-cols-3 gap-8 scroll-mt-24">
-            <div class="lg:col-span-2 space-y-6">
-                <div class="flex flex-col gap-4 border-b border-gray-800 pb-4">
-                    <h2 id="section-matches-title" class="text-2xl font-bold text-white">Lịch Trình Thi Đấu</h2>
-                    <div class="flex flex-wrap bg-gray-900 p-1.5 rounded-xl border border-gray-800 text-xs gap-1">
-                        <button onclick="filterMatches('vong-bang')" id="tab-vong-bang" class="px-3 py-2 rounded-lg font-bold bg-walrus-aqua text-walrus-dark">Vòng Bảng</button>
-                        <button onclick="filterMatches('vong-32')" id="tab-vong-32" class="px-3 py-2 rounded-lg font-bold text-gray-400 hover:text-white">Vòng 32 Đội</button>
-                        <button onclick="filterMatches('vong-16')" id="tab-vong-16" class="px-3 py-2 rounded-lg font-bold text-gray-400 hover:text-white">Vòng 16 Đội</button>
-                        <button onclick="filterMatches('tu-ket')" id="tab-tu-ket" class="px-3 py-2 rounded-lg font-bold text-gray-400 hover:text-white">Tứ Kết</button>
-                        <button onclick="filterMatches('ban-ket')" id="tab-ban-ket" class="px-3 py-2 rounded-lg font-bold text-gray-400 hover:text-white">Bán Kết</button>
-                        <button onclick="filterMatches('chung-ket')" id="tab-chung-ket" class="px-3 py-2 rounded-lg font-bold text-gray-400 hover:text-white">Chung Kết</button>
+            <div class="border-t border-gray-800/60 pt-5 mt-4 space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+                    <div class="sm:col-span-1">
+                        <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">${lang.labelScore}</label>
+                        <div class="flex items-center gap-2"><input type="number" id="scoreA-${match.id}" placeholder="0" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-center font-bold text-white focus:outline-none"><span class="text-gray-600 font-bold">-</span><input type="number" id="scoreB-${match.id}" placeholder="0" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-center font-bold text-white focus:outline-none"></div>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">${lang.labelAnalysis}</label>
+                        <input type="text" id="analysis-${match.id}" placeholder="${lang.placeholderAnalysis}" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-200 focus:outline-none">
                     </div>
                 </div>
-                <div id="match-list-container" class="space-y-6 max-h-[850px] overflow-y-auto pr-3 custom-scrollbar"></div>
+                <div class="flex justify-end pt-2">
+                    <button onclick="handleSubmissionWithEffects('${match.id}')" class="gradient-btn hover:opacity-90 text-walrus-dark font-extrabold text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-walrus-aqua/20 flex items-center gap-2 transition">${lang.btnSubmit}</button>
+                </div>
             </div>
-            <div class="space-y-6">
-                <h2 id="section-ai-title" class="text-2xl font-bold text-white">Walrus Memory Agent</h2>
-                <div class="bg-walrus-card p-5 rounded-2xl border border-walrus-aqua/20"><p id="ai-roast-text" class="text-xs italic text-gray-300"></p></div>
-                <h2 id="section-leaderboard-title" class="text-2xl font-bold text-white">Bảng Vàng</h2>
-                <div id="leaderboard-container" class="bg-walrus-card border border-gray-800 rounded-2xl p-4 space-y-3"></div>
-            </div>
-        </div>
-    </main>
+        `;
+        container.appendChild(card);
+    });
+}
 
-    <script src="data.js"></script>
-    <script src="ui-components.js"></script>
-    <script type="module" src="app-logic.js"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            if(typeof initApp === 'function') initApp();
-        });
-    </script>
-</body>
-</html>
+function renderLeaderboard() {
+    const container = document.getElementById('leaderboard-container');
+    if (!container || typeof mockLeaderboard === 'undefined') return;
+    container.innerHTML = '';
+    mockLeaderboard.forEach((user, index) => {
+        const row = document.createElement('div');
+        row.className = "flex items-center justify-between p-2.5 bg-gray-950/40 border border-gray-800/60 rounded-xl text-xs";
+        let medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
+        row.innerHTML = `<div class="flex items-center gap-2.5"><span class="w-6 font-bold text-gray-400 text-center">${medal}</span><div class="w-7 h-7 rounded-full bg-gray-800 flex items-center justify-center border border-gray-700"><span class="text-sm">🦫</span></div><span class="font-mono font-semibold text-gray-200">${user.name}</span></div><span class="font-bold text-walrus-aqua">${user.score} PTS</span>`;
+        container.appendChild(row);
+    });
+}
+
+function updateUINonDynamicText() {
+    const lang = translations[currentLang];
+    document.getElementById('btn-history-text').innerText = lang.btnHistory;
+    document.getElementById('hero-title').innerHTML = lang.heroTitle;
+    document.getElementById('hero-desc').innerText = lang.heroDesc;
+    document.getElementById('section-groups-title').innerHTML = lang.secGroups;
+    document.getElementById('section-matches-title').innerHTML = lang.secMatches;
+    document.getElementById('section-ai-title').innerHTML = lang.secAi;
+    document.getElementById('section-prizes-title').innerHTML = lang.secPrizes;
+    document.getElementById('section-leaderboard-title').innerHTML = lang.secLeaderboard;
+    document.getElementById('tab-vong-bang').innerText = lang.tabVongBang;
+    document.getElementById('tab-vong-32').innerText = lang.tabVong32;
+    document.getElementById('tab-vong-16').innerText = lang.tabVong16;
+    document.getElementById('tab-tu-ket').innerText = lang.tabTuKet;
+    document.getElementById('tab-ban-ket').innerText = lang.tabBanKet;
+    document.getElementById('tab-chung-ket').innerText = lang.tabChungKet;
+    document.getElementById('prize-1-title').innerHTML = lang.prize1;
+    document.getElementById('prize-1-val').innerText = lang.prize1Val;
+    document.getElementById('prize-2-title').innerHTML = lang.prize2;
+    document.getElementById('prize-2-val').innerText = lang.prize2Val;
+}

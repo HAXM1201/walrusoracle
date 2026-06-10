@@ -92,13 +92,13 @@ const worldCupGroups = {
     "Bảng D": [
         { name: "Mỹ", nameEn: "USA", code: "us" },
         { name: "Paraguay", nameEn: "Paraguay", code: "py" },
-        { name: "Australia", nameEn: "Australia", code: "au" },
+        { name: "Úc", nameEn: "Australia", code: "au" },
         { name: "Thổ Nhĩ Kỳ", nameEn: "Turkey", code: "tr" }
     ],
     "Bảng E": [
         { name: "Đức", nameEn: "Germany", code: "de" },
         { name: "Curacao", nameEn: "Curacao", code: "cw" },
-        { name: "Ivory Coast", nameEn: "Ivory Coast", code: "ci" },
+        { name: "Bờ Biển Ngà", nameEn: "Ivory Coast", code: "ci" },
         { name: "Ecuador", nameEn: "Ecuador", code: "ec" }
     ],
     "Bảng F": [

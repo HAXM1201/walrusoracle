@@ -19,11 +19,16 @@
                     },
                     animation: {
                         'border-glow': 'borderGlow 4s linear infinite',
+                        'marquee': 'marquee 15s linear infinite',
                     },
                     keyframes: {
                         borderGlow: {
                             '0%, 100%': { 'border-color': 'rgba(245, 158, 11, 0.4)' },
                             '50%': { 'border-color': 'rgba(0, 242, 254, 1)' },
+                        },
+                        marquee: {
+                            '0%': { transform: 'translateX(100%)' },
+                            '100%': { transform: 'translateX(-100%)' },
                         }
                     }
                 }
@@ -31,13 +36,35 @@
         }
     </script>
     <style>
-        .gradient-text { background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .gradient-text {
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
         .gradient-btn { background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); }
-        .hero-bg { background: linear-gradient(to bottom, rgba(11, 21, 40, 0.85), rgba(11, 21, 40, 1)), url('wc1.png'); background-size: cover; background-position: center; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #0b1528; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #162238; border: 1px solid rgba(0, 242, 254, 0.2); border-radius: 10px; }
-        .hot-match-card { animation: border-glow 4s linear infinite; border-width: 2px !important; }
+        .hero-bg {
+            background: linear-gradient(to bottom, rgba(11, 21, 40, 0.85), rgba(11, 21, 40, 1)), url('wc1.png');
+            background-size: cover; background-position: center;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0b1528;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #162238;
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #00f2fe;
+        }
+        .hot-match-card {
+            animation: border-glow 4s linear infinite;
+            border-width: 2px !important;
+        }
     </style>
 </head>
 <body class="bg-walrus-dark text-gray-100 min-h-screen font-sans antialiased relative overflow-x-hidden">
@@ -107,11 +134,13 @@
     </section>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+        
         <section class="space-y-6">
             <h2 id="section-groups-title" class="text-2xl font-bold text-white flex items-center gap-2">
-                <i class="fa-solid fa-users-rectangle text-walrus-aqua"></i> Cục Diện 48 Đội Đường Đến World Cup 2026
+                <i class="fa-solid fa-users-rectangle text-walrus-aqua"></i> Cục Diện 48 Đội - Đường Đến World Cup 2026
             </h2>
-            <div id="groups-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+            <div id="groups-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            </div>
         </section>
 
         <div id="voting-section" class="grid grid-cols-1 lg:grid-cols-3 gap-8 scroll-mt-24">
@@ -133,7 +162,9 @@
                         <button onclick="filterMatches('chung-ket')" id="tab-chung-ket" class="px-3 py-2 rounded-lg font-bold text-gray-400 hover:text-white transition">Chung Kết</button>
                     </div>
                 </div>
-                <div id="match-list-container" class="space-y-6 max-h-[850px] overflow-y-auto pr-3 custom-scrollbar"></div>
+
+                <div id="match-list-container" class="space-y-6 max-h-[850px] overflow-y-auto pr-3 custom-scrollbar">
+                </div>
             </div>
 
             <div class="space-y-6">
@@ -142,35 +173,57 @@
                 </h2>
                 <div class="bg-gradient-to-br from-walrus-card to-walrus-dark border border-walrus-aqua/20 rounded-2xl p-5 space-y-4 shadow-xl">
                     <div class="flex items-center gap-3 border-b border-gray-800 pb-3">
-                        <div id="ai-avatar-box" class="w-12 h-12 rounded-xl bg-gradient-to-br from-walrus-aqua to-walrus-lightAqua flex items-center justify-center text-walrus-dark text-2xl font-black shadow-md shadow-walrus-aqua/10">🦫</div>
+                        <div id="ai-avatar-box" class="w-12 h-12 rounded-xl bg-gradient-to-br from-walrus-aqua to-walrus-lightAqua flex items-center justify-center text-walrus-dark text-2xl font-black shadow-md shadow-walrus-aqua/10">
+                            🦫
+                        </div>
                         <div>
                             <h4 class="font-bold text-white text-sm">Hải Ly Tiên Tri v1.0</h4>
-                            <span id="ai-status-text" class="text-[10px] text-emerald-400 font-mono">Đang đọc bộ nhớ Walrus...</span>
+                            <span id="ai-status-text" class="text-[10px] text-emerald-400 font-mono">Đang đọc bộ nhớ Walrus Mainnet...</span>
                         </div>
                     </div>
-                    <p id="ai-roast-text" class="text-xs text-gray-300 leading-relaxed italic bg-gray-950/60 p-3 rounded-xl border border-gray-800"></p>
+                    <p id="ai-roast-text" class="text-xs text-gray-300 leading-relaxed italic bg-gray-950/60 p-3 rounded-xl border border-gray-800">
+                        "Chào sếp! Hãy kết nối ví Slush hoặc đăng nhập Gmail để tôi quét lịch sử gáy trận đấu của sếp trên mạng lưới Walrus nhé."
+                    </p>
                 </div>
+
                 <h2 id="section-leaderboard-title" class="text-2xl font-bold text-white flex items-center gap-2">
                     <i class="fa-solid fa-ranking-star text-worldcup-gold"></i> Bảng Vàng Tiên Tri
                 </h2>
-                <div id="leaderboard-container" class="bg-walrus-card border border-gray-800 rounded-2xl p-4 space-y-3 shadow-xl"></div>
+                <div id="leaderboard-container" class="bg-walrus-card border border-gray-800 rounded-2xl p-4 space-y-3 shadow-xl">
+                </div>
+
+                <h2 id="section-prizes-title" class="text-2xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-trophy text-worldcup-gold"></i> Quỹ Giải Thưởng
+                </h2>
+                <div class="bg-gradient-to-br from-walrus-card to-walrus-dark border border-gray-800 rounded-2xl p-6 space-y-4">
+                    <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+                        <span id="prize-1-title" class="text-sm font-semibold text-gray-300 flex items-center gap-2">
+                            <i class="fa-solid fa-award text-yellow-500"></i> Tiên Tri Tỷ Số Đúng
+                        </span>
+                        <span id="prize-1-val" class="text-sm font-bold text-walrus-aqua">500 WAL / Vòng</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+                        <span id="prize-2-title" class="text-sm font-semibold text-gray-300 flex items-center gap-2">
+                            <i class="fa-solid fa-face-laugh-squint text-orange-400"></i> Phân Tích Hài Hước Nhất
+                        </span>
+                        <span id="prize-2-val" class="text-sm font-bold text-worldcup-gold">300 WAL / Trận</span>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
 
+    <footer class="border-t border-gray-800 bg-gray-950 py-8 text-center text-xs text-gray-500">
+        <p>&copy; 2026 Walrus Cup Oracle. Powered by Walrus Memory Layer.</p>
+    </footer>
+
+    <!-- ==================== SCRIPTS ==================== -->
     <script src="data.js"></script>
     <script src="ui-components.js"></script>
     <script src="app-logic.js"></script>
 
     <script>
-        // Khởi chạy hệ thống sau khi các file module đã nạp
-        document.addEventListener("DOMContentLoaded", function() {
-            updateUINonDynamicText();
-            renderGroups();
-            renderMatches('vong-bang');
-            renderLeaderboard();
-            fetchWorldCupData(); 
-        });
+        document.addEventListener("DOMContentLoaded", initApp);
     </script>
 </body>
 </html>

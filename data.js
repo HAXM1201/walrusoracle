@@ -1,17 +1,148 @@
 // data.js
+
+
+const translations = {
+    vi: {
+        heroTitle: 'Gáy Khét World Cup <br/><span class="gradient-text">Nhận Thưởng Lớn</span>',
+        heroDesc: 'Dự đoán kết quả từ 104 trận đấu chính thức của giải vô địch bóng đá thế giới FIFA World Cup 2026. Nhận định của bạn sẽ được lưu vĩnh viễn trên hạ tầng Walrus Blobs Storage.',
+        secGroups: '<i class="fa-solid fa-users-rectangle text-walrus-aqua"></i> Cục Diện 48 Đội Đường Đến World Cup 2026',
+        secMatches: '<i class="fa-regular fa-calendar-days text-worldcup-gold"></i> Lịch Trình Thi Đấu Chính Thức',
+        secAi: '<i class="fa-solid fa-brain text-walrus-aqua"></i> Walrus Memory Agent',
+        secPrizes: '<i class="fa-solid fa-trophy text-worldcup-gold"></i> Quỹ Giải Thưởng',
+        secLeaderboard: '<i class="fa-solid fa-ranking-star text-worldcup-gold"></i> Bảng Vàng Tiên Tri',
+        tabVongBang: 'Vòng Bảng', 
+        tabVong32: 'Vòng 32 Đội', 
+        tabVong16: 'Vòng 16 Đội', 
+        tabTuKet: 'Tứ Kết', 
+        tabBanKet: 'Bán Kết', 
+        tabChungKet: 'Chung Kết',
+        aiReading: 'Đang đọc bộ nhớ Walrus Mainnet...',
+        aiWelcome: '"Chào sếp! Hãy kết nối ví Slush hoặc đăng nhập Gmail để tôi quét lịch sử gáy trận đấu của sếp trên mạng lưới Walrus nhé."',
+        aiConnecting: '"Đang kết nối API football-data.org để lấy kết quả World Cup 2026 thời gian thực..."',
+        aiSuccess: '"Đã đồng bộ thành công dữ liệu từ FIFA! Sơ đồ Vòng 32 Đội và kết quả các trận đấu đã được cập nhật chính xác theo thời gian thực. Vào gáy tiếp đi sếp!"',
+        aiFallback: '"Không kết nối được API bên ngoài, tôi đang sử dụng dữ liệu bộ nhớ dự phòng có sẵn trên mạng lưới Walrus cho sếp nhé!"',
+        btnGmail: 'Đăng nhập Gmail', 
+        btnWallet: 'Kết nối ví Slush',
+        btnHistory: 'Lịch sử dự đoán',
+        prize1: '<i class="fa-solid fa-award text-yellow-500"></i> Tiên Tri Tỷ Số Đúng', 
+        prize1Val: '500 WAL / Vòng',
+        prize2: '<i class="fa-solid fa-face-laugh-squint text-orange-400"></i> Phân Tích Hài Hước Nhất', 
+        prize2Val: '300 WAL / Trận',
+        labelScore: 'Dự đoán Tỷ số', 
+        labelAnalysis: 'Lý do phân tích / Câu gáy hài hước', 
+        placeholderAnalysis: 'Nhập nhận định lầy lội của bạn tại đây...', 
+        btnSubmit: '<i class="fa-solid fa-cloud-arrow-up"></i> Nộp Dự Đoán',
+        matchUnit: 'trận', 
+        resultStr: 'Kết quả'
+    },
+    en: {
+        heroTitle: 'Roast The World Cup <br/><span class="gradient-text">Win Massive Rewards</span>',
+        heroDesc: 'Predict the outcomes of all 104 official matches for the FIFA World Cup 2026. Your insights will be permanently stored on the decentralized Walrus Blobs Storage infrastructure.',
+        secGroups: '<i class="fa-solid fa-users-rectangle text-walrus-aqua"></i> 48 Teams Roadmap - World Cup 2026 Groups',
+        secMatches: '<i class="fa-regular fa-calendar-days text-worldcup-gold"></i> Official Match Schedule',
+        secAi: '<i class="fa-solid fa-brain text-walrus-aqua"></i> Walrus Memory Agent',
+        secPrizes: '<i class="fa-solid fa-trophy text-worldcup-gold"></i> Prize Pool & Rewards',
+        secLeaderboard: '<i class="fa-solid fa-ranking-star text-worldcup-gold"></i> Prediction Leaderboard',
+        tabVongBang: 'Group Stage', 
+        tabVong32: 'Round of 32', 
+        tabVong16: 'Round of 16', 
+        tabTuKet: 'Quarter-Finals', 
+        tabBanKet: 'Semi-Finals', 
+        tabChungKet: 'Finals',
+        aiReading: 'Reading Walrus Mainnet storage...',
+        aiWelcome: '"Hello boss! Connect your Slush Wallet or sign in with Gmail so I can scan your historical prediction logs on the Walrus Network."',
+        aiConnecting: '"Connecting to football-data.org API to fetch live World Cup 2026 results in real-time..."',
+        aiSuccess: '"FIFA data sync successful! Round of 32 configurations and real-time scores updated via Walrus Memory. Let the roasted games begin!"',
+        aiFallback: '"External API offline, I am actively recovering backup tournament state from the secure Walrus decentralized nodes!"',
+        btnGmail: 'Sign in with Gmail', 
+        btnWallet: 'Connect Slush Wallet',
+        btnHistory: 'Prediction History',
+        prize1: '<i class="fa-solid fa-award text-yellow-500"></i> Correct Score Predictor', 
+        prize1Val: '500 WAL / Round',
+        prize2: '<i class="fa-solid fa-face-laugh-squint text-orange-400"></i> Funniest Match Analyst', 
+        prize2Val: '300 WAL / Match',
+        labelScore: 'Score Prediction', 
+        labelAnalysis: 'Analysis / Banter Comment', 
+        placeholderAnalysis: 'Type your funny, trash-talk prediction here...', 
+        btnSubmit: '<i class="fa-solid fa-cloud-arrow-up"></i> Submit Prediction',
+        matchUnit: 'matches', 
+        resultStr: 'Result'
+    }
+};
+
 const worldCupGroups = {
-    "Bảng A": [{ name: "Mexico", nameEn: "Mexico", code: "mx" }, { name: "Nam Phi", nameEn: "South Africa", code: "za" }, { name: "Hàn Quốc", nameEn: "South Korea", code: "kr" }, { name: "CH Séc", nameEn: "Czech Republic", code: "cz" }],
-    "Bảng B": [{ name: "Canada", nameEn: "Canada", code: "ca" }, { name: "Bosnia/Herzeg.", nameEn: "Bosnia/Herzeg.", code: "ba" }, { name: "Qatar", nameEn: "Qatar", code: "qa" }, { name: "Thụy Sĩ", nameEn: "Switzerland", code: "ch" }],
-    "Bảng C": [{ name: "Brazil", nameEn: "Brazil", code: "br" }, { name: "Ma Rốc", nameEn: "Morocco", code: "ma" }, { name: "Haiti", nameEn: "Haiti", code: "ht" }, { name: "Scotland", nameEn: "Scotland", code: "gb-sct" }],
-    "Bảng D": [{ name: "Mỹ", nameEn: "USA", code: "us" }, { name: "Paraguay", nameEn: "Paraguay", code: "py" }, { name: "Australia", nameEn: "Australia", code: "au" }, { name: "Thổ Nhĩ Kỳ", nameEn: "Turkey", code: "tr" }],
-    "Bảng E": [{ name: "Đức", nameEn: "Germany", code: "de" }, { name: "Curacao", nameEn: "Curacao", code: "cw" }, { name: "Ivory Coast", nameEn: "Ivory Coast", code: "ci" }, { name: "Ecuador", nameEn: "Ecuador", code: "ec" }],
-    "Bảng F": [{ name: "Hà Lan", nameEn: "Netherlands", code: "nl" }, { name: "Nhật Bản", nameEn: "Japan", code: "jp" }, { name: "Thụy Điển", nameEn: "Sweden", code: "se" }, { name: "Tunisia", nameEn: "Tunisia", code: "tn" }],
-    "Bảng G": [{ name: "Bỉ", nameEn: "Belgium", code: "be" }, { name: "Ai Cập", nameEn: "Egypt", code: "eg" }, { name: "Iran", nameEn: "Iran", code: "ir" }, { name: "New Zealand", nameEn: "New Zealand", code: "nz" }],
-    "Bảng H": [{ name: "Tây Ban Nha", nameEn: "Spain", code: "es" }, { name: "Cape Verde", nameEn: "Cape Verde", code: "cv" }, { name: "Ả Rập Xê Út", nameEn: "Saudi Arabia", code: "sa" }, { name: "Uruguay", nameEn: "Uruguay", code: "uy" }],
-    "Bảng I": [{ name: "Pháp", nameEn: "France", code: "fr" }, { name: "Senegal", nameEn: "Senegal", code: "sn" }, { name: "Iraq", nameEn: "Iraq", code: "iq" }, { name: "Na Uy", nameEn: "Norway", code: "no" }],
-    "Bảng J": [{ name: "Argentina", nameEn: "Argentina", code: "ar" }, { name: "Algeria", nameEn: "Algeria", code: "dz" }, { name: "Áo", nameEn: "Austria", code: "at" }, { name: "Jordan", nameEn: "Jordan", code: "jo" }],
-    "Bảng K": [{ name: "Bồ Đào Nha", nameEn: "Portugal", code: "pt" }, { name: "Congo", nameEn: "Congo", code: "cg" }, { name: "Uzbekistan", nameEn: "Uzbekistan", code: "uz" }, { name: "Colombia", nameEn: "Colombia", code: "co" }],
-    "Bảng L": [{ name: "Anh", nameEn: "England", code: "gb-eng" }, { name: "Croatia", nameEn: "Croatia", code: "hr" }, { name: "Ghana", nameEn: "Ghana", code: "gh" }, { name: "Panama", nameEn: "Panama", code: "pa" }]
+    "Bảng A": [
+        { name: "Mexico", nameEn: "Mexico", code: "mx" },
+        { name: "Nam Phi", nameEn: "South Africa", code: "za" },
+        { name: "Hàn Quốc", nameEn: "South Korea", code: "kr" },
+        { name: "CH Séc", nameEn: "Czech Republic", code: "cz" }
+    ],
+    "Bảng B": [
+        { name: "Canada", nameEn: "Canada", code: "ca" },
+        { name: "Bosnia/Herzeg.", nameEn: "Bosnia/Herzeg.", code: "ba" },
+        { name: "Qatar", nameEn: "Qatar", code: "qa" },
+        { name: "Thụy Sĩ", nameEn: "Switzerland", code: "ch" }
+    ],
+    "Bảng C": [
+        { name: "Brazil", nameEn: "Brazil", code: "br" },
+        { name: "Ma Rốc", nameEn: "Morocco", code: "ma" },
+        { name: "Haiti", nameEn: "Haiti", code: "ht" },
+        { name: "Scotland", nameEn: "Scotland", code: "gb-sct" }
+    ],
+    "Bảng D": [
+        { name: "Mỹ", nameEn: "USA", code: "us" },
+        { name: "Paraguay", nameEn: "Paraguay", code: "py" },
+        { name: "Australia", nameEn: "Australia", code: "au" },
+        { name: "Thổ Nhĩ Kỳ", nameEn: "Turkey", code: "tr" }
+    ],
+    "Bảng E": [
+        { name: "Đức", nameEn: "Germany", code: "de" },
+        { name: "Curacao", nameEn: "Curacao", code: "cw" },
+        { name: "Ivory Coast", nameEn: "Ivory Coast", code: "ci" },
+        { name: "Ecuador", nameEn: "Ecuador", code: "ec" }
+    ],
+    "Bảng F": [
+        { name: "Hà Lan", nameEn: "Netherlands", code: "nl" },
+        { name: "Nhật Bản", nameEn: "Japan", code: "jp" },
+        { name: "Thụy Điển", nameEn: "Sweden", code: "se" },
+        { name: "Tunisia", nameEn: "Tunisia", code: "tn" }
+    ],
+    "Bảng G": [
+        { name: "Bỉ", nameEn: "Belgium", code: "be" },
+        { name: "Ai Cập", nameEn: "Egypt", code: "eg" },
+        { name: "Iran", nameEn: "Iran", code: "ir" },
+        { name: "New Zealand", nameEn: "New Zealand", code: "nz" }
+    ],
+    "Bảng H": [
+        { name: "Tây Ban Nha", nameEn: "Spain", code: "es" },
+        { name: "Cape Verde", nameEn: "Cape Verde", code: "cv" },
+        { name: "Ả Rập Xê Út", nameEn: "Saudi Arabia", code: "sa" },
+        { name: "Uruguay", nameEn: "Uruguay", code: "uy" }
+    ],
+    "Bảng I": [
+        { name: "Pháp", nameEn: "France", code: "fr" },
+        { name: "Senegal", nameEn: "Senegal", code: "sn" },
+        { name: "Iraq", nameEn: "Iraq", code: "iq" },
+        { name: "Na Uy", nameEn: "Norway", code: "no" }
+    ],
+    "Bảng J": [
+        { name: "Argentina", nameEn: "Argentina", code: "ar" },
+        { name: "Algeria", nameEn: "Algeria", code: "dz" },
+        { name: "Áo", nameEn: "Austria", code: "at" },
+        { name: "Jordan", nameEn: "Jordan", code: "jo" }
+    ],
+    "Bảng K": [
+        { name: "Bồ Đào Nha", nameEn: "Portugal", code: "pt" },
+        { name: "Congo", nameEn: "Congo", code: "cg" },
+        { name: "Uzbekistan", nameEn: "Uzbekistan", code: "uz" },
+        { name: "Colombia", nameEn: "Colombia", code: "co" }
+    ],
+    "Bảng L": [
+        { name: "Anh", nameEn: "England", code: "gb-eng" },
+        { name: "Croatia", nameEn: "Croatia", code: "hr" },
+        { name: "Ghana", nameEn: "Ghana", code: "gh" },
+        { name: "Panama", nameEn: "Panama", code: "pa" }
+    ]
 };
 
 const officialMatches = [
@@ -120,5 +251,12 @@ const officialMatches = [
     { id: "103", group: "Tranh Hạng 3", groupEn: "Third Place Playoff", date: "CN, 19/07/2026", time: "4:00", stadium: "Miami Stadium", teamA: "Thua Trận M101", teamAEn: "Loser M101", codeA: "placeholder", teamB: "Thua Trận M102", teamBEn: "Loser M102", codeB: "placeholder", type: "chung-ket" },
     { id: "104", group: "Chung Kết Tổng", groupEn: "World Cup Grand Final", date: "Thứ 2, 20/07/2026", time: "2:00", stadium: "New York/New Jersey Stadium", teamA: "Thắng Trận M101", teamAEn: "Winner M101", codeA: "placeholder", teamB: "Thắng Trận M102", teamBEn: "Winner M102", codeB: "placeholder", type: "chung-ket" }
 ];
-window.worldCupGroups = worldCupGroups;
-window.officialMatches = officialMatches;
+const mockLeaderboard = [
+    { name: "WalrusKing99", score: 1240, countryCode: "vn" },
+    { name: "HuyenAnhFC", score: 1180, countryCode: "vn" },
+    { name: "SlushMaster", score: 1090, countryCode: "us" },
+    { name: "BongDaTienTri", score: 980, countryCode: "br" },
+    { name: "GáyKhétPro", score: 920, countryCode: "th" }
+];
+
+const userPredictionMemory = [];

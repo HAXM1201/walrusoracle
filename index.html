@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="data.js"></script>
+    
     <script>
         tailwind.config = {
             theme: {
@@ -19,16 +19,11 @@
                     },
                     animation: {
                         'border-glow': 'borderGlow 4s linear infinite',
-                        'marquee': 'marquee 15s linear infinite',
                     },
                     keyframes: {
                         borderGlow: {
                             '0%, 100%': { 'border-color': 'rgba(245, 158, 11, 0.4)' },
                             '50%': { 'border-color': 'rgba(0, 242, 254, 1)' },
-                        },
-                        marquee: {
-                            '0%': { transform: 'translateX(100%)' },
-                            '100%': { transform: 'translateX(-100%)' },
                         }
                     }
                 }
@@ -36,35 +31,13 @@
         }
     </script>
     <style>
-        .gradient-text {
-            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+        .gradient-text { background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .gradient-btn { background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); }
-        .hero-bg {
-            background: linear-gradient(to bottom, rgba(11, 21, 40, 0.85), rgba(11, 21, 40, 1)), url('wc1.png');
-            background-size: cover; background-position: center;
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #0b1528;
-            border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #162238;
-            border: 1px solid rgba(0, 242, 254, 0.2);
-            border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #00f2fe;
-        }
-        .hot-match-card {
-            animation: border-glow 4s linear infinite;
-            border-width: 2px !important;
-        }
+        .hero-bg { background: linear-gradient(to bottom, rgba(11, 21, 40, 0.85), rgba(11, 21, 40, 1)), url('wc1.png'); background-size: cover; background-position: center; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0b1528; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #162238; border: 1px solid rgba(0, 242, 254, 0.2); border-radius: 10px; }
+        .hot-match-card { animation: border-glow 4s linear infinite; border-width: 2px !important; }
     </style>
 </head>
 <body class="bg-walrus-dark text-gray-100 min-h-screen font-sans antialiased relative overflow-x-hidden">
@@ -134,13 +107,11 @@
     </section>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
-        
         <section class="space-y-6">
             <h2 id="section-groups-title" class="text-2xl font-bold text-white flex items-center gap-2">
                 <i class="fa-solid fa-users-rectangle text-walrus-aqua"></i> Cục Diện 48 Đội Đường Đến World Cup 2026
             </h2>
-            <div id="groups-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            </div>
+            <div id="groups-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
         </section>
 
         <div id="voting-section" class="grid grid-cols-1 lg:grid-cols-3 gap-8 scroll-mt-24">
@@ -162,9 +133,7 @@
                         <button onclick="filterMatches('chung-ket')" id="tab-chung-ket" class="px-3 py-2 rounded-lg font-bold text-gray-400 hover:text-white transition">Chung Kết</button>
                     </div>
                 </div>
-
-                <div id="match-list-container" class="space-y-6 max-h-[850px] overflow-y-auto pr-3 custom-scrollbar">
-                </div>
+                <div id="match-list-container" class="space-y-6 max-h-[850px] overflow-y-auto pr-3 custom-scrollbar"></div>
             </div>
 
             <div class="space-y-6">
@@ -173,508 +142,32 @@
                 </h2>
                 <div class="bg-gradient-to-br from-walrus-card to-walrus-dark border border-walrus-aqua/20 rounded-2xl p-5 space-y-4 shadow-xl">
                     <div class="flex items-center gap-3 border-b border-gray-800 pb-3">
-                        <div id="ai-avatar-box" class="w-12 h-12 rounded-xl bg-gradient-to-br from-walrus-aqua to-walrus-lightAqua flex items-center justify-center text-walrus-dark text-2xl font-black shadow-md shadow-walrus-aqua/10">
-                            🦫
-                        </div>
+                        <div id="ai-avatar-box" class="w-12 h-12 rounded-xl bg-gradient-to-br from-walrus-aqua to-walrus-lightAqua flex items-center justify-center text-walrus-dark text-2xl font-black shadow-md shadow-walrus-aqua/10">🦫</div>
                         <div>
                             <h4 class="font-bold text-white text-sm">Hải Ly Tiên Tri v1.0</h4>
-                            <span id="ai-status-text" class="text-[10px] text-emerald-400 font-mono">Đang đọc bộ nhớ Walrus Mainnet...</span>
+                            <span id="ai-status-text" class="text-[10px] text-emerald-400 font-mono">Đang đọc bộ nhớ Walrus...</span>
                         </div>
                     </div>
-                    <p id="ai-roast-text" class="text-xs text-gray-300 leading-relaxed italic bg-gray-950/60 p-3 rounded-xl border border-gray-800">
-                        "Chào sếp! Hãy kết nối ví Slush hoặc đăng nhập Gmail để tôi quét lịch sử gáy trận đấu của sếp trên mạng lưới Walrus nhé."
-                    </p>
+                    <p id="ai-roast-text" class="text-xs text-gray-300 leading-relaxed italic bg-gray-950/60 p-3 rounded-xl border border-gray-800"></p>
                 </div>
-
                 <h2 id="section-leaderboard-title" class="text-2xl font-bold text-white flex items-center gap-2">
                     <i class="fa-solid fa-ranking-star text-worldcup-gold"></i> Bảng Vàng Tiên Tri
                 </h2>
-                <div id="leaderboard-container" class="bg-walrus-card border border-gray-800 rounded-2xl p-4 space-y-3 shadow-xl">
-                </div>
-
-                <h2 id="section-prizes-title" class="text-2xl font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-trophy text-worldcup-gold"></i> Quỹ Giải Thưởng
-                </h2>
-                <div class="bg-gradient-to-br from-walrus-card to-walrus-dark border border-gray-800 rounded-2xl p-6 space-y-4">
-                    <div class="flex justify-between items-center border-b border-gray-800 pb-3">
-                        <span id="prize-1-title" class="text-sm font-semibold text-gray-300 flex items-center gap-2">
-                            <i class="fa-solid fa-award text-yellow-500"></i> Tiên Tri Tỷ Số Đúng
-                        </span>
-                        <span id="prize-1-val" class="text-sm font-bold text-walrus-aqua">500 WAL / Vòng</span>
-                    </div>
-                    <div class="flex justify-between items-center border-b border-gray-800 pb-3">
-                        <span id="prize-2-title" class="text-sm font-semibold text-gray-300 flex items-center gap-2">
-                            <i class="fa-solid fa-face-laugh-squint text-orange-400"></i> Phân Tích Hài Hước Nhất
-                        </span>
-                        <span id="prize-2-val" class="text-sm font-bold text-worldcup-gold">300 WAL / Trận</span>
-                    </div>
-                </div>
+                <div id="leaderboard-container" class="bg-walrus-card border border-gray-800 rounded-2xl p-4 space-y-3 shadow-xl"></div>
             </div>
         </div>
     </main>
 
-    <footer class="border-t border-gray-800 bg-gray-950 py-8 text-center text-xs text-gray-500">
-        <p>&copy; 2026 Walrus Cup Oracle. Powered by Walrus Memory Layer.</p>
-    </footer>
+    <script src="data.js"></script>
+    <script src="ui-components.js"></script>
+    <script src="app-logic.js"></script>
 
     <script>
-        // ==================== GLOBAL VARIABLES & DICTIONARY ====================
-        let currentLang = "vi"; 
-        let currentApiStatus = "welcome"; 
-        let activeTabGlobal = "vong-bang";
-
-        const translations = {
-            vi: {
-                heroTitle: 'Gáy Khét World Cup <br/><span class="gradient-text">Nhận Thưởng Lớn</span>',
-                heroDesc: 'Dự đoán kết quả từ 104 trận đấu chính thức của giải vô địch bóng đá thế giới FIFA World Cup 2026. Nhận định của bạn sẽ được lưu vĩnh viễn trên hạ tầng Walrus Blobs Storage.',
-                secGroups: '<i class="fa-solid fa-users-rectangle text-walrus-aqua"></i> Cục Diện 48 Đội Đường Đến World Cup 2026',
-                secMatches: '<i class="fa-regular fa-calendar-days text-worldcup-gold"></i> Lịch Trình Thi Đấu Chính Thức',
-                secAi: '<i class="fa-solid fa-brain text-walrus-aqua"></i> Walrus Memory Agent',
-                secPrizes: '<i class="fa-solid fa-trophy text-worldcup-gold"></i> Quỹ Giải Thưởng',
-                secLeaderboard: '<i class="fa-solid fa-ranking-star text-worldcup-gold"></i> Bảng Vàng Tiên Tri',
-                tabVongBang: 'Vòng Bảng', tabVong32: 'Vòng 32 Đội', tabVong16: 'Vòng 16 Đội', tabTuKet: 'Tứ Kết', tabBanKet: 'Bán Kết', tabChungKet: 'Chung Kết',
-                aiReading: 'Đang đọc bộ nhớ Walrus Mainnet...',
-                aiWelcome: '"Chào sếp! Hãy kết nối ví Slush hoặc đăng nhập Gmail để tôi quét lịch sử gáy trận đấu của sếp trên mạng lưới Walrus nhé."',
-                aiConnecting: '"Đang kết nối API football-data.org để lấy kết quả World Cup 2026 thời gian thực..."',
-                aiSuccess: '"Đã đồng bộ thành công dữ liệu từ FIFA! Sơ đồ Vòng 32 Đội và kết quả các trận đấu đã được cập nhật chính xác theo thời gian thực. Vào gáy tiếp đi sếp!"',
-                aiFallback: '"Không kết nối được API bên ngoài, tôi đang sử dụng dữ liệu bộ nhớ dự phòng có sẵn trên mạng lưới Walrus cho sếp nhé!"',
-                btnGmail: 'Đăng nhập Gmail', btnWallet: 'Kết nối ví Slush',
-                btnHistory: 'Lịch sử dự đoán',
-                prize1: '<i class="fa-solid fa-award text-yellow-500"></i> Tiên Tri Tỷ Số Đúng', prize1Val: '500 WAL / Vòng',
-                prize2: '<i class="fa-solid fa-face-laugh-squint text-orange-400"></i> Phân Tích Hài Hước Nhất', prize2Val: '300 WAL / Trận',
-                labelScore: 'Dự đoán Tỷ số', labelAnalysis: 'Lý do phân tích / Câu gáy hài hước', placeholderAnalysis: 'Nhập nhận định lầy lội của bạn tại đây...', btnSubmit: '<i class="fa-solid fa-cloud-arrow-up"></i> Nộp Dự Đoán',
-                matchUnit: 'trận', resultStr: 'Kết quả'
-            },
-            en: {
-                heroTitle: 'Roast The World Cup <br/><span class="gradient-text">Win Massive Rewards</span>',
-                heroDesc: 'Predict the outcomes of all 104 official matches for the FIFA World Cup 2026. Your insights will be permanently stored on the decentralized Walrus Blobs Storage infrastructure.',
-                secGroups: '<i class="fa-solid fa-users-rectangle text-walrus-aqua"></i> 48 Teams Roadmap - World Cup 2026 Groups',
-                secMatches: '<i class="fa-regular fa-calendar-days text-worldcup-gold"></i> Official Match Schedule',
-                secAi: '<i class="fa-solid fa-brain text-walrus-aqua"></i> Walrus Memory Agent',
-                secPrizes: '<i class="fa-solid fa-trophy text-worldcup-gold"></i> Prize Pool & Rewards',
-                secLeaderboard: '<i class="fa-solid fa-ranking-star text-worldcup-gold"></i> Prediction Leaderboard',
-                tabVongBang: 'Group Stage', tabVong32: 'Round of 32', tabVong16: 'Round of 16', tabTuKet: 'Quarter-Finals', tabBanKet: 'Semi-Finals', tabChungKet: 'Finals',
-                aiReading: 'Reading Walrus Mainnet storage...',
-                aiWelcome: '"Hello boss! Connect your Slush Wallet or sign in with Gmail so I can scan your historical prediction logs on the Walrus Network."',
-                aiConnecting: '"Connecting to football-data.org API to fetch live World Cup 2026 results in real-time..."',
-                aiSuccess: '"FIFA data sync successful! Round of 32 configurations and real-time scores updated via Walrus Memory. Let the roasted games begin!"',
-                aiFallback: '"External API offline, I am actively recovering backup tournament state from the secure Walrus decentralized nodes!"',
-                btnGmail: 'Sign in with Gmail', btnWallet: 'Connect Slush Wallet',
-                btnHistory: 'Prediction History',
-                prize1: '<i class="fa-solid fa-award text-yellow-500"></i> Correct Score Predictor', prize1Val: '500 WAL / Round',
-                prize2: '<i class="fa-solid fa-face-laugh-squint text-orange-400"></i> Funniest Match Analyst', prize2Val: '300 WAL / Match',
-                labelScore: 'Score Prediction', labelAnalysis: 'Analysis / Banter Comment', placeholderAnalysis: 'Type your funny, trash-talk prediction here...', btnSubmit: '<i class="fa-solid fa-cloud-arrow-up"></i> Submit Prediction',
-                matchUnit: 'matches', resultStr: 'Result'
-            }
-        };
-
-        
-        // HÀM CHUYỂN ĐỔI NGÀY THÁNG SANG TIẾNG ANH / TIẾNG VIỆT AN TOÀN 100%
-        function getLocalizedDate(match) {
-            let dateStr = match.date || "";
-            if (currentLang === "en") {
-                return dateStr
-                    .replace(/Thứ 2|thứ 2/g, "Mon")
-                    .replace(/Thứ 3|thứ 3/g, "Tue")
-                    .replace(/Thứ 4|thứ 4/g, "Wed")
-                    .replace(/Thứ 5|thứ 5/g, "Thu")
-                    .replace(/Thứ 6|thứ 6/g, "Fri")
-                    .replace(/Thứ 7|thứ 7/g, "Sat")
-                    .replace(/CN|cn/g, "Sun");
-            }
-            return dateStr;
-        }
-
-        function getFlagImgHTML(code) {
-            if (code === "placeholder") {
-                return `<div class="w-12 h-8 rounded bg-gray-800 border border-gray-700 flex items-center justify-center text-[10px] text-gray-500 font-bold uppercase">TBD</div>`;
-            }
-            return `<img src="https://flagcdn.com/w80/${code}.png" onerror="this.onerror=null; this.src='https://placehold.co/48x32/162238/00f2fe?text=${code.toUpperCase()}';" class="w-12 h-8 object-cover rounded shadow-md border border-gray-700/50" alt="${code}" />`;
-        }
-
-        function renderGroups() {
-            const container = document.getElementById('groups-container');
-            if (!container || typeof worldCupGroups === 'undefined') return;
-            container.innerHTML = '';
-            for (const [groupName, teams] of Object.entries(worldCupGroups)) {
-                const groupCard = document.createElement('div');
-                groupCard.className = "bg-walrus-card border border-gray-800/80 rounded-xl p-3 text-xs shadow-md";
-                
-                let dynamicGroupName = currentLang === "en" ? groupName.replace("Bảng", "Group") : groupName;
-                
-                let teamsHTML = `<h3 class="font-bold text-walrus-aqua border-b border-gray-700/50 pb-1.5 mb-2">${dynamicGroupName}</h3><ul class="space-y-1.5">`;
-                teams.forEach(team => {
-                    let displayName = currentLang === "en" ? team.nameEn : team.name;
-                    teamsHTML += `<li class="flex items-center gap-2 text-gray-300 font-medium">
-                        <img src="https://flagcdn.com/w40/${team.code}.png" onerror="this.onerror=null; this.src='https://placehold.co/24x16/0b1528/00f2fe?text=${team.code.toUpperCase()}';" class="w-5 h-3.5 object-cover rounded-sm" /> 
-                        ${displayName}
-                    </li>`;
-                });
-                teamsHTML += `</ul>`;
-                groupCard.innerHTML = teamsHTML;
-                container.appendChild(groupCard);
-            }
-        }
-
-        function renderMatches(filterType = 'vong-bang') {
-            const container = document.getElementById('match-list-container');
-            const countBadge = document.getElementById('match-count');
-            if (!container || typeof officialMatches === 'undefined') return;
-            
-            container.innerHTML = '';
-            const filtered = officialMatches.filter(m => m.type === filterType);
-            
-            const lang = translations[currentLang];
-            if (countBadge) countBadge.innerText = `${filtered.length} ${lang.matchUnit}`;
-
-            filtered.forEach(match => {
-                const card = document.createElement('div');
-                
-                if (match.isHot) {
-                    card.className = "bg-walrus-card border border-amber-500 hot-match-card rounded-2xl p-6 shadow-2xl relative overflow-hidden transition";
-                } else {
-                    card.className = "bg-walrus-card border border-gray-800 rounded-2xl p-6 shadow-xl relative overflow-hidden transition hover:border-gray-700";
-                }
-                
-                let displayGroup = currentLang === "en" && match.groupEn ? match.groupEn : match.group;
-                if (currentLang === "en" && displayGroup.includes("Bảng")) { displayGroup = displayGroup.replace("Bảng", "Group"); }
-                
-                let displayDate = getLocalizedDate(match);
-                
-                let displayTeamA = currentLang === "en" ? (match.teamAEn || match.teamA) : match.teamA;
-                let displayTeamB = currentLang === "en" ? (match.teamBEn || match.teamB) : match.teamB;
-
-                let hotBadgeHTML = match.isHot 
-                    ? `<div class="absolute top-0 left-0 bg-gradient-to-r from-red-600 to-amber-500 text-white font-extrabold text-[9px] px-3 py-0.5 uppercase tracking-widest shadow-md z-10">
-                            🔥 HOT MATCH
-                       </div>` 
-                    : '';
-
-                card.innerHTML = `
-                    ${hotBadgeHTML}
-                    <div class="absolute top-0 right-0 bg-worldcup-gold text-walrus-dark font-bold text-[10px] px-3 py-1 uppercase tracking-wider rounded-bl-xl z-10">
-                        ${currentLang === "en" ? "Match" : "Trận"} ${match.id} - ${displayGroup}
-                    </div>
-                    <div class="flex items-center gap-2 text-xs text-gray-400 mb-4 mt-1">
-                        <i class="fa-solid fa-location-dot text-red-400"></i>
-                        <span class="font-semibold text-gray-300">${match.stadium}</span>
-                    </div>
-                    <div class="flex items-center justify-between my-6 px-4">
-                        <div class="flex flex-col items-center gap-2 w-28 text-center">
-                            ${getFlagImgHTML(match.codeA)}
-                            <span class="font-bold text-white text-sm mt-1">${displayTeamA}</span>
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <span class="text-xs text-gray-500 uppercase tracking-widest font-bold">VS</span>
-                            <span class="text-[11px] bg-gray-800 text-gray-400 px-3 py-1 rounded-full mt-2 font-mono text-center">${displayDate}<br/>${match.time}</span>
-                        </div>
-                        <div class="flex flex-col items-center gap-2 w-28 text-center">
-                            ${getFlagImgHTML(match.codeB)}
-                            <span class="font-bold text-gray-400 text-sm mt-1">${displayTeamB}</span>
-                        </div>
-                    </div>
-                    <div class="border-t border-gray-800/60 pt-5 mt-4 space-y-4">
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-                            <div class="sm:col-span-1">
-                                <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">${lang.labelScore}</label>
-                                <div class="flex items-center gap-2">
-                                    <input type="number" id="scoreA-${match.id}" placeholder="0" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-center font-bold text-white focus:outline-none focus:border-walrus-aqua">
-                                    <span class="text-gray-600 font-bold">-</span>
-                                    <input type="number" id="scoreB-${match.id}" placeholder="0" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-center font-bold text-white focus:outline-none focus:border-walrus-aqua">
-                                </div>
-                            </div>
-                            <div class="sm:col-span-2">
-                                <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">${lang.labelAnalysis}</label>
-                                <input type="text" id="analysis-${match.id}" placeholder="${lang.placeholderAnalysis}" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-200 focus:outline-none focus:border-walrus-aqua">
-                            </div>
-                        </div>
-                        <div class="flex justify-end pt-2">
-                            <button onclick="handleSubmissionWithEffects('${match.id}')" class="gradient-btn hover:opacity-90 text-walrus-dark font-extrabold text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-walrus-aqua/20 flex items-center gap-2 transition">
-                                ${lang.btnSubmit}
-                            </button>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function filterMatches(type) {
-            activeTabGlobal = type; // Lưu trạng thái tab hiện tại vào biến global
-            const tabs = ['vong-bang', 'vong-32', 'vong-16', 'tu-ket', 'ban-ket', 'chung-ket'];
-            tabs.forEach(t => {
-                const tabBtn = document.getElementById(`tab-${t}`);
-                if (tabBtn) {
-                    if (t === type) tabBtn.className = "px-3 py-2 rounded-lg font-bold transition bg-walrus-aqua text-walrus-dark";
-                    else tabBtn.className = "px-3 py-2 rounded-lg font-bold text-gray-400 hover:text-white transition";
-                }
-            });
-            renderMatches(type);
-        }
-
-        function renderLeaderboard() {
-            const container = document.getElementById('leaderboard-container');
-            if (!container) return;
-            container.innerHTML = '';
-            
-            mockLeaderboard.forEach((user, index) => {
-                const row = document.createElement('div');
-                row.className = "flex items-center justify-between p-2.5 bg-gray-950/40 border border-gray-800/60 rounded-xl text-xs";
-                
-                let medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
-                
-                row.innerHTML = `
-                    <div class="flex items-center gap-2.5">
-                        <span class="w-6 font-bold text-gray-400 text-center">${medal}</span>
-                        <div class="w-7 h-7 rounded-full bg-gray-800 flex items-center justify-center border border-gray-700 relative group">
-                            <span class="text-sm">🦫</span>
-                            <img src="https://flagcdn.com/w20/${user.countryCode}.png" class="absolute -bottom-1 -right-1 w-3.5 h-2.5 object-cover rounded-sm border border-gray-900" />
-                        </div>
-                        <span class="font-mono font-semibold text-gray-200">${user.name}</span>
-                    </div>
-                    <span class="font-bold text-walrus-aqua">${user.score} PTS</span>
-                `;
-                container.appendChild(row);
-            });
-        }
-
-        // =========================================================
-        // 🌐 ĐỒNG BỘ DỮ LIỆU TỰ ĐỘNG QUA FOOTBALL-DATA.ORG
-        // =========================================================
-        const FOOTBALL_DATA_API_KEY = "1287e361b6fe45d49685debe16b7561f"; 
-
-        async function fetchWorldCupData() {
-            const aiAgentText = document.getElementById('ai-roast-text');
-            const aiAvatarBox = document.getElementById('ai-avatar-box');
-            
-            currentApiStatus = "connecting";
-            if (aiAgentText) aiAgentText.innerHTML = translations[currentLang].aiConnecting;
-            if (aiAvatarBox) aiAvatarBox.innerText = "🔍";
-
-            try {
-                const response = await fetch('https://api.football-data.org/v4/competitions/WC/matches', {
-                    method: 'GET',
-                    headers: { 'X-Auth-Token': FOOTBALL_DATA_API_KEY }
-                });
-
-                if (!response.ok) throw new Error("API Connection Failed");
-                const data = await response.json();
-                const apiMatches = data.matches;
-
-                apiMatches.forEach(apiMatch => {
-                    const localMatch = officialMatches.find(m => m.id === apiMatch.matchNumber.toString());
-                    
-                    if (localMatch) {
-                        if (apiMatch.status === "FINISHED") {
-                            const resultPrefix = currentLang === "en" ? "Result" : "Kết quả";
-                            if (!localMatch.stadium.includes(resultPrefix)) {
-                                localMatch.stadium += ` (${resultPrefix}: ${apiMatch.score.fullTime.home} - ${apiMatch.score.fullTime.away})`;
-                            }
-                        }
-
-                        if (apiMatch.homeTeam && apiMatch.homeTeam.name && localMatch.id > 72) {
-                            localMatch.teamA = apiMatch.homeTeam.shortName || apiMatch.homeTeam.name;
-                            localMatch.teamAEn = apiMatch.homeTeam.shortName || apiMatch.homeTeam.name;
-                            localMatch.codeA = apiMatch.homeTeam.tla ? apiMatch.homeTeam.tla.toLowerCase() : "placeholder";
-                        }
-                        if (apiMatch.awayTeam && apiMatch.awayTeam.name && localMatch.id > 72) {
-                            localMatch.teamB = apiMatch.awayTeam.shortName || apiMatch.awayTeam.name;
-                            localMatch.teamBEn = apiMatch.awayTeam.shortName || apiMatch.awayTeam.name;
-                            localMatch.codeB = apiMatch.awayTeam.tla ? apiMatch.awayTeam.tla.toLowerCase() : "placeholder";
-                        }
-                    }
-                });
-
-                currentApiStatus = "success";
-                if (aiAgentText) aiAgentText.innerHTML = translations[currentLang].aiSuccess;
-                if (aiAvatarBox) aiAvatarBox.innerText = "🏆";
-
-                renderMatches(activeTabGlobal);
-
-            } catch (error) {
-                console.log("API Error or rate limit hit. Falling back to internal data.");
-                currentApiStatus = "fallback";
-                if (aiAgentText) aiAgentText.innerHTML = translations[currentLang].aiFallback;
-                if (aiAvatarBox) aiAvatarBox.innerText = "🛡️";
-            }
-        }
-
-        function updateUINonDynamicText() {
-            const lang = translations[currentLang];
-            document.getElementById('btn-history-text').innerText = lang.btnHistory;
-            document.getElementById('hero-title').innerHTML = lang.heroTitle;
-            document.getElementById('hero-desc').innerText = lang.heroDesc;
-            document.getElementById('section-groups-title').innerHTML = lang.secGroups;
-            document.getElementById('section-matches-title').innerHTML = lang.secMatches;
-            document.getElementById('section-ai-title').innerHTML = lang.secAi;
-            document.getElementById('section-prizes-title').innerHTML = lang.secPrizes;
-            document.getElementById('section-leaderboard-title').innerHTML = lang.secLeaderboard;
-            
-            document.getElementById('tab-vong-bang').innerText = lang.tabVongBang;
-            document.getElementById('tab-vong-32').innerText = lang.tabVong32;
-            document.getElementById('tab-vong-16').innerText = lang.tabVong16;
-            document.getElementById('tab-tu-ket').innerText = lang.tabTuKet;
-            document.getElementById('tab-ban-ket').innerText = lang.tabBanKet;
-            document.getElementById('tab-chung-ket').innerText = lang.tabChungKet;
-
-            document.getElementById('prize-1-title').innerHTML = lang.prize1;
-            document.getElementById('prize-1-val').innerText = lang.prize1Val;
-            document.getElementById('prize-2-title').innerHTML = lang.prize2;
-            document.getElementById('prize-2-val').innerText = lang.prize2Val;
-
-            const aiStatusText = document.getElementById('ai-status-text');
-            if (aiStatusText) aiStatusText.innerText = lang.aiReading;
-            
-            const aiAgentText = document.getElementById('ai-roast-text');
-            if (aiAgentText) {
-                if (currentApiStatus === "welcome") aiAgentText.innerHTML = lang.aiWelcome;
-                else if (currentApiStatus === "connecting") aiAgentText.innerHTML = lang.aiConnecting;
-                else if (currentApiStatus === "success") aiAgentText.innerHTML = lang.aiSuccess;
-                else if (currentApiStatus === "fallback") aiAgentText.innerHTML = lang.aiFallback;
-            }
-        }
-
-        function toggleLanguage() {
-            const flag = document.getElementById('langFlag');
-            const txt = document.getElementById('langText');
-
-            if (currentLang === "vi") {
-                currentLang = "en";
-                flag.src = "https://flagcdn.com/w20/vn.png";
-                txt.innerText = "VI";
-            } else {
-                currentLang = "vi";
-                flag.src = "https://flagcdn.com/w20/gb.png";
-                txt.innerText = "EN";
-            }
-
-            updateUINonDynamicText();
-            renderGroups();
-            renderMatches(activeTabGlobal); // Render mượt mà không lỗi đứng màn hình
-        }
-
-        // =========================================================
-        // 🛠️ MÔ-ĐUN QUẢN LÝ ĐĂNG NHẬP / VÍ (ĐỘC LẬP)
-        // =========================================================
-        let isGmailLoggedIn = true; 
-        let isWalletConnected = false;
-
-        function toggleGmail() {
-            isGmailLoggedIn = !isGmailLoggedIn;
-            const btn = document.getElementById('gmailBtn');
-            const txt = document.getElementById('gmailText');
-            if(isGmailLoggedIn) {
-                btn.classList.replace('bg-gray-800', 'bg-red-950');
-                btn.classList.add('border-red-900/50');
-                txt.innerHTML = `<span class="text-red-400 font-bold">huyenanh***@gmail.com</span>`;
-            } else {
-                btn.className = "flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 text-sm font-semibold rounded-xl border border-gray-700 transition duration-200";
-                txt.innerText = translations[currentLang].btnGmail;
-            }
-        }
-
-        function toggleWallet() {
-            isWalletConnected = !isWalletConnected;
-            const btn = document.getElementById('walletBtn');
-            const txt = document.getElementById('walletText');
-            if(isWalletConnected) {
-                btn.classList.replace('bg-walrus-card', 'bg-teal-950');
-                btn.classList.add('border-teal-900/50');
-                txt.innerHTML = `<span class="text-emerald-400 font-mono">0xSlush...40a2</span>`;
-            } else {
-                btn.className = "flex items-center gap-2 px-4 py-2 bg-walrus-card hover:bg-opacity-80 text-walrus-aqua text-sm font-semibold rounded-xl border border-walrus-aqua/30 transition duration-200";
-                txt.innerText = translations[currentLang].btnWallet;
-            }
-        }
-
-        // =========================================================
-        // 🎆 MÔ-ĐUN HIỆU ỨNG PHÁO HOA CANVAS (ĐỘC LẬP)
-        // =========================================================
-        const canvas = document.getElementById('effect-canvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        function createConfetti() {
-            const colors = ['#00f2fe', '#4facfe', '#f59e0b', '#10b981', '#ef4444'];
-            for (let i = 0; i < 100; i++) {
-                particles.push({
-                    x: window.innerWidth / 2,
-                    y: window.innerHeight / 2 + window.scrollY - 200,
-                    radius: Math.random() * 4 + 2,
-                    color: colors[Math.floor(Math.random() * colors.length)],
-                    vx: (Math.random() - 0.5) * 10,
-                    vy: (Math.random() - 0.5) * 10 - 5,
-                    opacity: 1,
-                    gravity: 0.15
-                });
-            }
-        }
-
-        function animateParticles() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach((p, index) => {
-                p.vy += p.gravity;
-                p.x += p.vx;
-                p.y += p.vy;
-                p.opacity -= 0.015;
-
-                ctx.beginPath();
-                ctx.arc(p.x, p.y - window.scrollY, p.radius, 0, Math.PI * 2);
-                ctx.fillStyle = p.color;
-                ctx.globalAlpha = p.opacity;
-                ctx.fill();
-
-                if (p.opacity <= 0) particles.splice(index, 1);
-            });
-            if (particles.length > 0) requestAnimationFrame(animateParticles);
-        }
-
-        function handleSubmissionWithEffects(id) {
-            createConfetti();
-            animateParticles();
-            mockSubmit(id);
-        }
-
-        function mockSubmit(id) { 
-            const successMsg = currentLang === "en" 
-                ? `Success! Your prediction for match ${id} has been securely stored on Walrus Mainnet.`
-                : `Thành công! Dự đoán trận ${id} đã được lưu trữ lên Walrus Mainnet.`;
-            alert(successMsg); 
-        }
-        async function fetchMyPredictions() {
-            const email = document.getElementById('gmailText').innerText;
-            
-            if (email.includes("Đăng nhập") || email.includes("Sign in")) {
-                alert(currentLang === "en" ? "Please sign in with Gmail first!" : "Sếp vui lòng đăng nhập Gmail trước!");
-                return;
-            }
-
-            alert(currentLang === "en" ? "Fetching your prediction history from Walrus..." : "Đang truy xuất lịch sử dự đoán từ Walrus...");
-            
-            const myHistory = userPredictionMemory.filter(item => item.ownerEmail === email);
-            
-            if (myHistory.length === 0) {
-                alert(currentLang === "en" ? "No prediction history found for this account." : "Chưa có lịch sử dự đoán cho tài khoản này.");
-            } else {
-                console.table(myHistory); 
-                alert(currentLang === "en" 
-                    ? `You have ${myHistory.length} prediction(s). Check browser console for details!` 
-                    : `Sếp đã có ${myHistory.length} dự đoán. Kiểm tra console để xem chi tiết!`);
-            }
-        }
-        // KHỞI CHẠY HỆ THỐNG TRANG WEB
+        // Khởi chạy hệ thống sau khi các file module đã nạp
         document.addEventListener("DOMContentLoaded", function() {
-            currentApiStatus = "welcome";
             updateUINonDynamicText();
             renderGroups();
-            filterMatches('vong-bang'); // Kích hoạt tab vòng bảng chuẩn mặc định
+            renderMatches('vong-bang');
             renderLeaderboard();
             fetchWorldCupData(); 
         });

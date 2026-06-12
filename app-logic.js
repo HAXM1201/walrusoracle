@@ -345,7 +345,7 @@ async function fetchMyPredictions() {
     alert(currentLang === "vi" ? `Đang lấy lịch sử cho: ${currentUser.email}` : `Fetching predictions for: ${currentUser.email}`);
 }
 
-// ==================== FETCH DỮ LIỆU THỰC TẾ TỪ NGUỒN ONLINE ====================
+// ==================== FETCH DỮ LIỆU ONLINE THỰC TẾ ====================
 async function fetchWorldCupData() {
     const aiAgentText = document.getElementById('ai-roast-text');
     const aiAvatarBox = document.getElementById('ai-avatar-box');
@@ -361,24 +361,33 @@ async function fetchWorldCupData() {
         const data = await response.json();
         let updated = 0;
 
-        data.forEach(apiMatch => {
+        data.games.forEach(apiMatch => {
             const localMatch = officialMatches.find(m => String(m.id) === String(apiMatch.id));
-            if (localMatch && apiMatch.status === "finished" && apiMatch.score) {
+            if (localMatch && apiMatch.finished === "TRUE") {
                 localMatch.result = {
-                    home: apiMatch.score.home || 0,
-                    away: apiMatch.score.away || 0,
-                    goals: apiMatch.goals || []
+                    home: parseInt(apiMatch.home_score) || 0,
+                    away: parseInt(apiMatch.away_score) || 0,
+                    goals: []
                 };
+                // Parse scorers nếu có
+                if (apiMatch.home_scorers && apiMatch.home_scorers !== "null") {
+                    try {
+                        const scorers = apiMatch.home_scorers.replace(/[{}"]/g, '').split(',');
+                        scorers.forEach(s => {
+                            if (s.trim()) localMatch.result.goals.push({team: "home", scorer: s.trim(), minute: ""});
+                        });
+                    } catch(e) {}
+                }
                 updated++;
             }
         });
 
         currentApiStatus = "success";
-        if (aiAgentText) aiAgentText.innerHTML = `${translations[currentLang].aiSuccess}<br><small>Đã cập nhật ${updated} trận từ server</small>`;
+        if (aiAgentText) aiAgentText.innerHTML = `${translations[currentLang].aiSuccess}<br><small>Đã lấy ${updated} trận từ server</small>`;
         if (aiAvatarBox) aiAvatarBox.innerText = "🏆";
 
     } catch (error) {
-        console.log("Không lấy được dữ liệu online, dùng dữ liệu nội bộ");
+        console.log("Không lấy được dữ liệu online → fallback");
         currentApiStatus = "fallback";
         if (aiAgentText) aiAgentText.innerHTML = translations[currentLang].aiFallback;
         if (aiAvatarBox) aiAvatarBox.innerText = "🛡️";

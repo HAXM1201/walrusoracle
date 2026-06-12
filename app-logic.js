@@ -234,6 +234,7 @@ function renderMatches(filterType = 'vong-bang') {
     });
 }
 
+// ==================== CÁC HÀM CÒN LẠI ====================
 function filterMatches(type) {
     activeTabGlobal = type;
     const tabs = ['vong-bang', 'vong-32', 'vong-16', 'tu-ket', 'ban-ket', 'chung-ket'];
@@ -345,7 +346,7 @@ async function fetchMyPredictions() {
     alert(currentLang === "vi" ? `Đang lấy lịch sử cho: ${currentUser.email}` : `Fetching predictions for: ${currentUser.email}`);
 }
 
-// ==================== FETCH DỮ LIỆU ONLINE THỰC TẾ ====================
+// ==================== FETCH + PARSE GOALS TỐT HƠN ====================
 async function fetchWorldCupData() {
     const aiAgentText = document.getElementById('ai-roast-text');
     const aiAvatarBox = document.getElementById('ai-avatar-box');
@@ -369,25 +370,43 @@ async function fetchWorldCupData() {
                     away: parseInt(apiMatch.away_score) || 0,
                     goals: []
                 };
-                // Parse scorers nếu có
+
+                // Parse home scorers
                 if (apiMatch.home_scorers && apiMatch.home_scorers !== "null") {
-                    try {
-                        const scorers = apiMatch.home_scorers.replace(/[{}"]/g, '').split(',');
-                        scorers.forEach(s => {
-                            if (s.trim()) localMatch.result.goals.push({team: "home", scorer: s.trim(), minute: ""});
-                        });
-                    } catch(e) {}
+                    const scorers = apiMatch.home_scorers.replace(/[{}"]/g, '').split(',');
+                    scorers.forEach(s => {
+                        if (s.trim()) {
+                            const parts = s.trim().split(" ");
+                            const minute = parts.pop() || "";
+                            const scorer = parts.join(" ");
+                            localMatch.result.goals.push({team: "home", scorer: scorer, minute: minute.replace("'", "")});
+                        }
+                    });
                 }
+
+                // Parse away scorers (sửa chỗ này)
+                if (apiMatch.away_scorers && apiMatch.away_scorers !== "null") {
+                    const scorers = apiMatch.away_scorers.replace(/[{}"]/g, '').split(',');
+                    scorers.forEach(s => {
+                        if (s.trim()) {
+                            const parts = s.trim().split(" ");
+                            const minute = parts.pop() || "";
+                            const scorer = parts.join(" ");
+                            localMatch.result.goals.push({team: "away", scorer: scorer, minute: minute.replace("'", "")});
+                        }
+                    });
+                }
+
                 updated++;
             }
         });
 
         currentApiStatus = "success";
-        if (aiAgentText) aiAgentText.innerHTML = `${translations[currentLang].aiSuccess}<br><small>Đã lấy ${updated} trận từ server</small>`;
+        if (aiAgentText) aiAgentText.innerHTML = `${translations[currentLang].aiSuccess}<br><small>Đã lấy ${updated} trận</small>`;
         if (aiAvatarBox) aiAvatarBox.innerText = "🏆";
 
     } catch (error) {
-        console.log("Không lấy được dữ liệu online → fallback");
+        console.log("Không lấy được dữ liệu online");
         currentApiStatus = "fallback";
         if (aiAgentText) aiAgentText.innerHTML = translations[currentLang].aiFallback;
         if (aiAvatarBox) aiAvatarBox.innerText = "🛡️";

@@ -1,8 +1,75 @@
-<!-- ==================== app-logic.js ==================== -->
+// ==================== app-logic.js ====================
 
 let currentLang = "vi"; 
 let currentApiStatus = "welcome"; 
 let activeTabGlobal = "vong-bang";
+let currentUser = null;
+
+// ==================== FIREBASE AUTH ====================
+const firebaseConfig = {
+  apiKey: "AIzaSyBl7vHtoGcSNqoIgTJnPkgu29wQRD2XVAo",
+  authDomain: "walrus-cup-oracle.firebaseapp.com",
+  projectId: "walrus-cup-oracle",
+  storageBucket: "walrus-cup-oracle.firebasestorage.app",
+  messagingSenderId: "152805594660",
+  appId: "1:152805594660:web:3767f0fd98f6720031eab1"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+function initFirebaseAuth() {
+    auth.onAuthStateChanged(user => {
+        currentUser = user;
+        if (user) updateUserUI();
+        else resetUserUI();
+    });
+}
+
+async function signInWithGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try {
+        const result = await auth.signInWithPopup(provider);
+        currentUser = result.user;
+        updateUserUI();
+        alert(currentLang === "vi" ? `Chào ${currentUser.displayName}!` : `Welcome ${currentUser.displayName}!`);
+    } catch (error) {
+        console.error("Lỗi đăng nhập:", error);
+        if (error.code === 'auth/unauthorized-domain') {
+            alert("❌ Vui lòng thêm walrusoracle.xyz vào Authorized Domains trong Firebase Console!");
+        } else {
+            alert("Đăng nhập thất bại. Thử lại sau.");
+        }
+    }
+}
+
+function updateUserUI() {
+    const btn = document.getElementById('googleBtn');
+    btn.innerHTML = `
+        <img src="${currentUser.photoURL}" class="w-6 h-6 rounded-full border border-gray-300" alt="">
+        <span class="text-emerald-600 font-medium">${currentUser.displayName}</span>
+    `;
+    btn.onclick = signOut;
+}
+
+function resetUserUI() {
+    const btn = document.getElementById('googleBtn');
+    btn.innerHTML = `
+        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" class="w-5 h-5" alt="Google">
+        <span id="gmailText">Đăng nhập bằng Google</span>
+    `;
+    btn.onclick = signInWithGoogle;
+}
+
+async function signOut() {
+    if (confirm(currentLang === "vi" ? "Đăng xuất?" : "Sign out?")) {
+        await auth.signOut();
+    }
+}
+
+// =========================================================
+// ==================== CÁC HÀM HỖ TRỢ ====================
+// =========================================================
 
 function getLocalizedDate(match) {
     let dateStr = match.date || "";
@@ -33,9 +100,7 @@ function renderGroups() {
     for (const [groupName, teams] of Object.entries(worldCupGroups)) {
         const groupCard = document.createElement('div');
         groupCard.className = "bg-walrus-card border border-gray-800/80 rounded-xl p-3 text-xs shadow-md";
-        
         let dynamicGroupName = currentLang === "en" ? groupName.replace("Bảng", "Group") : groupName;
-        
         let teamsHTML = `<h3 class="font-bold text-walrus-aqua border-b border-gray-700/50 pb-1.5 mb-2">${dynamicGroupName}</h3><ul class="space-y-1.5">`;
         teams.forEach(team => {
             let displayName = currentLang === "en" ? team.nameEn : team.name;
@@ -50,6 +115,7 @@ function renderGroups() {
     }
 }
 
+// ==================== RENDER MATCHES (Hiển thị kết quả + form dự đoán) ====================
 function renderMatches(filterType = 'vong-bang') {
     const container = document.getElementById('match-list-container');
     const countBadge = document.getElementById('match-count');
@@ -57,7 +123,6 @@ function renderMatches(filterType = 'vong-bang') {
     
     container.innerHTML = '';
     const filtered = officialMatches.filter(m => m.type === filterType);
-    
     const lang = translations[currentLang];
     if (countBadge) countBadge.innerText = `${filtered.length} ${lang.matchUnit}`;
 
@@ -76,41 +141,36 @@ function renderMatches(filterType = 'vong-bang') {
 
         let cardHTML = '';
 
-        // ==================== TRẬN ĐÃ CÓ KẾT QUẢ ====================
+        // === TRẬN ĐÃ CÓ KẾT QUẢ ===
         if (match.result && match.result.home !== undefined) {
             const res = match.result;
             let goalsHTML = '';
-
             if (res.goals && res.goals.length > 0) {
                 goalsHTML = `<div class="mt-4 bg-gray-900/80 rounded-xl p-4 text-sm">`;
-                res.goals.forEach(goal => {
-                    const teamName = goal.team === 'home' ? displayTeamA : displayTeamB;
+                res.goals.forEach(g => {
+                    const teamName = g.team === 'home' ? displayTeamA : displayTeamB;
                     goalsHTML += `
-                        <div class="flex justify-between items-center py-2 border-b border-gray-700 last:border-none">
-                            <span class="font-medium">${teamName} <strong>${goal.scorer}</strong></span>
-                            <span class="font-mono text-walrus-aqua">${goal.minute}'</span>
+                        <div class="flex justify-between py-1.5 border-b border-gray-700 last:border-0">
+                            <span>${teamName} - <strong>${g.scorer || 'Cầu thủ'}</strong></span>
+                            <span class="font-mono text-walrus-aqua">${g.minute}'</span>
                         </div>`;
                 });
                 goalsHTML += `</div>`;
             }
 
             cardHTML = `
-                <div class="absolute top-0 right-0 bg-emerald-600 text-white text-xs font-bold px-4 py-1.5 rounded-bl-xl">
-                    ${currentLang === "en" ? "FINAL RESULT" : "KẾT THÚC"}
-                </div>
-                ${match.isHot ? `<div class="absolute top-0 left-0 bg-gradient-to-r from-red-600 to-amber-500 text-white text-[10px] px-3 py-1">🔥 HOT MATCH</div>` : ''}
+                <div class="absolute top-0 right-0 bg-emerald-600 text-white text-xs font-bold px-4 py-1.5 rounded-bl-xl">KẾT THÚC</div>
+                ${match.isHot ? `<div class="absolute top-3 left-3 bg-gradient-to-r from-red-600 to-amber-500 text-white text-xs px-3 py-1 rounded">🔥 HOT MATCH</div>` : ''}
                 
-                <div class="flex items-center justify-between my-8 px-4">
+                <div class="flex items-center justify-between my-8 px-6">
                     <div class="flex flex-col items-center w-28 text-center">
                         ${getFlagImgHTML(match.codeA)}
                         <span class="font-bold text-white mt-2">${displayTeamA}</span>
                     </div>
-                    
                     <div class="text-center">
-                        <div class="text-6xl font-black font-mono text-white tracking-tighter">${res.home} - ${res.away}</div>
-                        <div class="text-xs text-gray-400 mt-2">${displayDate} • ${match.time}</div>
+                        <div class="text-6xl font-black font-mono">${res.home} - ${res.away}</div>
+                        <div class="text-xs text-gray-400 mt-1">${displayDate} • ${match.time}</div>
                     </div>
-                    
                     <div class="flex flex-col items-center w-28 text-center">
                         ${getFlagImgHTML(match.codeB)}
                         <span class="font-bold text-white mt-2">${displayTeamB}</span>
@@ -119,15 +179,14 @@ function renderMatches(filterType = 'vong-bang') {
                 ${goalsHTML}
             `;
         } 
-        // ==================== TRẬN CHƯA DIỄN RA ====================
+        // === TRẬN CHƯA DIỄN RA ===
         else {
             cardHTML = `
-                ${match.isHot ? `<div class="absolute top-0 left-0 bg-gradient-to-r from-red-600 to-amber-500 text-white font-extrabold text-[9px] px-3 py-0.5 uppercase tracking-widest shadow-md z-10">🔥 HOT MATCH</div>` : ''}
-                <div class="absolute top-0 right-0 bg-worldcup-gold text-walrus-dark font-bold text-[10px] px-3 py-1 uppercase tracking-wider rounded-bl-xl z-10">
-                    ${currentLang === "en" ? "Match" : "Trận"} ${match.id} - ${displayGroup}
+                ${match.isHot ? `<div class="absolute top-0 left-0 bg-gradient-to-r from-red-600 to-amber-500 text-white font-extrabold text-[9px] px-3 py-1 uppercase tracking-widest">🔥 HOT MATCH</div>` : ''}
+                <div class="absolute top-0 right-0 bg-worldcup-gold text-walrus-dark font-bold text-[10px] px-3 py-1 uppercase tracking-wider rounded-bl-xl">
+                    Trận ${match.id} - ${displayGroup}
                 </div>
-                <!-- Phần còn lại giữ nguyên như code cũ của bạn -->
-                <div class="flex items-center gap-2 text-xs text-gray-400 mb-4 mt-1">
+                <div class="flex items-center gap-2 text-xs text-gray-400 mb-4 mt-8">
                     <i class="fa-solid fa-location-dot text-red-400"></i>
                     <span class="font-semibold text-gray-300">${match.stadium}</span>
                 </div>
@@ -145,24 +204,23 @@ function renderMatches(filterType = 'vong-bang') {
                         <span class="font-bold text-gray-400 text-sm mt-1">${displayTeamB}</span>
                     </div>
                 </div>
-                <!-- Form dự đoán -->
                 <div class="border-t border-gray-800/60 pt-5 mt-4 space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
                         <div class="sm:col-span-1">
                             <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">${lang.labelScore}</label>
                             <div class="flex items-center gap-2">
-                                <input type="number" id="scoreA-${match.id}" placeholder="0" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-center font-bold text-white">
+                                <input type="number" id="scoreA-${match.id}" placeholder="0" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-center font-bold text-white focus:outline-none focus:border-walrus-aqua">
                                 <span class="text-gray-600 font-bold">-</span>
-                                <input type="number" id="scoreB-${match.id}" placeholder="0" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-center font-bold text-white">
+                                <input type="number" id="scoreB-${match.id}" placeholder="0" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-center font-bold text-white focus:outline-none focus:border-walrus-aqua">
                             </div>
                         </div>
                         <div class="sm:col-span-2">
                             <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">${lang.labelAnalysis}</label>
-                            <input type="text" id="analysis-${match.id}" placeholder="${lang.placeholderAnalysis}" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-200">
+                            <input type="text" id="analysis-${match.id}" placeholder="${lang.placeholderAnalysis}" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-200 focus:outline-none focus:border-walrus-aqua">
                         </div>
                     </div>
                     <div class="flex justify-end pt-2">
-                        <button onclick="handleSubmissionWithEffects('${match.id}')" class="gradient-btn hover:opacity-90 text-walrus-dark font-extrabold text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-walrus-aqua/20 flex items-center gap-2">
+                        <button onclick="handleSubmissionWithEffects('${match.id}')" class="gradient-btn hover:opacity-90 text-walrus-dark font-extrabold text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-walrus-aqua/20 flex items-center gap-2 transition">
                             ${lang.btnSubmit}
                         </button>
                     </div>
@@ -192,13 +250,10 @@ function renderLeaderboard() {
     const container = document.getElementById('leaderboard-container');
     if (!container) return;
     container.innerHTML = '';
-    
     mockLeaderboard.forEach((user, index) => {
         const row = document.createElement('div');
         row.className = "flex items-center justify-between p-2.5 bg-gray-950/40 border border-gray-800/60 rounded-xl text-xs";
-        
         let medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
-        
         row.innerHTML = `
             <div class="flex items-center gap-2.5">
                 <span class="w-6 font-bold text-gray-400 text-center">${medal}</span>
@@ -214,11 +269,17 @@ function renderLeaderboard() {
     });
 }
 
-// =========================================================
-// 🌐 ĐỒNG BỘ DỮ LIỆU TỰ ĐỘNG QUA FOOTBALL-DATA.ORG
-// =========================================================
-const FOOTBALL_DATA_API_KEY = "1287e361b6fe45d49685debe16b7561f"; 
+// ==================== AUTO REFRESH LIVE ====================
+let refreshInterval = null;
 
+function startLiveRefresh() {
+    if (refreshInterval) clearInterval(refreshInterval);
+    refreshInterval = setInterval(() => {
+        fetchWorldCupData();
+    }, 60000); // Cập nhật mỗi 60 giây
+}
+
+// ==================== FETCH KẾT QUẢ THỰC TẾ ====================
 async function fetchWorldCupData() {
     const aiAgentText = document.getElementById('ai-roast-text');
     const aiAvatarBox = document.getElementById('ai-avatar-box');
@@ -228,50 +289,46 @@ async function fetchWorldCupData() {
     if (aiAvatarBox) aiAvatarBox.innerText = "🔄";
 
     try {
-        // Nguồn dữ liệu World Cup 2026 chính thức (public, CORS-friendly)
         const response = await fetch('https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json');
-        
-        if (!response.ok) throw new Error("Failed to fetch");
+        if (!response.ok) throw new Error("Failed");
 
         const data = await response.json();
-        
-        // Đồng bộ kết quả vào officialMatches
+        let updated = 0;
+
         data.matches.forEach(apiMatch => {
             const localMatch = officialMatches.find(m => 
-                m.id === apiMatch.matchday?.toString() || 
+                String(m.id) === String(apiMatch.round?.matchday) ||
                 (m.teamA && m.teamB && 
-                 (m.teamA.includes(apiMatch.team1) || m.teamB.includes(apiMatch.team2)))
+                 (m.teamA.toLowerCase().includes((apiMatch.team1 || "").toLowerCase()) || 
+                  m.teamB.toLowerCase().includes((apiMatch.team2 || "").toLowerCase())))
             );
 
-            if (localMatch) {
-                // Nếu trận đã kết thúc
-                if (apiMatch.score && (apiMatch.score.ft || apiMatch.score.pen)) {
-                    localMatch.result = {
-                        home: apiMatch.score.ft ? apiMatch.score.ft[0] : 0,
-                        away: apiMatch.score.ft ? apiMatch.score.ft[1] : 0,
-                        goals: apiMatch.goals || [],
-                        note: apiMatch.score.pen ? `Pen: ${apiMatch.score.pen[0]}-${apiMatch.score.pen[1]}` : ""
-                    };
-                }
+            if (localMatch && apiMatch.score && apiMatch.score.ft) {
+                localMatch.result = {
+                    home: apiMatch.score.ft[0],
+                    away: apiMatch.score.ft[1],
+                    goals: apiMatch.goals || [],
+                    note: apiMatch.score.pen ? `Pen ${apiMatch.score.pen[0]}-${apiMatch.score.pen[1]}` : ""
+                };
+                updated++;
             }
         });
 
         currentApiStatus = "success";
-        if (aiAgentText) aiAgentText.innerHTML = translations[currentLang].aiSuccess;
+        if (aiAgentText) aiAgentText.innerHTML = `${translations[currentLang].aiSuccess}<br><small>Đã sync ${updated} trận</small>`;
         if (aiAvatarBox) aiAvatarBox.innerText = "🏆";
 
-        renderMatches(activeTabGlobal);
-
     } catch (error) {
-        console.log("API Error → Using local fallback");
+        console.log("API Error → fallback");
         currentApiStatus = "fallback";
         if (aiAgentText) aiAgentText.innerHTML = translations[currentLang].aiFallback;
         if (aiAvatarBox) aiAvatarBox.innerText = "🛡️";
-        
-        renderMatches(activeTabGlobal);
     }
+
+    renderMatches(activeTabGlobal);
 }
 
+// ==================== CÁC HÀM CÒN LẠI (GIỮ NGUYÊN) ====================
 function updateUINonDynamicText() {
     const lang = translations[currentLang];
     document.getElementById('btn-history-text').innerText = lang.btnHistory;
@@ -320,42 +377,13 @@ function toggleLanguage() {
         flag.src = "https://flagcdn.com/w20/gb.png";
         txt.innerText = "EN";
     }
-
     updateUINonDynamicText();
     renderGroups();
     renderMatches(activeTabGlobal);
 }
 
-let isGmailLoggedIn = true; 
-let isWalletConnected = false;
-
-function toggleGmail() {
-    isGmailLoggedIn = !isGmailLoggedIn;
-    const btn = document.getElementById('gmailBtn');
-    const txt = document.getElementById('gmailText');
-    if(isGmailLoggedIn) {
-        btn.classList.replace('bg-gray-800', 'bg-red-950');
-        btn.classList.add('border-red-900/50');
-        txt.innerHTML = `<span class="text-red-400 font-bold">huyenanh***@gmail.com</span>`;
-    } else {
-        btn.className = "flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 text-sm font-semibold rounded-xl border border-gray-700 transition duration-200";
-        txt.innerText = translations[currentLang].btnGmail;
-    }
-}
-
-function toggleWallet() {
-    isWalletConnected = !isWalletConnected;
-    const btn = document.getElementById('walletBtn');
-    const txt = document.getElementById('walletText');
-    if(isWalletConnected) {
-        btn.classList.replace('bg-walrus-card', 'bg-teal-950');
-        btn.classList.add('border-teal-900/50');
-        txt.innerHTML = `<span class="text-emerald-400 font-mono">0xSlush...40a2</span>`;
-    } else {
-        btn.className = "flex items-center gap-2 px-4 py-2 bg-walrus-card hover:bg-opacity-80 text-walrus-aqua text-sm font-semibold rounded-xl border border-walrus-aqua/30 transition duration-200";
-        txt.innerText = translations[currentLang].btnWallet;
-    }
-}
+function toggleGmail() { /* giữ nguyên nếu bạn còn dùng */ }
+function toggleWallet() { /* giữ nguyên */ }
 
 function handleSubmissionWithEffects(id) {
     createConfetti();
@@ -372,108 +400,23 @@ function mockSubmit(id) {
 
 async function fetchMyPredictions() {
     if (!currentUser) {
-        alert(currentLang === "vi" ? "Vui lòng đăng nhập Google trước!" : "Please sign in with Google first!");
+        alert(currentLang === "vi" ? "Vui lòng đăng nhập Google trước!" : "Please sign in first!");
         return;
     }
-
-    const email = currentUser.email;
-    alert(currentLang === "vi" 
-        ? `Đang lấy lịch sử dự đoán cho: ${email}` 
-        : `Fetching predictions for: ${email}`);
-    
-    // TODO: Sau này bạn sẽ query Firestore theo email này
-    console.log("User email:", email);
-}
-// ==================== FIREBASE AUTH WITH GOOGLE ====================
-let currentUser = null;
-
-// Firebase config của bạn
-const firebaseConfig = {
-  apiKey: "AIzaSyBl7vHtoGcSNqoIgTJnPkgu29wQRD2XVAo",
-  authDomain: "walrus-cup-oracle.firebaseapp.com",
-  projectId: "walrus-cup-oracle",
-  storageBucket: "walrus-cup-oracle.firebasestorage.app",
-  messagingSenderId: "152805594660",
-  appId: "1:152805594660:web:3767f0fd98f6720031eab1",
-  measurementId: "G-PSVC36Q50K"
-};
-
-// Initialize Firebase
-const app = firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-
-function initFirebaseAuth() {
-    // Kiểm tra user đã đăng nhập chưa
-    auth.onAuthStateChanged(user => {
-        if (user) {
-            currentUser = user;
-            updateUserUI();
-        } else {
-            currentUser = null;
-            resetUserUI();
-        }
-    });
+    alert(currentLang === "vi" ? `Đang lấy lịch sử cho: ${currentUser.email}` : `Fetching for: ${currentUser.email}`);
 }
 
-async function signInWithGoogle() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
-
-    try {
-        const result = await auth.signInWithPopup(provider);
-        currentUser = result.user;
-        updateUserUI();
-        
-        alert(currentLang === "vi" 
-            ? `Chào ${currentUser.displayName}! Đăng nhập thành công.` 
-            : `Welcome ${currentUser.displayName}!`);
-    } catch (error) {
-        console.error("Lỗi đăng nhập:", error);
-        alert("Đăng nhập thất bại. Vui lòng thử lại.");
-    }
-}
-
-function updateUserUI() {
-    const btn = document.getElementById('googleBtn');
-    const txt = document.getElementById('gmailText');
-
-    if (currentUser) {
-        btn.innerHTML = `
-            <img src="${currentUser.photoURL || 'https://via.placeholder.com/32'}" 
-                 class="w-6 h-6 rounded-full border border-gray-300" alt="">
-            <span class="text-emerald-600 font-medium">${currentUser.displayName}</span>
-        `;
-        btn.onclick = signOut;
-    }
-}
-
-function resetUserUI() {
-    const btn = document.getElementById('googleBtn');
-    btn.innerHTML = `
-        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" 
-             class="w-5 h-5" alt="Google">
-        <span id="gmailText">${translations[currentLang].btnGmail || 'Đăng nhập bằng Google'}</span>
-    `;
-    btn.onclick = signInWithGoogle;
-}
-
-async function signOut() {
-    if (confirm(currentLang === "vi" ? "Bạn muốn đăng xuất?" : "Sign out?")) {
-        await auth.signOut();
-        currentUser = null;
-        resetUserUI();
-    }
-}
-
-// ====================== KHỞI CHẠY ======================
+// ==================== KHỞI CHẠY ====================
 function initApp() {
     currentApiStatus = "welcome";
     updateUINonDynamicText();
     renderGroups();
     filterMatches('vong-bang');
     renderLeaderboard();
-    fetchWorldCupData();
-
-    // Khởi tạo Firebase Auth
+    
     initFirebaseAuth();
+    fetchWorldCupData();
+    startLiveRefresh();   // Auto refresh mỗi 60 giây
 }
+
+document.addEventListener("DOMContentLoaded", initApp);

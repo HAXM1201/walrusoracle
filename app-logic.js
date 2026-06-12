@@ -68,7 +68,7 @@ async function signOut() {
 }
 
 // =========================================================
-// ==================== CÁC HÀM HỖ TRỢ ====================
+// ==================== HÀM HỖ TRỢ ====================
 // =========================================================
 
 function getLocalizedDate(match) {
@@ -100,7 +100,9 @@ function renderGroups() {
     for (const [groupName, teams] of Object.entries(worldCupGroups)) {
         const groupCard = document.createElement('div');
         groupCard.className = "bg-walrus-card border border-gray-800/80 rounded-xl p-3 text-xs shadow-md";
+        
         let dynamicGroupName = currentLang === "en" ? groupName.replace("Bảng", "Group") : groupName;
+        
         let teamsHTML = `<h3 class="font-bold text-walrus-aqua border-b border-gray-700/50 pb-1.5 mb-2">${dynamicGroupName}</h3><ul class="space-y-1.5">`;
         teams.forEach(team => {
             let displayName = currentLang === "en" ? team.nameEn : team.name;
@@ -115,7 +117,7 @@ function renderGroups() {
     }
 }
 
-// ==================== RENDER MATCHES (Hiển thị kết quả + form dự đoán) ====================
+// ==================== RENDER MATCHES (HỖ TRỢ NGƯỜI GHI BÀN) ====================
 function renderMatches(filterType = 'vong-bang') {
     const container = document.getElementById('match-list-container');
     const countBadge = document.getElementById('match-count');
@@ -123,25 +125,31 @@ function renderMatches(filterType = 'vong-bang') {
     
     container.innerHTML = '';
     const filtered = officialMatches.filter(m => m.type === filterType);
+    
     const lang = translations[currentLang];
     if (countBadge) countBadge.innerText = `${filtered.length} ${lang.matchUnit}`;
 
     filtered.forEach(match => {
         const card = document.createElement('div');
-        card.className = match.isHot 
-            ? "bg-walrus-card border border-amber-500 hot-match-card rounded-2xl p-6 shadow-2xl relative overflow-hidden" 
-            : "bg-walrus-card border border-gray-800 rounded-2xl p-6 shadow-xl relative overflow-hidden hover:border-gray-700";
-
+        
+        if (match.isHot) {
+            card.className = "bg-walrus-card border border-amber-500 hot-match-card rounded-2xl p-6 shadow-2xl relative overflow-hidden transition";
+        } else {
+            card.className = "bg-walrus-card border border-gray-800 rounded-2xl p-6 shadow-xl relative overflow-hidden transition hover:border-gray-700";
+        }
+        
         let displayGroup = currentLang === "en" && match.groupEn ? match.groupEn : match.group;
-        if (currentLang === "en" && displayGroup.includes("Bảng")) displayGroup = displayGroup.replace("Bảng", "Group");
-
+        if (currentLang === "en" && displayGroup.includes("Bảng")) { 
+            displayGroup = displayGroup.replace("Bảng", "Group"); 
+        }
+        
         let displayDate = getLocalizedDate(match);
         let displayTeamA = currentLang === "en" ? (match.teamAEn || match.teamA) : match.teamA;
         let displayTeamB = currentLang === "en" ? (match.teamBEn || match.teamB) : match.teamB;
 
         let cardHTML = '';
 
-        // === TRẬN ĐÃ CÓ KẾT QUẢ ===
+        // ==================== TRẬN ĐÃ CÓ KẾT QUẢ ====================
         if (match.result && match.result.home !== undefined) {
             const res = match.result;
             let goalsHTML = '';
@@ -151,7 +159,7 @@ function renderMatches(filterType = 'vong-bang') {
                     const teamName = g.team === 'home' ? displayTeamA : displayTeamB;
                     goalsHTML += `
                         <div class="flex justify-between py-1.5 border-b border-gray-700 last:border-0">
-                            <span>${teamName} - <strong>${g.scorer || 'Cầu thủ'}</strong></span>
+                            <span>${teamName} - <strong>${g.scorer}</strong></span>
                             <span class="font-mono text-walrus-aqua">${g.minute}'</span>
                         </div>`;
                 });
@@ -160,7 +168,7 @@ function renderMatches(filterType = 'vong-bang') {
 
             cardHTML = `
                 <div class="absolute top-0 right-0 bg-emerald-600 text-white text-xs font-bold px-4 py-1.5 rounded-bl-xl">KẾT THÚC</div>
-                ${match.isHot ? `<div class="absolute top-3 left-3 bg-gradient-to-r from-red-600 to-amber-500 text-white text-xs px-3 py-1 rounded">🔥 HOT MATCH</div>` : ''}
+                ${match.isHot ? `<div class="absolute top-0 left-0 bg-gradient-to-r from-red-600 to-amber-500 text-white font-extrabold text-[9px] px-3 py-1">🔥 HOT MATCH</div>` : ''}
                 
                 <div class="flex items-center justify-between my-8 px-6">
                     <div class="flex flex-col items-center w-28 text-center">
@@ -179,14 +187,14 @@ function renderMatches(filterType = 'vong-bang') {
                 ${goalsHTML}
             `;
         } 
-        // === TRẬN CHƯA DIỄN RA ===
+        // ==================== TRẬN CHƯA DIỄN RA ====================
         else {
             cardHTML = `
-                ${match.isHot ? `<div class="absolute top-0 left-0 bg-gradient-to-r from-red-600 to-amber-500 text-white font-extrabold text-[9px] px-3 py-1 uppercase tracking-widest">🔥 HOT MATCH</div>` : ''}
-                <div class="absolute top-0 right-0 bg-worldcup-gold text-walrus-dark font-bold text-[10px] px-3 py-1 uppercase tracking-wider rounded-bl-xl">
-                    Trận ${match.id} - ${displayGroup}
+                ${match.isHot ? `<div class="absolute top-0 left-0 bg-gradient-to-r from-red-600 to-amber-500 text-white font-extrabold text-[9px] px-3 py-0.5 uppercase tracking-widest shadow-md z-10">🔥 HOT MATCH</div>` : ''}
+                <div class="absolute top-0 right-0 bg-worldcup-gold text-walrus-dark font-bold text-[10px] px-3 py-1 uppercase tracking-wider rounded-bl-xl z-10">
+                    ${currentLang === "en" ? "Match" : "Trận"} ${match.id} - ${displayGroup}
                 </div>
-                <div class="flex items-center gap-2 text-xs text-gray-400 mb-4 mt-8">
+                <div class="flex items-center gap-2 text-xs text-gray-400 mb-4 mt-1">
                     <i class="fa-solid fa-location-dot text-red-400"></i>
                     <span class="font-semibold text-gray-300">${match.stadium}</span>
                 </div>
@@ -233,6 +241,7 @@ function renderMatches(filterType = 'vong-bang') {
     });
 }
 
+// ==================== CÁC HÀM CÒN LẠI (GIỮ NGUYÊN) ====================
 function filterMatches(type) {
     activeTabGlobal = type;
     const tabs = ['vong-bang', 'vong-32', 'vong-16', 'tu-ket', 'ban-ket', 'chung-ket'];
@@ -269,66 +278,6 @@ function renderLeaderboard() {
     });
 }
 
-// ==================== AUTO REFRESH LIVE ====================
-let refreshInterval = null;
-
-function startLiveRefresh() {
-    if (refreshInterval) clearInterval(refreshInterval);
-    refreshInterval = setInterval(() => {
-        fetchWorldCupData();
-    }, 60000); // Cập nhật mỗi 60 giây
-}
-
-// ==================== FETCH KẾT QUẢ THỰC TẾ ====================
-async function fetchWorldCupData() {
-    const aiAgentText = document.getElementById('ai-roast-text');
-    const aiAvatarBox = document.getElementById('ai-avatar-box');
-
-    currentApiStatus = "connecting";
-    if (aiAgentText) aiAgentText.innerHTML = translations[currentLang].aiConnecting;
-    if (aiAvatarBox) aiAvatarBox.innerText = "🔄";
-
-    try {
-        const response = await fetch('https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json');
-        if (!response.ok) throw new Error("Failed");
-
-        const data = await response.json();
-        let updated = 0;
-
-        data.matches.forEach(apiMatch => {
-            const localMatch = officialMatches.find(m => 
-                String(m.id) === String(apiMatch.round?.matchday) ||
-                (m.teamA && m.teamB && 
-                 (m.teamA.toLowerCase().includes((apiMatch.team1 || "").toLowerCase()) || 
-                  m.teamB.toLowerCase().includes((apiMatch.team2 || "").toLowerCase())))
-            );
-
-            if (localMatch && apiMatch.score && apiMatch.score.ft) {
-                localMatch.result = {
-                    home: apiMatch.score.ft[0],
-                    away: apiMatch.score.ft[1],
-                    goals: apiMatch.goals || [],
-                    note: apiMatch.score.pen ? `Pen ${apiMatch.score.pen[0]}-${apiMatch.score.pen[1]}` : ""
-                };
-                updated++;
-            }
-        });
-
-        currentApiStatus = "success";
-        if (aiAgentText) aiAgentText.innerHTML = `${translations[currentLang].aiSuccess}<br><small>Đã sync ${updated} trận</small>`;
-        if (aiAvatarBox) aiAvatarBox.innerText = "🏆";
-
-    } catch (error) {
-        console.log("API Error → fallback");
-        currentApiStatus = "fallback";
-        if (aiAgentText) aiAgentText.innerHTML = translations[currentLang].aiFallback;
-        if (aiAvatarBox) aiAvatarBox.innerText = "🛡️";
-    }
-
-    renderMatches(activeTabGlobal);
-}
-
-// ==================== CÁC HÀM CÒN LẠI (GIỮ NGUYÊN) ====================
 function updateUINonDynamicText() {
     const lang = translations[currentLang];
     document.getElementById('btn-history-text').innerText = lang.btnHistory;
@@ -377,13 +326,11 @@ function toggleLanguage() {
         flag.src = "https://flagcdn.com/w20/gb.png";
         txt.innerText = "EN";
     }
+
     updateUINonDynamicText();
     renderGroups();
     renderMatches(activeTabGlobal);
 }
-
-function toggleGmail() { /* giữ nguyên nếu bạn còn dùng */ }
-function toggleWallet() { /* giữ nguyên */ }
 
 function handleSubmissionWithEffects(id) {
     createConfetti();
@@ -400,10 +347,89 @@ function mockSubmit(id) {
 
 async function fetchMyPredictions() {
     if (!currentUser) {
-        alert(currentLang === "vi" ? "Vui lòng đăng nhập Google trước!" : "Please sign in first!");
+        alert(currentLang === "vi" ? "Vui lòng đăng nhập Google trước!" : "Please sign in with Google first!");
         return;
     }
-    alert(currentLang === "vi" ? `Đang lấy lịch sử cho: ${currentUser.email}` : `Fetching for: ${currentUser.email}`);
+    alert(currentLang === "vi" ? `Đang lấy lịch sử cho: ${currentUser.email}` : `Fetching predictions for: ${currentUser.email}`);
+}
+
+// ==================== HARD CODE + FETCH TỪ API ====================
+function addRealResults() {
+    const match1 = officialMatches.find(m => m.id === "1");
+    if (match1) {
+        match1.result = {
+            home: 2, away: 0,
+            goals: [
+                { team: "home", scorer: "Julián Quiñones", minute: "9" },
+                { team: "home", scorer: "Raúl Jiménez", minute: "67" }
+            ]
+        };
+    }
+
+    const match2 = officialMatches.find(m => m.id === "2");
+    if (match2) {
+        match2.result = {
+            home: 2, away: 1,
+            goals: [
+                { team: "away", scorer: "Ladislav Krejčí", minute: "59" },
+                { team: "home", scorer: "Hwang In-beom", minute: "67" },
+                { team: "home", scorer: "Oh Hyeon-gyu", minute: "80" }
+            ]
+        };
+    }
+}
+
+async function fetchWorldCupData() {
+    const aiAgentText = document.getElementById('ai-roast-text');
+    const aiAvatarBox = document.getElementById('ai-avatar-box');
+    
+    currentApiStatus = "connecting";
+    if (aiAgentText) aiAgentText.innerHTML = translations[currentLang].aiConnecting;
+    if (aiAvatarBox) aiAvatarBox.innerText = "🔍";
+
+    try {
+        const response = await fetch('https://api.football-data.org/v4/competitions/WC/matches', {
+            method: 'GET',
+            headers: { 'X-Auth-Token': "1287e361b6fe45d49685debe16b7561f" }
+        });
+
+        if (!response.ok) throw new Error("API Connection Failed");
+
+        const data = await response.json();
+        const apiMatches = data.matches;
+
+        apiMatches.forEach(apiMatch => {
+            const localMatch = officialMatches.find(m => String(m.id) === String(apiMatch.matchNumber));
+            if (localMatch && apiMatch.status === "FINISHED") {
+                localMatch.result = {
+                    home: apiMatch.score.fullTime.home,
+                    away: apiMatch.score.fullTime.away,
+                    goals: apiMatch.goals || []
+                };
+            }
+        });
+
+        addRealResults(); // Đảm bảo trận 1 và 2 luôn hiển thị
+
+        currentApiStatus = "success";
+        if (aiAgentText) aiAgentText.innerHTML = translations[currentLang].aiSuccess;
+        if (aiAvatarBox) aiAvatarBox.innerText = "🏆";
+
+    } catch (error) {
+        console.log("API Error or rate limit hit. Falling back to internal data.");
+        currentApiStatus = "fallback";
+        if (aiAgentText) aiAgentText.innerHTML = translations[currentLang].aiFallback;
+        if (aiAvatarBox) aiAvatarBox.innerText = "🛡️";
+        addRealResults();
+    }
+
+    renderMatches(activeTabGlobal);
+}
+
+let refreshInterval = null;
+function startLiveRefresh() {
+    if (refreshInterval) clearInterval(refreshInterval);
+    refreshInterval = setInterval(fetchWorldCupData, 45000);
 }
 
 // ==================== KHỞI CHẠY ====================
@@ -416,7 +442,7 @@ function initApp() {
     
     initFirebaseAuth();
     fetchWorldCupData();
-    startLiveRefresh();   // Auto refresh mỗi 60 giây
+    startLiveRefresh();
 }
 
 document.addEventListener("DOMContentLoaded", initApp);

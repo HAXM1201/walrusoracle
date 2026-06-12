@@ -182,41 +182,36 @@ const FOOTBALL_DATA_API_KEY = "1287e361b6fe45d49685debe16b7561f";
 async function fetchWorldCupData() {
     const aiAgentText = document.getElementById('ai-roast-text');
     const aiAvatarBox = document.getElementById('ai-avatar-box');
-    
+
     currentApiStatus = "connecting";
     if (aiAgentText) aiAgentText.innerHTML = translations[currentLang].aiConnecting;
-    if (aiAvatarBox) aiAvatarBox.innerText = "🔍";
+    if (aiAvatarBox) aiAvatarBox.innerText = "🔄";
 
     try {
-        const response = await fetch('https://api.football-data.org/v4/competitions/WC/matches', {
-            method: 'GET',
-            headers: { 'X-Auth-Token': FOOTBALL_DATA_API_KEY }
-        });
+        // Nguồn dữ liệu World Cup 2026 chính thức (public, CORS-friendly)
+        const response = await fetch('https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json');
+        
+        if (!response.ok) throw new Error("Failed to fetch");
 
-        if (!response.ok) throw new Error("API Connection Failed");
         const data = await response.json();
-        const apiMatches = data.matches;
+        
+        // Đồng bộ kết quả vào officialMatches
+        data.matches.forEach(apiMatch => {
+            const localMatch = officialMatches.find(m => 
+                m.id === apiMatch.matchday?.toString() || 
+                (m.teamA && m.teamB && 
+                 (m.teamA.includes(apiMatch.team1) || m.teamB.includes(apiMatch.team2)))
+            );
 
-        apiMatches.forEach(apiMatch => {
-            const localMatch = officialMatches.find(m => m.id === apiMatch.matchNumber.toString());
-            
             if (localMatch) {
-                if (apiMatch.status === "FINISHED") {
-                    const resultPrefix = currentLang === "en" ? "Result" : "Kết quả";
-                    if (!localMatch.stadium.includes(resultPrefix)) {
-                        localMatch.stadium += ` (${resultPrefix}: ${apiMatch.score.fullTime.home} - ${apiMatch.score.fullTime.away})`;
-                    }
-                }
-
-                if (apiMatch.homeTeam && apiMatch.homeTeam.name && localMatch.id > 72) {
-                    localMatch.teamA = apiMatch.homeTeam.shortName || apiMatch.homeTeam.name;
-                    localMatch.teamAEn = apiMatch.homeTeam.shortName || apiMatch.homeTeam.name;
-                    localMatch.codeA = apiMatch.homeTeam.tla ? apiMatch.homeTeam.tla.toLowerCase() : "placeholder";
-                }
-                if (apiMatch.awayTeam && apiMatch.awayTeam.name && localMatch.id > 72) {
-                    localMatch.teamB = apiMatch.awayTeam.shortName || apiMatch.awayTeam.name;
-                    localMatch.teamBEn = apiMatch.awayTeam.shortName || apiMatch.awayTeam.name;
-                    localMatch.codeB = apiMatch.awayTeam.tla ? apiMatch.awayTeam.tla.toLowerCase() : "placeholder";
+                // Nếu trận đã kết thúc
+                if (apiMatch.score && (apiMatch.score.ft || apiMatch.score.pen)) {
+                    localMatch.result = {
+                        home: apiMatch.score.ft ? apiMatch.score.ft[0] : 0,
+                        away: apiMatch.score.ft ? apiMatch.score.ft[1] : 0,
+                        goals: apiMatch.goals || [],
+                        note: apiMatch.score.pen ? `Pen: ${apiMatch.score.pen[0]}-${apiMatch.score.pen[1]}` : ""
+                    };
                 }
             }
         });
@@ -228,10 +223,12 @@ async function fetchWorldCupData() {
         renderMatches(activeTabGlobal);
 
     } catch (error) {
-        console.log("API Error or rate limit hit. Falling back to internal data.");
+        console.log("API Error → Using local fallback");
         currentApiStatus = "fallback";
         if (aiAgentText) aiAgentText.innerHTML = translations[currentLang].aiFallback;
         if (aiAvatarBox) aiAvatarBox.innerText = "🛡️";
+        
+        renderMatches(activeTabGlobal);
     }
 }
 

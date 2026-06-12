@@ -354,13 +354,96 @@ async function fetchMyPredictions() {
             : `Sếp đã có ${myHistory.length} dự đoán. Kiểm tra console để xem chi tiết!`);
     }
 }
+// ==================== FIREBASE AUTH WITH GOOGLE ====================
+let currentUser = null;
 
-// KHỞI CHẠY ỨNG DỤNG
+// Firebase config của bạn
+const firebaseConfig = {
+  apiKey: "AIzaSyBl7vHtoGcSNqoIgTJnPkgu29wQRD2XVAo",
+  authDomain: "walrus-cup-oracle.firebaseapp.com",
+  projectId: "walrus-cup-oracle",
+  storageBucket: "walrus-cup-oracle.firebasestorage.app",
+  messagingSenderId: "152805594660",
+  appId: "1:152805594660:web:3767f0fd98f6720031eab1",
+  measurementId: "G-PSVC36Q50K"
+};
+
+// Initialize Firebase
+const app = firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+function initFirebaseAuth() {
+    // Kiểm tra user đã đăng nhập chưa
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            currentUser = user;
+            updateUserUI();
+        } else {
+            currentUser = null;
+            resetUserUI();
+        }
+    });
+}
+
+async function signInWithGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    try {
+        const result = await auth.signInWithPopup(provider);
+        currentUser = result.user;
+        updateUserUI();
+        
+        alert(currentLang === "vi" 
+            ? `Chào ${currentUser.displayName}! Đăng nhập thành công.` 
+            : `Welcome ${currentUser.displayName}!`);
+    } catch (error) {
+        console.error("Lỗi đăng nhập:", error);
+        alert("Đăng nhập thất bại. Vui lòng thử lại.");
+    }
+}
+
+function updateUserUI() {
+    const btn = document.getElementById('googleBtn');
+    const txt = document.getElementById('gmailText');
+
+    if (currentUser) {
+        btn.innerHTML = `
+            <img src="${currentUser.photoURL || 'https://via.placeholder.com/32'}" 
+                 class="w-6 h-6 rounded-full border border-gray-300" alt="">
+            <span class="text-emerald-600 font-medium">${currentUser.displayName}</span>
+        `;
+        btn.onclick = signOut;
+    }
+}
+
+function resetUserUI() {
+    const btn = document.getElementById('googleBtn');
+    btn.innerHTML = `
+        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" 
+             class="w-5 h-5" alt="Google">
+        <span id="gmailText">${translations[currentLang].btnGmail || 'Đăng nhập bằng Google'}</span>
+    `;
+    btn.onclick = signInWithGoogle;
+}
+
+async function signOut() {
+    if (confirm(currentLang === "vi" ? "Bạn muốn đăng xuất?" : "Sign out?")) {
+        await auth.signOut();
+        currentUser = null;
+        resetUserUI();
+    }
+}
+
+// ====================== KHỞI CHẠY ======================
 function initApp() {
     currentApiStatus = "welcome";
     updateUINonDynamicText();
     renderGroups();
     filterMatches('vong-bang');
     renderLeaderboard();
-    fetchWorldCupData(); 
+    fetchWorldCupData();
+
+    // Khởi tạo Firebase Auth
+    initFirebaseAuth();
 }

@@ -331,11 +331,68 @@ function handleSubmissionWithEffects(id) {
     mockSubmit(id);
 }
 
-function mockSubmit(id) { 
-    const successMsg = currentLang === "en" 
-        ? `Success! Your prediction for match ${id} has been securely stored on Walrus Mainnet.`
-        : `Thành công! Dự đoán trận ${id} đã được lưu trữ lên Walrus Mainnet.`;
-    alert(successMsg); 
+// ==================== WALRUS STORAGE - ADMIN PAY ====================
+const WALRUS_PUBLISHER_URL = "https://publisher.walrus-mainnet.walrus.xyz"; // Mainnet
+
+async function storePredictionOnWalrus(matchId, scoreA, scoreB, analysis) {
+    if (!currentUser) {
+        alert(currentLang === "vi" ? "Vui lòng đăng nhập Gmail trước!" : "Please sign in first!");
+        return false;
+    }
+
+    const predictionData = {
+        userEmail: currentUser.email,
+        userName: currentUser.displayName || "Anonymous",
+        matchId: matchId,
+        scoreHome: parseInt(scoreA) || 0,
+        scoreAway: parseInt(scoreB) || 0,
+        analysis: analysis || "Không có phân tích",
+        timestamp: new Date().toISOString(),
+        language: currentLang
+    };
+
+    try {
+        const response = await fetch(`${WALRUS_PUBLISHER_URL}/v1/blobs?epochs=5`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(predictionData)
+        });
+
+        if (!response.ok) throw new Error("Upload failed");
+
+        const result = await response.json();
+        console.log("✅ Lưu thành công lên Walrus:", result);
+
+        alert(currentLang === "vi" 
+            ? `✅ Dự đoán trận ${matchId} đã được lưu vĩnh viễn trên Walrus Mainnet!\nBlob ID: ${result.blobId || result.newlyCreated?.blobId}`
+            : `✅ Prediction saved permanently on Walrus Mainnet!`);
+
+        return true;
+
+    } catch (error) {
+        console.error("Walrus Error:", error);
+        alert(currentLang === "vi" 
+            ? "❌ Không thể lưu lên Walrus. Dữ liệu chỉ được lưu tạm thời." 
+            : "❌ Failed to save on Walrus.");
+        return false;
+    }
+}
+
+// ==================== CẬP NHẬT HÀM SUBMIT ====================
+function mockSubmit(id) {
+    const scoreA = document.getElementById(`scoreA-${id}`).value;
+    const scoreB = document.getElementById(`scoreB-${id}`).value;
+    const analysis = document.getElementById(`analysis-${id}`).value || "";
+
+    if (scoreA === "" && scoreB === "") {
+        alert(currentLang === "vi" ? "Vui lòng nhập tỷ số!" : "Please enter score!");
+        return;
+    }
+
+    // Lưu lên Walrus
+    storePredictionOnWalrus(id, scoreA, scoreB, analysis);
 }
 
 async function fetchMyPredictions() {

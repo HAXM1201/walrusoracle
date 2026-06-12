@@ -334,25 +334,18 @@ function mockSubmit(id) {
 }
 
 async function fetchMyPredictions() {
-    const email = document.getElementById('gmailText').innerText;
-    
-    if (email.includes("Đăng nhập") || email.includes("Sign in")) {
-        alert(currentLang === "en" ? "Please sign in with Gmail first!" : "Sếp vui lòng đăng nhập Gmail trước!");
+    if (!currentUser) {
+        alert(currentLang === "vi" ? "Vui lòng đăng nhập Google trước!" : "Please sign in with Google first!");
         return;
     }
 
-    alert(currentLang === "en" ? "Fetching your prediction history from Walrus..." : "Đang truy xuất lịch sử dự đoán từ Walrus...");
+    const email = currentUser.email;
+    alert(currentLang === "vi" 
+        ? `Đang lấy lịch sử dự đoán cho: ${email}` 
+        : `Fetching predictions for: ${email}`);
     
-    const myHistory = userPredictionMemory.filter(item => item.ownerEmail === email);
-    
-    if (myHistory.length === 0) {
-        alert(currentLang === "en" ? "No prediction history found for this account." : "Chưa có lịch sử dự đoán cho tài khoản này.");
-    } else {
-        console.table(myHistory); 
-        alert(currentLang === "en" 
-            ? `You have ${myHistory.length} prediction(s). Check browser console for details!` 
-            : `Sếp đã có ${myHistory.length} dự đoán. Kiểm tra console để xem chi tiết!`);
-    }
+    // TODO: Sau này bạn sẽ query Firestore theo email này
+    console.log("User email:", email);
 }
 // ==================== FIREBASE AUTH WITH GOOGLE ====================
 let currentUser = null;

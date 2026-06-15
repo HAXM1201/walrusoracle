@@ -5,6 +5,10 @@ let currentApiStatus = "welcome";
 let activeTabGlobal = "vong-bang";
 let currentUser = null;
 
+// Cache để load nhanh hơn
+let matchCache = null;
+let lastFetchTime = 0;
+
 // ==================== FIREBASE AUTH ====================
 const firebaseConfig = {
   apiKey: "AIzaSyBl7vHtoGcSNqoIgTJnPkgu29wQRD2XVAo",
@@ -97,7 +101,7 @@ function getFlagImgHTML(code) {
     return `<img src="https://flagcdn.com/w80/${code}.png" onerror="this.onerror=null; this.src='https://placehold.co/48x32/162238/00f2fe?text=${code.toUpperCase()}';" class="w-12 h-8 object-cover rounded shadow-md border border-gray-700/50" alt="${code}" />`;
 }
 
-// ==================== HIỆU ỨNG PHÁO HOA ====================
+// ==================== HIỆU ỨNG ====================
 function launchConfetti() {
     if (typeof confetti === "function") {
         confetti({
@@ -112,20 +116,16 @@ function createParticles() {
     console.log("🎉 Hiệu ứng pháo hoa đã chạy");
 }
 
-// ====================== NỘP DỰ ĐOÁN & LƯU WALRUS ======================
+// ====================== NỘP DỰ ĐOÁN ======================
 async function handleSubmissionWithEffects(matchId, homeScore, awayScore, analysis = "") {
     if (!currentUser) {
         alert(currentLang === "vi" ? "Vui lòng đăng nhập Gmail trước khi nộp dự đoán!" : "Please login first!");
         return;
     }
 
-    // Hiệu ứng
     launchConfetti();
     createParticles();
 
-    console.log(`📤 Đang lưu dự đoán trận ${matchId}: ${homeScore}-${awayScore}`);
-
-    // Lưu thật lên Walrus
     const success = await storePredictionOnWalrus(matchId, homeScore, awayScore, analysis);
 
     if (success) {
@@ -139,7 +139,7 @@ async function handleSubmissionWithEffects(matchId, homeScore, awayScore, analys
     }
 }
 
-// ==================== WALRUS PUBLISHER (Railway) ====================
+// ==================== WALRUS PUBLISHER ====================
 const CUSTOM_PUBLISHER_URL = "https://walrus-publisher-production-b5d6.up.railway.app";
 
 async function storePredictionOnWalrus(matchId, scoreA, scoreB, analysis) {
@@ -161,24 +161,20 @@ async function storePredictionOnWalrus(matchId, scoreA, scoreB, analysis) {
     try {
         const response = await fetch(`${CUSTOM_PUBLISHER_URL}/publish`, {
             method: "POST",
-            headers: { 
-                "Content-Type": "application/json" 
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(predictionData)
         });
 
         if (response.ok) {
             const result = await response.json();
-            console.log("✅ Blob saved:", result);
+            console.log("✅ Lưu Walrus thành công:", result);
             return true;
         } else {
             throw new Error(`HTTP ${response.status}`);
         }
     } catch (error) {
         console.error("Publisher Error:", error);
-        alert(currentLang === "vi" 
-            ? "❌ Lỗi kết nối Publisher. Kiểm tra lại backend." 
-            : "❌ Publisher connection failed.");
+        alert(currentLang === "vi" ? "❌ Lỗi kết nối Publisher. Kiểm tra lại backend." : "❌ Publisher connection failed.");
         return false;
     }
 }
@@ -289,8 +285,7 @@ function renderMatches(filterType = 'vong-bang') {
                         </div>
                     </div>
                     <div class="flex justify-end pt-2">
-                        <button onclick="handleSubmissionWithEffects('${match.id}', document.getElementById('scoreA-${match.id}').value, document.getElementById('scoreB-${match.id}').value, document.getElementById('analysis-${match.id}').value)" 
-                                class="gradient-btn hover:opacity-90 text-walrus-dark font-extrabold text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-walrus-aqua/20 flex items-center gap-2 transition">
+                        <button onclick="handleSubmissionWithEffects('${match.id}', document.getElementById('scoreA-${match.id}').value, document.getElementById('scoreB-${match.id}').value, document.getElementById('analysis-${match.id}').value)" class="gradient-btn hover:opacity-90 text-walrus-dark font-extrabold text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-walrus-aqua/20 flex items-center gap-2 transition">
                             ${lang.btnSubmit}
                         </button>
                     </div>
@@ -385,9 +380,6 @@ function updateUINonDynamicText() {
     document.getElementById('prize-2-title').innerHTML = lang.prize2;
     document.getElementById('prize-2-val').innerText = lang.prize2Val;
 
-    const aiStatusText = document.getElementById('ai-status-text');
-    if (aiStatusText) aiStatusText.innerText = lang.aiReading;
-    
     const aiAgentText = document.getElementById('ai-roast-text');
     if (aiAgentText) {
         if (currentApiStatus === "welcome") aiAgentText.innerHTML = lang.aiWelcome;
@@ -416,19 +408,14 @@ function toggleLanguage() {
     renderMatches(activeTabGlobal);
 }
 
-// ==================== FETCH DỮ LIỆU TRẬN ĐẤU (TỐI ƯU) ====================
-let matchCache = null;
-let lastFetchTime = 0;
-
+// ==================== FETCH DỮ LIỆU TỐI ƯU ====================
 async function fetchWorldCupData() {
     const aiAgentText = document.getElementById('ai-roast-text');
     const aiAvatarBox = document.getElementById('ai-avatar-box');
     
     const now = Date.now();
-
-    // Dùng cache nếu chưa quá 45 giây
     if (matchCache && (now - lastFetchTime < 45000)) {
-        console.log("📦 Sử dụng cache dữ liệu trận đấu");
+        console.log("📦 Dùng cache");
         currentApiStatus = "success";
         if (aiAgentText) aiAgentText.innerHTML = "✅ Dùng cache (nhanh)";
         if (aiAvatarBox) aiAvatarBox.innerText = "⚡";
@@ -437,12 +424,11 @@ async function fetchWorldCupData() {
     }
 
     currentApiStatus = "connecting";
-    if (aiAgentText) aiAgentText.innerHTML = "Đang tải kết quả trận đấu...";
+    if (aiAgentText) aiAgentText.innerHTML = "Đang tải kết quả...";
     if (aiAvatarBox) aiAvatarBox.innerText = "🔄";
 
     try {
         const response = await fetch('https://worldcup26.ir/get/games');
-
         if (!response.ok) throw new Error("Network error");
 
         const data = await response.json();
@@ -457,10 +443,9 @@ async function fetchWorldCupData() {
                     goals: []
                 };
 
-                const parseScorers = (scorersStr, team) => {
-                    if (!scorersStr || scorersStr === "null") return;
-                    const list = scorersStr.replace(/[{}"]/g, '').split(',');
-                    list.forEach(item => {
+                const parseScorers = (str, team) => {
+                    if (!str || str === "null") return;
+                    str.replace(/[{}"]/g, '').split(',').forEach(item => {
                         if (item.trim()) {
                             const parts = item.trim().split(/\s+(\d+)'?$/);
                             localMatch.result.goals.push({
@@ -474,7 +459,6 @@ async function fetchWorldCupData() {
 
                 parseScorers(apiMatch.home_scorers, "home");
                 parseScorers(apiMatch.away_scorers, "away");
-
                 updated++;
             }
         });
@@ -487,26 +471,21 @@ async function fetchWorldCupData() {
         if (aiAvatarBox) aiAvatarBox.innerText = "🏆";
 
     } catch (error) {
-        console.log("❌ Không lấy được dữ liệu online → dùng cache cũ");
+        console.log("Không lấy online, dùng cache cũ");
         currentApiStatus = "fallback";
-        if (aiAgentText) aiAgentText.innerHTML = "⚠️ Dùng dữ liệu cache cũ";
+        if (aiAgentText) aiAgentText.innerHTML = "⚠️ Dùng cache cũ";
         if (aiAvatarBox) aiAvatarBox.innerText = "🛡️";
     }
 
     renderMatches(activeTabGlobal);
 }
 
-// ==================== REFRESH MƯỢT HƠN ====================
 let refreshInterval = null;
-
 function startLiveRefresh() {
     if (refreshInterval) clearInterval(refreshInterval);
-    
-    // Tăng thời gian refresh lên 60 giây để mượt hơn
-    refreshInterval = setInterval(() => {
-        fetchWorldCupData();
-    }, 60000); // 60 giây
+    refreshInterval = setInterval(fetchWorldCupData, 60000);
 }
+
 // ==================== KHỞI TẠO APP ====================
 function initApp() {
     currentApiStatus = "welcome";

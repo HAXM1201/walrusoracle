@@ -380,10 +380,27 @@ function toggleLanguage() {
     renderMatches(activeTabGlobal);
 }
 
-function handleSubmissionWithEffects(id) {
-    createConfetti();
-    animateParticles();
-    mockSubmit(id);
+async function handleSubmissionWithEffects(matchId, homeScore, awayScore, analysis = "") {
+    if (!currentUser) {
+        alert(currentLang === "vi" ? "Vui lòng đăng nhập Gmail trước khi nộp dự đoán!" : "Please login first!");
+        return;
+    }
+
+    // Hiệu ứng pháo hoa
+    launchConfetti();
+    createParticles();
+
+    // Lưu thật lên Walrus qua Railway backend
+    const success = await storePredictionOnWalrus(matchId, homeScore, awayScore, analysis);
+
+    if (success) {
+        // Cập nhật UI sau khi lưu thành công
+        setTimeout(() => {
+            renderMatches(activeTabGlobal);
+        }, 800);
+    } else {
+        console.warn("⚠️ Lưu dự đoán thất bại nhưng vẫn có hiệu ứng");
+    }
 }
 
 // ==================== WALRUS MAINNET - ADMIN PAY (Publisher) ====================

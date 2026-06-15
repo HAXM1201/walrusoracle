@@ -416,8 +416,7 @@ function toggleLanguage() {
     renderMatches(activeTabGlobal);
 }
 
-// ==================== FETCH WORLD CUP DATA ====================
-// ==================== CACHE DỮ LIỆU ====================
+// ==================== FETCH DỮ LIỆU TRẬN ĐẤU (TỐI ƯU) ====================
 let matchCache = null;
 let lastFetchTime = 0;
 
@@ -426,26 +425,23 @@ async function fetchWorldCupData() {
     const aiAvatarBox = document.getElementById('ai-avatar-box');
     
     const now = Date.now();
-    
-    // Chỉ fetch lại sau 30 giây (giảm tải)
-    if (matchCache && (now - lastFetchTime < 30000)) {
-        console.log("📦 Dùng cache dữ liệu trận đấu");
+
+    // Dùng cache nếu chưa quá 45 giây
+    if (matchCache && (now - lastFetchTime < 45000)) {
+        console.log("📦 Sử dụng cache dữ liệu trận đấu");
         currentApiStatus = "success";
-        if (aiAgentText) aiAgentText.innerHTML = "✅ Dùng dữ liệu cache";
+        if (aiAgentText) aiAgentText.innerHTML = "✅ Dùng cache (nhanh)";
         if (aiAvatarBox) aiAvatarBox.innerText = "⚡";
         renderMatches(activeTabGlobal);
         return;
     }
 
     currentApiStatus = "connecting";
-    if (aiAgentText) aiAgentText.innerHTML = translations[currentLang].aiConnecting || "Đang tải...";
+    if (aiAgentText) aiAgentText.innerHTML = "Đang tải kết quả trận đấu...";
     if (aiAvatarBox) aiAvatarBox.innerText = "🔄";
 
     try {
-        const response = await fetch('https://worldcup26.ir/get/games', {
-            cache: "no-store",
-            headers: { "Cache-Control": "no-cache" }
-        });
+        const response = await fetch('https://worldcup26.ir/get/games');
 
         if (!response.ok) throw new Error("Network error");
 
@@ -461,7 +457,6 @@ async function fetchWorldCupData() {
                     goals: []
                 };
 
-                // Parse scorers (cải tiến)
                 const parseScorers = (scorersStr, team) => {
                     if (!scorersStr || scorersStr === "null") return;
                     const list = scorersStr.replace(/[{}"]/g, '').split(',');
@@ -484,7 +479,6 @@ async function fetchWorldCupData() {
             }
         });
 
-        // Lưu cache
         matchCache = data;
         lastFetchTime = now;
 
@@ -493,9 +487,9 @@ async function fetchWorldCupData() {
         if (aiAvatarBox) aiAvatarBox.innerText = "🏆";
 
     } catch (error) {
-        console.log("Không lấy được dữ liệu online, dùng cache cũ");
+        console.log("❌ Không lấy được dữ liệu online → dùng cache cũ");
         currentApiStatus = "fallback";
-        if (aiAgentText) aiAgentText.innerHTML = translations[currentLang].aiFallback || "Dùng dữ liệu cũ";
+        if (aiAgentText) aiAgentText.innerHTML = "⚠️ Dùng dữ liệu cache cũ";
         if (aiAvatarBox) aiAvatarBox.innerText = "🛡️";
     }
 

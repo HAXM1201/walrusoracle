@@ -5,7 +5,7 @@ let currentApiStatus = "welcome";
 let activeTabGlobal = "vong-bang";
 let currentUser = null;
 
-// Cache để load nhanh hơn
+// Cache để load nhanh và giảm lỗi
 let matchCache = null;
 let lastFetchTime = 0;
 
@@ -101,7 +101,7 @@ function getFlagImgHTML(code) {
     return `<img src="https://flagcdn.com/w80/${code}.png" onerror="this.onerror=null; this.src='https://placehold.co/48x32/162238/00f2fe?text=${code.toUpperCase()}';" class="w-12 h-8 object-cover rounded shadow-md border border-gray-700/50" alt="${code}" />`;
 }
 
-// ==================== HIỆU ỨNG ====================
+// ==================== HIỆU ỨNG PHÁO HOA ====================
 function launchConfetti() {
     if (typeof confetti === "function") {
         confetti({
@@ -166,8 +166,7 @@ async function storePredictionOnWalrus(matchId, scoreA, scoreB, analysis) {
         });
 
         if (response.ok) {
-            const result = await response.json();
-            console.log("✅ Lưu Walrus thành công:", result);
+            console.log("✅ Lưu Walrus thành công");
             return true;
         } else {
             throw new Error(`HTTP ${response.status}`);
@@ -285,7 +284,8 @@ function renderMatches(filterType = 'vong-bang') {
                         </div>
                     </div>
                     <div class="flex justify-end pt-2">
-                        <button onclick="handleSubmissionWithEffects('${match.id}', document.getElementById('scoreA-${match.id}').value, document.getElementById('scoreB-${match.id}').value, document.getElementById('analysis-${match.id}').value)" class="gradient-btn hover:opacity-90 text-walrus-dark font-extrabold text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-walrus-aqua/20 flex items-center gap-2 transition">
+                        <button onclick="handleSubmissionWithEffects('${match.id}', document.getElementById('scoreA-${match.id}').value, document.getElementById('scoreB-${match.id}').value, document.getElementById('analysis-${match.id}').value)" 
+                                class="gradient-btn hover:opacity-90 text-walrus-dark font-extrabold text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-walrus-aqua/20 flex items-center gap-2 transition">
                             ${lang.btnSubmit}
                         </button>
                     </div>
@@ -408,7 +408,7 @@ function toggleLanguage() {
     renderMatches(activeTabGlobal);
 }
 
-// ==================== FETCH DỮ LIỆU TỐI ƯU ====================
+// ==================== FETCH DỮ LIỆU TỐI ƯU (KHÔNG GÂY CORS) ====================
 async function fetchWorldCupData() {
     const aiAgentText = document.getElementById('ai-roast-text');
     const aiAvatarBox = document.getElementById('ai-avatar-box');
@@ -424,7 +424,7 @@ async function fetchWorldCupData() {
     }
 
     currentApiStatus = "connecting";
-    if (aiAgentText) aiAgentText.innerHTML = "Đang tải kết quả...";
+    if (aiAgentText) aiAgentText.innerHTML = "Đang tải kết quả trận đấu...";
     if (aiAvatarBox) aiAvatarBox.innerText = "🔄";
 
     try {
@@ -471,9 +471,9 @@ async function fetchWorldCupData() {
         if (aiAvatarBox) aiAvatarBox.innerText = "🏆";
 
     } catch (error) {
-        console.log("Không lấy online, dùng cache cũ");
+        console.log("❌ Không lấy được dữ liệu online → dùng cache cũ");
         currentApiStatus = "fallback";
-        if (aiAgentText) aiAgentText.innerHTML = "⚠️ Dùng cache cũ";
+        if (aiAgentText) aiAgentText.innerHTML = "⚠️ Dùng dữ liệu cache cũ";
         if (aiAvatarBox) aiAvatarBox.innerText = "🛡️";
     }
 
@@ -483,7 +483,7 @@ async function fetchWorldCupData() {
 let refreshInterval = null;
 function startLiveRefresh() {
     if (refreshInterval) clearInterval(refreshInterval);
-    refreshInterval = setInterval(fetchWorldCupData, 60000);
+    refreshInterval = setInterval(fetchWorldCupData, 60000); // 60 giây một lần
 }
 
 // ==================== KHỞI TẠO APP ====================

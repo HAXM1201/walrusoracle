@@ -28,22 +28,30 @@ function initFirebaseAuth() {
         if (user) updateUserUI();
         else resetUserUI();
     });
+
+    // THÊM ĐOẠN NÀY: Bắt kết quả trả về sau khi chuyển hướng đăng nhập thành công
+    auth.getRedirectResult().then(result => {
+        if (result.user) {
+            currentUser = result.user;
+            updateUserUI();
+            alert(currentLang === "vi" ? `Chào ${currentUser.displayName}!` : `Welcome ${currentUser.displayName}!`);
+        }
+    }).catch(error => {
+        console.error("Lỗi xử lý kết quả redirect:", error);
+        if (error.code === 'auth/unauthorized-domain') {
+            alert("❌ Vui lòng thêm walrusoracle.xyz vào Authorized Domains trong Firebase Console!");
+        }
+    });
 }
 
 async function signInWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
     try {
-        const result = await auth.signInWithPopup(provider);
-        currentUser = result.user;
-        updateUserUI();
-        alert(currentLang === "vi" ? `Chào ${currentUser.displayName}!` : `Welcome ${currentUser.displayName}!`);
+        // Thay signInWithPopup bằng signInWithRedirect
+        await auth.signInWithRedirect(provider);
     } catch (error) {
-        console.error("Lỗi đăng nhập:", error);
-        if (error.code === 'auth/unauthorized-domain') {
-            alert("❌ Vui lòng thêm walrusoracle.xyz vào Authorized Domains trong Firebase Console!");
-        } else {
-            alert("Đăng nhập thất bại. Thử lại sau.");
-        }
+        console.error("Lỗi đăng nhập chuyển hướng:", error);
+        alert("Đăng nhập thất bại. Thử lại sau.");
     }
 }
 

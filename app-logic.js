@@ -9,7 +9,18 @@ let currentUser = null;
 let matchCache = null;
 let lastFetchTime = 0;
 
-// ==================== FIREBASE AUTH ====================
+// ==================== CẤU HÌNH VƯỢT LỖI TRUSTED TYPES (ĐẶT Ở ĐẦU FILE) ====================
+if (window.trustedTypes && window.trustedTypes.createPolicy) {
+    if (!window.trustedTypes.defaultPolicy) {
+        window.trustedTypes.createPolicy('default', {
+            createHTML: (string) => string,
+            createScript: (string) => string,
+            createScriptURL: (string) => string,
+        });
+    }
+}
+
+// ==================== FIREBASE AUTH (CƠ CHẾ POPUP CHUẨN) ====================
 const firebaseConfig = {
   apiKey: "AIzaSyBl7vHtoGcSNqoIgTJnPkgu29wQRD2XVAo",
   authDomain: "walrus-cup-oracle.firebaseapp.com",
@@ -25,33 +36,40 @@ const auth = firebase.auth();
 function initFirebaseAuth() {
     auth.onAuthStateChanged(user => {
         currentUser = user;
-        if (user) updateUserUI();
-        else resetUserUI();
-    });
-
-    // Bắt kết quả trả về từ Google sau khi quay lại trang
-    auth.getRedirectResult().then(result => {
-        if (result && result.user) {
-            currentUser = result.user;
+        if (user) {
             updateUserUI();
-            alert(currentLang === "vi" ? `Chào ${currentUser.displayName}!` : `Welcome ${currentUser.displayName}!`);
-        }
-    }).catch(error => {
-        console.error("Lỗi xử lý redirect:", error);
-        if (error.code === 'auth/unauthorized-domain') {
-            alert("❌ Vui lòng thêm domain vào Authorized Domains trong Firebase Console!");
+        } else {
+            resetUserUI();
         }
     });
 }
 
 async function signInWithGoogle() {
+    // Ép cấu hình customParameters để Google xử lý luồng popup độc lập, giảm xung đột COOP
     const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({
+        prompt: 'select_account'
+    });
+
     try {
-        // Thay signInWithPopup bằng signInWithRedirect
-        await auth.signInWithRedirect(provider);
+        console.log("🔄 Đang khởi chạy cửa sổ xác thực Google...");
+        const result = await auth.signInWithPopup(provider);
+        currentUser = result.user;
+        updateUserUI();
+        alert(currentLang === "vi" ? `Chào ${currentUser.displayName}!` : `Welcome ${currentUser.displayName}!`);
     } catch (error) {
-        console.error("Lỗi đăng nhập chuyển hướng:", error);
-        alert("Đăng nhập thất bại. Thử lại sau.");
+        console.error("Lỗi đăng nhập hệ thống:", error);
+        
+        // Bắt chính xác các kịch bản lỗi để hướng dẫn người dùng
+        if (error.code === 'auth/popup-blocked') {
+            alert("❌ Trình duyệt của sếp đã chặn cửa sổ Popup! Vui lòng nhấn vào biểu tượng mở khóa ô vuông ở góc thanh địa chỉ duyệt web.");
+        } else if (error.code === 'auth/popup-closed-by-user') {
+            console.log("Người dùng đã chủ động tắt popup trước khi đăng nhập.");
+        } else if (error.code === 'auth/unauthorized-domain') {
+            alert("❌ Domain walrusoracle.xyz chưa được bật quyền trong Firebase Console!");
+        } else {
+            alert(`Đăng nhập thất bại: ${error.message}. Hãy thử lại trên tab ẩn danh.`);
+        }
     }
 }
 

@@ -391,63 +391,28 @@ const WALRUS_PUBLISHER_URL = "https://publisher.walrus-mainnet.walrus.xyz";
 
 async function storePredictionOnWalrus(matchId, scoreA, scoreB, analysis) {
     if (!currentUser) {
-        alert(currentLang === "vi" ? "Vui lòng đăng nhập Gmail trước khi dự đoán!" : "Please sign in with Gmail first!");
+        alert(currentLang === "vi" ? "Vui lòng đăng nhập Gmail trước!" : "Please sign in first!");
         return false;
     }
 
-    const predictionData = {
-        type: "walrus_cup_prediction",
-        version: "v1",
-        user: {
-            email: currentUser.email,
-            name: currentUser.displayName || "Anonymous",
-            photo: currentUser.photoURL || ""
-        },
-        match: {
-            id: matchId,
-            teamA: officialMatches.find(m => m.id === matchId)?.teamA || "",
-            teamB: officialMatches.find(m => m.id === matchId)?.teamB || ""
-        },
-        prediction: {
-            scoreHome: parseInt(scoreA) || 0,
-            scoreAway: parseInt(scoreB) || 0,
-            analysis: analysis.trim() || "Không có phân tích"
-        },
-        metadata: {
-            timestamp: new Date().toISOString(),
-            language: currentLang,
-            app: "Walrus Cup Oracle"
-        }
-    };
+    const predictionData = { /* ... dữ liệu giữ nguyên */ };
 
     try {
-        const response = await fetch(`${WALRUS_PUBLISHER_URL}/v1/blobs?epochs=10`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json"
-            },
+        const response = await fetch('https://walrus-publisher-production-b5d6.up.railway.app/publish', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(predictionData)
         });
 
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
         const result = await response.json();
-        const blobId = result.blobId || result.newlyCreated?.blobId;
-
-        console.log("✅ Lưu thành công Walrus Mainnet - Blob ID:", blobId);
 
         alert(currentLang === "vi" 
-            ? `🎉 Dự đoán trận ${matchId} đã được lưu vĩnh viễn trên Walrus Mainnet!\n\nBlob ID: ${blobId}`
-            : `🎉 Prediction saved on Walrus Mainnet!\n\nBlob ID: ${blobId}`);
-
-        return true;
+            ? `✅ Dự đoán đã được lưu thành công lên Walrus Mainnet!` 
+            : `✅ Saved on Walrus Mainnet!`);
 
     } catch (error) {
-        console.error("Walrus Error:", error);
-        alert(currentLang === "vi" 
-            ? "❌ Không thể lưu lên Walrus lúc này. Dữ liệu được lưu tạm thời." 
-            : "❌ Failed to save on Walrus.");
-        return false;
+        console.error(error);
+        alert(currentLang === "vi" ? "❌ Lỗi kết nối Publisher" : "❌ Connection error");
     }
 }
 

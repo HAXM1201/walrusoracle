@@ -247,7 +247,62 @@ function filterMatches(type) {
     });
     renderMatches(type);
 }
+// ==================== XEM LỊCH SỬ DỰ ĐOÁN ====================
+function showMyPredictions() {
+    if (!currentUser) {
+        alert(currentLang === "vi" ? "Vui lòng đăng nhập Gmail trước!" : "Please sign in first!");
+        return;
+    }
 
+    if (!window.userPredictionMemory || window.userPredictionMemory.length === 0) {
+        alert(currentLang === "vi" 
+            ? "Bạn chưa có dự đoán nào. Hãy thử dự đoán một trận đấu!" 
+            : "You have no predictions yet. Try predicting a match!");
+        return;
+    }
+
+    let html = `<h3 class="text-lg font-bold mb-4">📜 Lịch sử dự đoán của bạn (${window.userPredictionMemory.length} trận)</h3>`;
+
+    window.userPredictionMemory.sort((a, b) => new Date(b.metadata?.timestamp || b.timestamp) - new Date(a.metadata?.timestamp || a.timestamp));
+
+    window.userPredictionMemory.forEach(pred => {
+        html += `
+            <div class="bg-gray-900 border border-gray-700 rounded-xl p-4 mb-3">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="text-walrus-aqua font-bold">Trận ${pred.matchId}</span>
+                        <span class="text-gray-400 text-sm ml-2">${new Date(pred.metadata?.timestamp || pred.timestamp).toLocaleString('vi-VN')}</span>
+                    </div>
+                    <span class="text-xs bg-emerald-900 text-emerald-400 px-2 py-1 rounded">Đã lưu Walrus</span>
+                </div>
+                <div class="mt-3 text-lg font-mono">
+                    ${pred.prediction.scoreHome} - ${pred.prediction.scoreAway}
+                </div>
+                <div class="mt-2 text-sm text-gray-300 italic">
+                    "${pred.prediction.analysis || 'Không có phân tích'}"
+                </div>
+                ${pred.blobId ? `<div class="text-[10px] text-gray-500 mt-2">Blob ID: ${pred.blobId}</div>` : ''}
+            </div>`;
+    });
+
+    // Hiển thị dưới dạng modal hoặc alert (có thể cải tiến sau)
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto;';
+    modal.innerHTML = `
+        <div style="background:#162238;max-width:600px;width:100%;border-radius:16px;padding:25px;max-height:90vh;overflow:auto;border:2px solid #00f2fe;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <h2 style="margin:0;color:white;font-size:1.4rem;">📜 Lịch sử dự đoán</h2>
+                <button onclick="this.closest('.modal-container').remove()" style="background:none;border:none;color:#ff6b6b;font-size:1.8rem;cursor:pointer;">×</button>
+            </div>
+            ${html}
+            <div style="text-align:center;margin-top:20px;">
+                <button onclick="this.closest('.modal-container').remove()" style="background:#00f2fe;color:#0b1528;padding:10px 25px;border-radius:8px;font-weight:bold;">Đóng</button>
+            </div>
+        </div>
+    `;
+    modal.className = 'modal-container';
+    document.body.appendChild(modal);
+}
 function renderLeaderboard() {
     const container = document.getElementById('leaderboard-container');
     if (!container) return;

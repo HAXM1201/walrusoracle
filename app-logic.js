@@ -331,28 +331,42 @@ function handleSubmissionWithEffects(id) {
     mockSubmit(id);
 }
 
-// ==================== WALRUS STORAGE - ADMIN PAY ====================
-const WALRUS_PUBLISHER_URL = "https://publisher.walrus-mainnet.walrus.xyz"; // Mainnet
+// ==================== WALRUS MAINNET - ADMIN PAY (Publisher) ====================
+const WALRUS_PUBLISHER_URL = "https://publisher.walrus-mainnet.walrus.xyz";
 
 async function storePredictionOnWalrus(matchId, scoreA, scoreB, analysis) {
     if (!currentUser) {
-        alert(currentLang === "vi" ? "Vui lòng đăng nhập Gmail trước!" : "Please sign in first!");
+        alert(currentLang === "vi" ? "Vui lòng đăng nhập Gmail trước khi dự đoán!" : "Please sign in with Gmail first!");
         return false;
     }
 
     const predictionData = {
-        userEmail: currentUser.email,
-        userName: currentUser.displayName || "Anonymous",
-        matchId: matchId,
-        scoreHome: parseInt(scoreA) || 0,
-        scoreAway: parseInt(scoreB) || 0,
-        analysis: analysis || "Không có phân tích",
-        timestamp: new Date().toISOString(),
-        language: currentLang
+        type: "walrus_cup_prediction",
+        version: "v1",
+        user: {
+            email: currentUser.email,
+            name: currentUser.displayName || "Anonymous",
+            photo: currentUser.photoURL || ""
+        },
+        match: {
+            id: matchId,
+            teamA: officialMatches.find(m => m.id === matchId)?.teamA || "",
+            teamB: officialMatches.find(m => m.id === matchId)?.teamB || ""
+        },
+        prediction: {
+            scoreHome: parseInt(scoreA) || 0,
+            scoreAway: parseInt(scoreB) || 0,
+            analysis: analysis.trim() || "Không có phân tích"
+        },
+        metadata: {
+            timestamp: new Date().toISOString(),
+            language: currentLang,
+            app: "Walrus Cup Oracle"
+        }
     };
 
     try {
-        const response = await fetch(`${WALRUS_PUBLISHER_URL}/v1/blobs?epochs=5`, {
+        const response = await fetch(`${WALRUS_PUBLISHER_URL}/v1/blobs?epochs=10`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -360,21 +374,23 @@ async function storePredictionOnWalrus(matchId, scoreA, scoreB, analysis) {
             body: JSON.stringify(predictionData)
         });
 
-        if (!response.ok) throw new Error("Upload failed");
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
         const result = await response.json();
-        console.log("✅ Lưu thành công lên Walrus:", result);
+        const blobId = result.blobId || result.newlyCreated?.blobId;
+
+        console.log("✅ Lưu thành công Walrus Mainnet - Blob ID:", blobId);
 
         alert(currentLang === "vi" 
-            ? `✅ Dự đoán trận ${matchId} đã được lưu vĩnh viễn trên Walrus Mainnet!\nBlob ID: ${result.blobId || result.newlyCreated?.blobId}`
-            : `✅ Prediction saved permanently on Walrus Mainnet!`);
+            ? `🎉 Dự đoán trận ${matchId} đã được lưu vĩnh viễn trên Walrus Mainnet!\n\nBlob ID: ${blobId}`
+            : `🎉 Prediction saved on Walrus Mainnet!\n\nBlob ID: ${blobId}`);
 
         return true;
 
     } catch (error) {
         console.error("Walrus Error:", error);
         alert(currentLang === "vi" 
-            ? "❌ Không thể lưu lên Walrus. Dữ liệu chỉ được lưu tạm thời." 
+            ? "❌ Không thể lưu lên Walrus lúc này. Dữ liệu được lưu tạm thời." 
             : "❌ Failed to save on Walrus.");
         return false;
     }
@@ -386,12 +402,11 @@ function mockSubmit(id) {
     const scoreB = document.getElementById(`scoreB-${id}`).value;
     const analysis = document.getElementById(`analysis-${id}`).value || "";
 
-    if (scoreA === "" && scoreB === "") {
+    if (!scoreA && !scoreB) {
         alert(currentLang === "vi" ? "Vui lòng nhập tỷ số!" : "Please enter score!");
         return;
     }
 
-    // Lưu lên Walrus
     storePredictionOnWalrus(id, scoreA, scoreB, analysis);
 }
 

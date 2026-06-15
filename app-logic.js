@@ -380,6 +380,7 @@ function toggleLanguage() {
     renderMatches(activeTabGlobal);
 }
 
+// ====================== NỘP DỰ ĐOÁN & LƯU WALRUS ======================
 async function handleSubmissionWithEffects(matchId, homeScore, awayScore, analysis = "") {
     if (!currentUser) {
         alert(currentLang === "vi" ? "Vui lòng đăng nhập Gmail trước khi nộp dự đoán!" : "Please login first!");
@@ -390,16 +391,20 @@ async function handleSubmissionWithEffects(matchId, homeScore, awayScore, analys
     launchConfetti();
     createParticles();
 
-    // Lưu thật lên Walrus qua Railway backend
+    console.log(`📤 Đang lưu dự đoán trận ${matchId}: ${homeScore}-${awayScore}`);
+
+    // Gọi hàm lưu thật lên Walrus
     const success = await storePredictionOnWalrus(matchId, homeScore, awayScore, analysis);
 
     if (success) {
-        // Cập nhật UI sau khi lưu thành công
+        alert(currentLang === "vi" 
+            ? `🎉 Dự đoán trận ${matchId} đã được lưu thành công lên Walrus Mainnet!` 
+            : `🎉 Prediction saved on Walrus!`);
+        
+        // Refresh danh sách trận sau 1 giây
         setTimeout(() => {
             renderMatches(activeTabGlobal);
-        }, 800);
-    } else {
-        console.warn("⚠️ Lưu dự đoán thất bại nhưng vẫn có hiệu ứng");
+        }, 1000);
     }
 }
 

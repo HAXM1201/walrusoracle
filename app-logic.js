@@ -387,7 +387,11 @@ function handleSubmissionWithEffects(id) {
 }
 
 // ==================== WALRUS MAINNET - ADMIN PAY (Publisher) ====================
-const WALRUS_PUBLISHER_URL = "https://publisher.walrus-mainnet.walrus.xyz";
+// ====================== WALRUS PUBLISHER CONFIG ======================
+const WALRUS_PUBLISHER_URL = "https://publisher.walrus-mainnet.walrus.xyz"; // giữ nguyên cho sau này
+
+// Sử dụng Railway backend (Admin Pay)
+const CUSTOM_PUBLISHER_URL = "https://walrus-publisher-production-b5d6.up.railway.app";
 
 async function storePredictionOnWalrus(matchId, scoreA, scoreB, analysis) {
     if (!currentUser) {
@@ -395,49 +399,43 @@ async function storePredictionOnWalrus(matchId, scoreA, scoreB, analysis) {
         return false;
     }
 
-    const predictionData = { /* ... dữ liệu giữ nguyên */ };
+    const predictionData = {
+        userEmail: currentUser.email,
+        matchId: matchId,
+        homeScore: parseInt(scoreA) || 0,
+        awayScore: parseInt(scoreB) || 0,
+        analysis: analysis || "",
+        timestamp: new Date().toISOString(),
+        lang: currentLang
+    };
 
     try {
-        const response = await fetch('https://walrus-publisher-production-b5d6.up.railway.app/publish', {
+        const response = await fetch(`${CUSTOM_PUBLISHER_URL}/publish`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json" 
+            },
             body: JSON.stringify(predictionData)
         });
 
-        const result = await response.json();
-
-        alert(currentLang === "vi" 
-            ? `✅ Dự đoán đã được lưu thành công lên Walrus Mainnet!` 
-            : `✅ Saved on Walrus Mainnet!`);
-
+        if (response.ok) {
+            const result = await response.json();
+            alert(currentLang === "vi" 
+                ? `✅ Dự đoán đã được lưu thành công lên Walrus Mainnet!` 
+                : `✅ Saved successfully on Walrus!`);
+            console.log("✅ Blob saved:", result);
+            return true;
+        } else {
+            throw new Error(`HTTP ${response.status}`);
+        }
     } catch (error) {
-        console.error(error);
-        alert(currentLang === "vi" ? "❌ Lỗi kết nối Publisher" : "❌ Connection error");
+        console.error("Publisher Error:", error);
+        alert(currentLang === "vi" 
+            ? "❌ Lỗi kết nối Publisher. Kiểm tra lại backend." 
+            : "❌ Publisher connection failed.");
+        return false;
     }
 }
-
-// ==================== CẬP NHẬT HÀM SUBMIT ====================
-function mockSubmit(id) {
-    const scoreA = document.getElementById(`scoreA-${id}`).value;
-    const scoreB = document.getElementById(`scoreB-${id}`).value;
-    const analysis = document.getElementById(`analysis-${id}`).value || "";
-
-    if (!scoreA && !scoreB) {
-        alert(currentLang === "vi" ? "Vui lòng nhập tỷ số!" : "Please enter score!");
-        return;
-    }
-
-    storePredictionOnWalrus(id, scoreA, scoreB, analysis);
-}
-
-async function fetchMyPredictions() {
-    if (!currentUser) {
-        alert(currentLang === "vi" ? "Vui lòng đăng nhập Google trước!" : "Please sign in with Google first!");
-        return;
-    }
-    alert(currentLang === "vi" ? `Đang lấy lịch sử cho: ${currentUser.email}` : `Fetching predictions for: ${currentUser.email}`);
-}
-
 // ==================== FETCH + PARSE GOALS TỐT HƠN ====================
 async function fetchWorldCupData() {
     const aiAgentText = document.getElementById('ai-roast-text');

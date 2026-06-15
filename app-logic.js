@@ -365,13 +365,57 @@ function renderLeaderboard() {
 }
 
 function updateUINonDynamicText() {
-    // ... giữ nguyên hàm này của bạn
     const lang = translations[currentLang];
-    // (copy nguyên hàm updateUINonDynamicText cũ của bạn vào đây)
+    document.getElementById('btn-history-text').innerText = lang.btnHistory;
+    document.getElementById('hero-title').innerHTML = lang.heroTitle;
+    document.getElementById('hero-desc').innerText = lang.heroDesc;
+    document.getElementById('section-groups-title').innerHTML = lang.secGroups;
+    document.getElementById('section-matches-title').innerHTML = lang.secMatches;
+    document.getElementById('section-ai-title').innerHTML = lang.secAi;
+    document.getElementById('section-prizes-title').innerHTML = lang.secPrizes;
+    document.getElementById('section-leaderboard-title').innerHTML = lang.secLeaderboard;
+    
+    document.getElementById('tab-vong-bang').innerText = lang.tabVongBang;
+    document.getElementById('tab-vong-32').innerText = lang.tabVong32;
+    document.getElementById('tab-vong-16').innerText = lang.tabVong16;
+    document.getElementById('tab-tu-ket').innerText = lang.tabTuKet;
+    document.getElementById('tab-ban-ket').innerText = lang.tabBanKet;
+    document.getElementById('tab-chung-ket').innerText = lang.tabChungKet;
+
+    document.getElementById('prize-1-title').innerHTML = lang.prize1;
+    document.getElementById('prize-1-val').innerText = lang.prize1Val;
+    document.getElementById('prize-2-title').innerHTML = lang.prize2;
+    document.getElementById('prize-2-val').innerText = lang.prize2Val;
+
+    const aiStatusText = document.getElementById('ai-status-text');
+    if (aiStatusText) aiStatusText.innerText = lang.aiReading;
+    
+    const aiAgentText = document.getElementById('ai-roast-text');
+    if (aiAgentText) {
+        if (currentApiStatus === "welcome") aiAgentText.innerHTML = lang.aiWelcome;
+        else if (currentApiStatus === "connecting") aiAgentText.innerHTML = lang.aiConnecting;
+        else if (currentApiStatus === "success") aiAgentText.innerHTML = lang.aiSuccess;
+        else if (currentApiStatus === "fallback") aiAgentText.innerHTML = lang.aiFallback;
+    }
 }
 
 function toggleLanguage() {
-    // ... giữ nguyên hàm toggleLanguage cũ của bạn
+    const flag = document.getElementById('langFlag');
+    const txt = document.getElementById('langText');
+
+    if (currentLang === "vi") {
+        currentLang = "en";
+        flag.src = "https://flagcdn.com/w20/vn.png";
+        txt.innerText = "VI";
+    } else {
+        currentLang = "vi";
+        flag.src = "https://flagcdn.com/w20/gb.png";
+        txt.innerText = "EN";
+    }
+
+    updateUINonDynamicText();
+    renderGroups();
+    renderMatches(activeTabGlobal);
 }
 
 // ==================== KHỞI TẠO APP ====================

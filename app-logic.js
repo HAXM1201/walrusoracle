@@ -303,7 +303,7 @@ function renderMatches(filterType = 'vong-bang') {
     });
 }
 
-// ==================== CÁC HÀM CÒN LẠI (giữ nguyên) ====================
+// ==================== CÁC HÀM CÒN LẠI ====================
 function filterMatches(type) {
     activeTabGlobal = type;
     const tabs = ['vong-bang', 'vong-32', 'vong-16', 'tu-ket', 'ban-ket', 'chung-ket'];
@@ -318,7 +318,6 @@ function filterMatches(type) {
 }
 
 function renderGroups() {
-    // ... (giữ nguyên hàm renderGroups của bạn)
     const container = document.getElementById('groups-container');
     if (!container) return;
     container.innerHTML = '';
@@ -341,7 +340,6 @@ function renderGroups() {
 }
 
 function renderLeaderboard() {
-    // ... giữ nguyên hàm renderLeaderboard của bạn
     const container = document.getElementById('leaderboard-container');
     if (!container) return;
     container.innerHTML = '';
@@ -416,6 +414,19 @@ function toggleLanguage() {
     updateUINonDynamicText();
     renderGroups();
     renderMatches(activeTabGlobal);
+}
+
+// ==================== FETCH WORLD CUP DATA ====================
+async function fetchWorldCupData() {
+    // Giữ nguyên hàm fetchWorldCupData của bạn
+    console.log("Đang lấy dữ liệu trận đấu...");
+    renderMatches(activeTabGlobal);
+}
+
+let refreshInterval = null;
+function startLiveRefresh() {
+    if (refreshInterval) clearInterval(refreshInterval);
+    refreshInterval = setInterval(fetchWorldCupData, 45000);
 }
 
 // ==================== KHỞI TẠO APP ====================

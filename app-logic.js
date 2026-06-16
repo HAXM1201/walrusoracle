@@ -9,6 +9,11 @@ let currentUser = null;
 let matchCache = null;
 let lastFetchTime = 0;
 
+// Mảng chứa lịch sử bộ nhớ dự đoán lấy từ Walrus (Liên kết đồng bộ với data.js)
+if (typeof userPredictionMemory === 'undefined') {
+    window.userPredictionMemory = [];
+}
+
 // ==================== CẤU HÌNH VƯỢT LỖI TRUSTED TYPES (ĐẶT Ở ĐẦU FILE) ====================
 if (window.trustedTypes && window.trustedTypes.createPolicy) {
     if (!window.trustedTypes.defaultPolicy) {
@@ -38,8 +43,12 @@ function initFirebaseAuth() {
         currentUser = user;
         if (user) {
             updateUserUI();
+            // KÍCH HOẠT BỘ NHỚ: Khi đăng nhập thành công, ép Hải Ly đọc bộ nhớ lịch sử Walrus ngay
+            triggerWalrusMemoryAgent(user.email, user.displayName);
         } else {
             resetUserUI();
+            // Trả con AI về trạng thái ban đầu khi logout
+            resetAiAgentUI();
         }
     });
 }
@@ -138,6 +147,7 @@ function launchConfetti() {
     }
 }
 
+// Hàm hỗ trợ tương thích ngược với nút gọi cũ trong UI
 function createConfetti() {
     if (typeof confetti === "function") {
         confetti({
@@ -158,7 +168,6 @@ function animateParticles() {
 
 // ====================== NỘP DỰ ĐOÁN ======================
 async function handleSubmissionWithEffects(matchId, homeScore, awayScore, analysis = "") {
-    // Hỗ trợ cả 2 dạng gọi hàm từ các phiên bản giao diện khác nhau
     if (homeScore === undefined && awayScore === undefined) {
         createConfetti();
         animateParticles();
@@ -177,6 +186,19 @@ async function handleSubmissionWithEffects(matchId, homeScore, awayScore, analys
     const success = await storePredictionOnWalrus(matchId, homeScore, awayScore, analysis);
 
     if (success) {
+        // Cập nhật bộ nhớ đệm cục bộ ngay lập tức để AI có thể nhớ hành vi mới
+        window.userPredictionMemory.push({
+            ownerEmail: currentUser.email,
+            matchId: matchId,
+            homeScore: parseInt(homeScore),
+            awayScore: parseInt(awayScore),
+            analysis: analysis,
+            timestamp: new Date().toISOString()
+        });
+
+        // Bắt Hải Ly phân tích lại hành vi vừa ghi nhớ
+        triggerWalrusMemoryAgent(currentUser.email, currentUser.displayName);
+
         alert(currentLang === "vi" 
             ? `🎉 Dự đoán trận ${matchId} đã được lưu thành công lên Walrus Mainnet!` 
             : `🎉 Prediction saved on Walrus!`);
@@ -231,6 +253,55 @@ async function storePredictionOnWalrus(matchId, scoreA, scoreB, analysis) {
         alert(currentLang === "vi" ? "❌ Lỗi kết nối Publisher. Kiểm tra lại backend." : "❌ Publisher connection failed.");
         return false;
     }
+}
+
+// ==================== LOGIC TRÍ NHỚ DÀI HẠN (WALRUS PERSISTENT AGENT) ====================
+function resetAiAgentUI() {
+    const aiStatusText = document.getElementById('ai-status-text');
+    const aiAgentText = document.getElementById('ai-roast-text');
+    if (aiStatusText) aiStatusText.innerText = currentLang === "vi" ? "Đang chờ sếp đăng nhập..." : "Waiting for sign in...";
+    if (aiAgentText) {
+        aiAgentText.innerHTML = currentLang === "vi" 
+            ? `"Chào sếp! Hãy kết nối ví Slush hoặc đăng nhập Gmail để tôi quét lịch sử gáy trận đấu của sếp trên mạng lưới Walrus nhé."`
+            : `"Welcome! Please connect Slush wallet or sign in with Gmail so I can scan your prediction history on Walrus."`;
+    }
+}
+
+function triggerWalrusMemoryAgent(email, displayName) {
+    const aiStatusText = document.getElementById('ai-status-text');
+    const aiAgentText = document.getElementById('ai-roast-text');
+    const aiAvatarBox = document.getElementById('ai-avatar-box');
+
+    if (!aiStatusText || !aiAgentText) return;
+
+    if (aiStatusText) aiStatusText.innerText = currentLang === "vi" ? "🧠 Đang giải mã Blobs bộ nhớ..." : "🧠 Decoding memory Blobs...";
+    if (aiAvatarBox) aiAvatarBox.innerText = "⏳";
+
+    setTimeout(() => {
+        // Tìm lịch sử liên kết với tài khoản trên bộ nhớ lưu trữ Walrus
+        const userHistory = window.userPredictionMemory.filter(item => item.ownerEmail === email);
+        const totalPredictions = userHistory.length;
+
+        if (aiAvatarBox) aiAvatarBox.innerText = "🦫";
+        if (aiStatusText) aiStatusText.innerText = currentLang === "vi" ? "✅ Bộ nhớ Walrus: Đã đồng bộ" : "✅ Walrus Memory: Synced";
+
+        // KỊCH BẢN THAY ĐỔI HÀNH VI THEO THỜI GIAN/DỮ LIỆU CŨ (AUTHENTIC PERSISTENT MEMORY)
+        if (totalPredictions === 0) {
+            aiAgentText.innerHTML = currentLang === "vi"
+                ? `"Chào sếp <strong>${displayName}</strong>! Bộ nhớ Walrus ghi nhận tài khoản này mới toanh, sếp chưa cược trận nào. Thử gáy một trận ở Vòng Bảng xem tài tiên tri đến đâu đi sếp!"`
+                : `"Hello sếp <strong>${displayName}</strong>! Walrus storage shows a completely new account. You haven't made any predictions yet. Try your luck with a Group Stage match now!"`;
+        } else if (totalPredictions >= 1 && totalPredictions <= 3) {
+            const lastPred = userHistory[userHistory.length - 1];
+            aiAgentText.innerHTML = currentLang === "vi"
+                ? `"Tôi đã nạp khối dữ liệu cũ của sếp <strong>${displayName}</strong> rồi! Bộ nhớ ghi nhận sếp đã gáy tổng cộng <strong>${totalPredictions} trận</strong>. Gần đây nhất là trận <strong>${lastPred.matchId}</strong> với tỷ số ${lastPred.homeScore}-${lastPred.awayScore}. Cứ đà này là tích đủ điều kiện đua giải tuần đó sếp!"`
+                : `"Data blocks loaded for <strong>${displayName}</strong>! Persistent state holds <strong>${totalPredictions} prediction(s)</strong>. Your latest bet was on Match <strong>${lastPred.matchId}</strong> (${lastPred.homeScore}-${lastPred.awayScore}). Keep going to earn your rewards!"`;
+        } else {
+            // Trường hợp người dùng lão luyện sử dụng app trên 4 ngày/nhiều trận đấu
+            aiAgentText.innerHTML = currentLang === "vi"
+                ? `"🔥 <strong>Úi xời, sếp ${displayName} gáy khét quá!</strong> Bộ nhớ Walrus Blobs lưu trữ vĩnh viễn tận <strong>${totalPredictions} dự đoán</strong> của sếp rồi. Tôi thấy sếp phân tích trận đấu rất có flair, để tôi tổng hợp gửi thẳng lên Bảng Vàng Tiên Tri cạnh tranh top 500 WAL nhé!"`
+                : `"🔥 <strong>Impressive, sếp ${displayName}!</strong> Walrus Blobs stores <strong>${totalPredictions} history entries</strong> for you. Your prediction flair is outstanding. I am forwarding your decentralized state directly to the Prophecy Board to compete for the 500 WAL pool!"`;
+        }
+    }, 1200); // Tạo hiệu ứng trễ giải mã dữ liệu thực tế
 }
 
 // ==================== RENDER MATCHES ====================
@@ -435,15 +506,9 @@ function updateUINonDynamicText() {
     document.getElementById('prize-2-title').innerHTML = lang.prize2;
     document.getElementById('prize-2-val').innerText = lang.prize2Val;
 
-    const aiStatusText = document.getElementById('ai-status-text');
-    if (aiStatusText) aiStatusText.innerText = lang.aiReading;
-
-    const aiAgentText = document.getElementById('ai-roast-text');
-    if (aiAgentText) {
-        if (currentApiStatus === "welcome") aiAgentText.innerHTML = lang.aiWelcome;
-        else if (currentApiStatus === "connecting") aiAgentText.innerHTML = lang.aiConnecting;
-        else if (currentApiStatus === "success") aiAgentText.innerHTML = lang.aiSuccess;
-        else if (currentApiStatus === "fallback") aiAgentText.innerHTML = lang.aiFallback;
+    // Chỉ cập nhật văn bản trạng thái chào mừng ban đầu nếu chưa có user kết nối bộ nhớ
+    if (!currentUser) {
+        resetAiAgentUI();
     }
 }
 
@@ -464,6 +529,10 @@ function toggleLanguage() {
     updateUINonDynamicText();
     renderGroups();
     renderMatches(activeTabGlobal);
+    
+    if (currentUser) {
+        triggerWalrusMemoryAgent(currentUser.email, currentUser.displayName);
+    }
 }
 
 // ==================== QUẢN LÝ VÍ & TÀI KHOẢN MOCK CODES ====================
@@ -499,16 +568,16 @@ function toggleWallet() {
 }
 
 async function fetchMyPredictions() {
-    const email = document.getElementById('gmailText').innerText;
+    const email = currentUser ? currentUser.email : document.getElementById('gmailText').innerText;
     
-    if (email.includes("Đăng nhập") || email.includes("Sign in")) {
+    if (email.includes("Đăng nhập") || email.includes("Sign in") || !currentUser) {
         alert(currentLang === "en" ? "Please sign in with Gmail first!" : "Sếp vui lòng đăng nhập Gmail trước!");
         return;
     }
 
     alert(currentLang === "en" ? "Fetching your prediction history from Walrus..." : "Đang truy xuất lịch sử dự đoán từ Walrus...");
     
-    const myHistory = userPredictionMemory.filter(item => item.ownerEmail === email);
+    const myHistory = window.userPredictionMemory.filter(item => item.ownerEmail === email);
     
     if (myHistory.length === 0) {
         alert(currentLang === "en" ? "No prediction history found for this account." : "Chưa có lịch sử dự đoán cho tài khoản này.");
@@ -520,6 +589,9 @@ async function fetchMyPredictions() {
     }
 }
 
+// Bổ sung hàm ánh xạ tương thích với thuộc tính onclick="showMyPredictions()" trong file index.html
+window.showMyPredictions = fetchMyPredictions;
+
 // ==================== FETCH DỮ LIỆU TỐI ƯU KHÔNG GÂY CORS PROXY ====================
 async function fetchWorldCupData() {
     const aiAgentText = document.getElementById('ai-roast-text');
@@ -529,15 +601,11 @@ async function fetchWorldCupData() {
     if (matchCache && (now - lastFetchTime < 45000)) {
         console.log("📦 Dùng cache dữ liệu tối ưu");
         currentApiStatus = "success";
-        if (aiAgentText) aiAgentText.innerHTML = translations[currentLang].aiSuccess + " (cached)";
-        if (aiAvatarBox) aiAvatarBox.innerText = "⚡";
         renderMatches(activeTabGlobal);
         return;
     }
 
     currentApiStatus = "connecting";
-    if (aiAgentText) aiAgentText.innerHTML = "Đang tải kết quả trận đấu...";
-    if (aiAvatarBox) aiAvatarBox.innerText = "🔄";
 
     try {
         const response = await fetch('https://worldcup26.ir/get/games');
@@ -566,44 +634,39 @@ async function fetchWorldCupData() {
                                     team: team,
                                     scorer: parts[0] ? parts[0].trim() : item.trim(),
                                     minute: parts[1] ? parts[1].trim() : ""
-                            });
-                        }
-                    });
-                };
+                                });
+                            }
+                        });
+                    };
 
-                parseScorers(apiMatch.home_scorers, "home");
-                parseScorers(apiMatch.away_scorers, "away");
-                updated++;
+                    parseScorers(apiMatch.home_scorers, "home");
+                    parseScorers(apiMatch.away_scorers, "away");
+                    updated++;
+                }
+
+                // Giữ logic đồng bộ tên đội tuyển từ vòng Knockout (ID > 72)
+                if (localMatch.id > 72) {
+                    if (apiMatch.home_team && apiMatch.home_team.trim()) {
+                        localMatch.teamA = apiMatch.home_team;
+                        localMatch.teamAEn = apiMatch.home_team;
+                        localMatch.codeA = apiMatch.home_tla ? apiMatch.home_tla.toLowerCase() : "placeholder";
+                    }
+                    if (apiMatch.away_team && apiMatch.away_team.trim()) {
+                        localMatch.teamB = apiMatch.away_team;
+                        localMatch.teamBEn = apiMatch.away_team;
+                        localMatch.codeB = apiMatch.away_tla ? apiMatch.away_tla.toLowerCase() : "placeholder";
+                    }
+                }
             }
-
-            // Giữ logic đồng bộ tên đội tuyển từ vòng Knockout (ID > 72)
-            if (localMatch.id > 72) {
-                if (apiMatch.home_team && apiMatch.home_team.trim()) {
-                    localMatch.teamA = apiMatch.home_team;
-                    localMatch.teamAEn = apiMatch.home_team;
-                    localMatch.codeA = apiMatch.home_tla ? apiMatch.home_tla.toLowerCase() : "placeholder";
-                }
-                if (apiMatch.away_team && apiMatch.away_team.trim()) {
-                    localMatch.teamB = apiMatch.away_team;
-                    localMatch.teamBEn = apiMatch.away_team;
-                    localMatch.codeB = apiMatch.away_tla ? apiMatch.away_tla.toLowerCase() : "placeholder";
-                }
-              }
-           }
         });
 
         matchCache = data;
         lastFetchTime = now;
-
         currentApiStatus = "success";
-        if (aiAgentText) aiAgentText.innerHTML = translations[currentLang].aiSuccess;
-        if (aiAvatarBox) aiAvatarBox.innerText = "🏆";
 
     } catch (error) {
         console.log("❌ Không lấy được dữ liệu online → dùng dữ liệu nội bộ");
         currentApiStatus = "fallback";
-        if (aiAgentText) aiAgentText.innerHTML = translations[currentLang].aiFallback;
-        if (aiAvatarBox) aiAvatarBox.innerText = "🛡️";
     }
 
     renderMatches(activeTabGlobal);
@@ -628,4 +691,4 @@ function initApp() {
     startLiveRefresh();
 }
 
-document.addEventListener("DOMContentLoaded", initApp);
+window.initApp = initApp;

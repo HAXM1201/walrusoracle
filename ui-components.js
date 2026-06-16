@@ -147,7 +147,7 @@ function createMatchCardHTML(match) {
                 </div>
             </div>
             <div class="flex justify-end pt-2">
-                <button onclick="handleSubmissionWithEffects('${match.id}')" 
+                <button onclick="handleSubmissionWithEffects('${match.id}', document.getElementById('scoreA-${match.id}').value, document.getElementById('scoreB-${match.id}').value, document.getElementById('analysis-${match.id}').value)" 
                         class="gradient-btn hover:opacity-90 text-walrus-dark font-extrabold text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-walrus-aqua/20 flex items-center gap-2 transition">
                     ${lang.btnSubmit}
                 </button>

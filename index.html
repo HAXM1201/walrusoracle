@@ -113,39 +113,33 @@
     <section class="hero-bg relative py-16 sm:py-24 border-b border-gray-800/50 overflow-hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                <div class="lg:col-span-7 flex flex-col items-center justify-center relative rounded-2xl overflow-hidden p-6 w-full max-w-2xl">
-                    
-                    <div class="absolute inset-x-0 bottom-0 top-1/3 bg-cover bg-center pointer-events-none opacity-[0.18] filter blur-[1px]" 
-                         style="background-image: url('2006wc.jpg'); z-index: 0;">
-                    </div>
-                    
-                    <div class="absolute inset-0 bg-gradient-to-t from-walrus-dark/90 via-transparent to-walrus-dark/80 pointer-events-none" 
-                         style="z-index: 1;">
-                    </div>
-
-                    <div class="relative group w-full" style="z-index: 10;">
+                <div class="lg:col-span-5 text-left space-y-6">
+                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-walrus-aqua/10 text-walrus-aqua text-xs font-semibold uppercase tracking-wider border border-walrus-aqua/20">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Walrus Mainnet Connected
+                    </span>
+                    <h1 id="hero-title" class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
+                        Gáy Khét World Cup <br/>
+                        <span class="gradient-text">Nhận Thưởng Lớn</span>
+                    </h1>
+                    <p id="hero-desc" class="text-gray-300 text-sm sm:text-base leading-relaxed">
+                        Dự đoán kết quả từ 104 trận đấu chính thức của giải vô địch bóng đá thế giới FIFA World Cup 2026. Nhận định của bạn sẽ được lưu vĩnh viễn trên hạ tầng Walrus Blobs Storage.
+                    </p>
+                </div>
+                <div class="lg:col-span-7 flex justify-center">
+                    <div class="relative group max-w-2xl w-full">
                         <div class="absolute -inset-1.5 bg-gradient-to-r from-walrus-aqua to-walrus-lightAqua rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-1000"></div>
                         <div class="relative bg-walrus-dark rounded-2xl overflow-hidden shadow-2xl border border-gray-700/50">
                             <img src="wc1.png" alt="Walrus World Cup 2026 Centerpiece" class="w-full h-auto object-cover">
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
     </section>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16 relative rounded-3xl my-6 overflow-hidden">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
         
-        <div class="absolute inset-0 bg-cover bg-center pointer-events-none opacity-[0.07] filter blur-[2px]" 
-             style="background-image: url('2006wc.jpg'); z-index: 0;">
-        </div>
-        
-        <div class="absolute inset-0 bg-gradient-to-b from-walrus-dark/40 via-walrus-dark/20 to-walrus-dark/60 pointer-events-none" 
-             style="z-index: 0;">
-        </div>
-
-        <section class="space-y-6 relative" style="z-index: 10;">
+        <section class="space-y-6">
             <h2 id="section-groups-title" class="text-2xl font-bold text-white flex items-center gap-2">
                 <i class="fa-solid fa-users-rectangle text-walrus-aqua"></i> Cục Diện 48 Đội - Đường Đến World Cup 2026
             </h2>
@@ -153,7 +147,7 @@
             </div>
         </section>
 
-        <div id="voting-section" class="grid grid-cols-1 lg:grid-cols-3 gap-8 scroll-mt-24 relative" style="z-index: 10;">
+        <div id="voting-section" class="grid grid-cols-1 lg:grid-cols-3 gap-8 scroll-mt-24">
             <div class="lg:col-span-2 space-y-6">
                 <div class="flex flex-col gap-4 border-b border-gray-800 pb-4">
                     <div class="flex items-center justify-between">
@@ -222,6 +216,7 @@
             </div>
         </div>
     </main>
+
     <footer class="border-t border-gray-800 bg-gray-950 py-8 text-center text-xs text-gray-500">
         <p>&copy; 2026 Walrus Cup Oracle. Powered by Walrus Memory Layer.</p>
     </footer>

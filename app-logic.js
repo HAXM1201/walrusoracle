@@ -607,132 +607,24 @@ async function fetchMyPredictions() {
 window.showMyPredictions = fetchMyPredictions;
 
 
-// ==================== LIVE REFRESH & API CONTROL (ĐÃ ỔN ĐỊNH) ====================
+// ==================== LIVE REFRESH - TẮT API TẠM THỜI (VÌ API ĐANG LỖI) ====================
 let refreshInterval = null;
-let isFirstSuccess = false;
-let apiFailedCount = 0;
-const MAX_API_FAILS = 3;
 
+// Không fetch API nữa vì đang lỗi nặng
 function startLiveRefresh() {
+    console.log("⛔ API World Cup đang không khả dụng → Dùng dữ liệu tĩnh. Auto refresh đã tắt.");
     if (refreshInterval) clearInterval(refreshInterval);
-
-    const intervalTime = isFirstSuccess ? 600000 : 5000; // 10 phút hoặc 5 giây
-
-    refreshInterval = setInterval(() => {
-        if (apiFailedCount < MAX_API_FAILS) {
-            fetchWorldCupData();
-        }
-    }, intervalTime);
-
-    console.log(`🔄 Auto refresh: ${intervalTime === 5000 ? '5 giây' : '10 phút'}`);
 }
 
-async function fetchWorldCupData(retryCount = 0) {
-    const now = Date.now();
-
-    // Cache ngắn hạn
-    if (matchCache && (now - lastFetchTime < 30000)) return;
-
-    currentApiStatus = "connecting";
-
-    try {
-        console.log(`🌐 Fetching World Cup... (Attempt ${retryCount + 1})`);
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000);
-
-        const response = await fetch('https://worldcup26.ir/get/games', {
-            method: 'GET',
-            signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-        const data = await response.json();
-
-        localStorage.setItem('worldcup_cache_v2', JSON.stringify({
-            timestamp: now,
-            data: data
-        }));
-
-        applyApiData(data);
-        matchCache = data;
-        lastFetchTime = now;
-        currentApiStatus = "success";
-        apiFailedCount = 0;
-
-        console.log("✅ Đã lấy kết quả online thành công!");
-
-        if (!isFirstSuccess) {
-            isFirstSuccess = true;
-            console.log("🔄 Chuyển sang chế độ 10 phút/lần");
-            startLiveRefresh();
-        }
-
-        renderMatches(activeTabGlobal);
-
-    } catch (error) {
-        apiFailedCount++;
-        console.warn(`❌ API lỗi (${apiFailedCount}/${MAX_API_FAILS}):`, error.message);
-
-        if (retryCount < 1 && apiFailedCount < MAX_API_FAILS) {
-            setTimeout(() => fetchWorldCupData(retryCount + 1), 4000);
-        } else if (apiFailedCount >= MAX_API_FAILS) {
-            if (refreshInterval) {
-                clearInterval(refreshInterval);
-            }
-            console.log("⛔ API không khả dụng → Tắt auto refresh, dùng dữ liệu tĩnh");
-            currentApiStatus = "fallback";
-            renderMatches(activeTabGlobal);
-        }
-    }
+async function fetchWorldCupData() {
+    console.log("⛔ API World Cup tạm tắt do lỗi server/CORS. Sử dụng dữ liệu tĩnh.");
+    currentApiStatus = "fallback";
+    renderMatches(activeTabGlobal);
 }
 
 function applyApiData(data) {
-    if (!data?.games) return;
-
-    data.games.forEach(apiMatch => {
-        const localMatch = officialMatches.find(m => String(m.id) === String(apiMatch.id));
-        if (!localMatch) return;
-
-        if (apiMatch.finished === "TRUE" || apiMatch.status === "finished") {
-            localMatch.result = {
-                home: parseInt(apiMatch.home_score) || 0,
-                away: parseInt(apiMatch.away_score) || 0,
-                goals: []
-            };
-
-            const parseScorers = (str, team) => {
-                if (!str || str === "null") return;
-                str.replace(/[{}"]/g, '').split(',').forEach(item => {
-                    if (item.trim()) {
-                        const parts = item.trim().split(/\s+(\d+)'?$/);
-                        localMatch.result.goals.push({
-                            team: team,
-                            scorer: parts[0] ? parts[0].trim() : item.trim(),
-                            minute: parts[1] ? parts[1].trim() : ""
-                        });
-                    }
-                });
-            };
-
-            parseScorers(apiMatch.home_scorers, "home");
-            parseScorers(apiMatch.away_scorers, "away");
-        }
-
-        if (parseInt(localMatch.id) > 72) {
-            if (apiMatch.home_team) {
-                localMatch.teamA = localMatch.teamAEn = apiMatch.home_team;
-                localMatch.codeA = (apiMatch.home_tla || "placeholder").toLowerCase();
-            }
-            if (apiMatch.away_team) {
-                localMatch.teamB = localMatch.teamBEn = apiMatch.away_team;
-                localMatch.codeB = (apiMatch.away_tla || "placeholder").toLowerCase();
-            }
-        }
-    });
+    // Không dùng vì API lỗi
+    console.log("⛔ applyApiData bị bỏ qua vì API không hoạt động");
 }
 
 // ==================== KHỞI TẠO APP ====================
@@ -745,12 +637,14 @@ function initApp() {
     
     initFirebaseAuth();
 
+    // Render ngay dữ liệu tĩnh
     renderMatches(activeTabGlobal);
 
+    // Chỉ log, không fetch thật
     setTimeout(() => {
         fetchWorldCupData();
         startLiveRefresh();
-    }, 800);
+    }, 500);
 }
 
 // ==================== EXPOSE GLOBAL ====================

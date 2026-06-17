@@ -1,4 +1,4 @@
-<!-- ==================== ui-components.js ==================== -->
+// ==================== ui-components.js ==================== 
 
 // =========================================================
 // 🎆 MÔ-ĐUN HIỆU ỨNG PHÁO HOA CANVAS (ĐỘC LẬP)
@@ -155,3 +155,9 @@ function createMatchCardHTML(match) {
         </div>
     `;
 }
+
+// Expose các hàm ra window để tránh lỗi undefined khi onclick
+window.createConfetti = createConfetti;
+window.animateParticles = animateParticles;
+window.createGroupCardHTML = createGroupCardHTML;
+window.createMatchCardHTML = createMatchCardHTML;

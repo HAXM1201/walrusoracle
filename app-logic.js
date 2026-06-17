@@ -623,6 +623,7 @@ async function fetchWorldCupData() {
         currentApiStatus = "success";
 
         console.log("✅ Đã lấy dữ liệu online từ GitHub thành công!");
+        hideLoadingOverlay(); 
         renderMatches(activeTabGlobal);
 
     } catch (error) {
@@ -687,7 +688,16 @@ function startLiveRefresh() {
     if (refreshInterval) clearInterval(refreshInterval);
     refreshInterval = setInterval(fetchWorldCupData, 45000); // 45 giây một lần
 }
-
+// ==================== LOADING OVERLAY CONTROL ====================
+function hideLoadingOverlay() {
+    const loadingOverlay = document.getElementById('loading-overlay');
+    if (loadingOverlay) {
+        loadingOverlay.style.opacity = "0";
+        setTimeout(() => {
+            loadingOverlay.style.display = "none";
+        }, 600);
+    }
+}
 // ==================== EXPOSE ====================
 window.filterMatches = filterMatches;
 window.toggleLanguage = toggleLanguage;

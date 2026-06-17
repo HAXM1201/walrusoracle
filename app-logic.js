@@ -459,26 +459,12 @@ function renderGroups() {
         container.appendChild(groupCard);
     }
 }
-// ==================== FALLBACK NẾU DATA.JS CHƯA LOAD ====================
-if (typeof mockLeaderboard === 'undefined') {
-    window.mockLeaderboard = [
-        { name: "TayBew", score: 1240, countryCode: "vn" },
-        { name: "HALN", score: 1180, countryCode: "vn" },
-        { name: "Jack", score: 1090, countryCode: "us" },
-        { name: "Puchi", score: 980, countryCode: "br" },
-        { name: "Stravia", score: 920, countryCode: "th" }
-    ];
-}
+
 function renderLeaderboard() {
     const container = document.getElementById('leaderboard-container');
     if (!container) return;
-    
     container.innerHTML = '';
-    
-    // Sử dụng window.mockLeaderboard để an toàn
-    const leaderboardData = window.mockLeaderboard || mockLeaderboard || [];
-    
-    leaderboardData.forEach((user, index) => {
+    mockLeaderboard.forEach((user, index) => {
         const row = document.createElement('div');
         row.className = "flex items-center justify-between p-2.5 bg-gray-950/40 border border-gray-800/60 rounded-xl text-xs";
         let medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
@@ -606,28 +592,93 @@ async function fetchMyPredictions() {
 // Bổ sung hàm ánh xạ tương thích với thuộc tính onclick="showMyPredictions()" trong file index.html
 window.showMyPredictions = fetchMyPredictions;
 
-
-// ==================== LIVE REFRESH - TẮT API TẠM THỜI (VÌ API ĐANG LỖI) ====================
-let refreshInterval = null;
-
-// Không fetch API nữa vì đang lỗi nặng
-function startLiveRefresh() {
-    console.log("⛔ API World Cup đang không khả dụng → Dùng dữ liệu tĩnh. Auto refresh đã tắt.");
-    if (refreshInterval) clearInterval(refreshInterval);
-}
-
+// ==================== FETCH DỮ LIỆU TỐI ƯU KHÔNG GÂY CORS PROXY ====================
 async function fetchWorldCupData() {
-    console.log("⛔ API World Cup tạm tắt do lỗi server/CORS. Sử dụng dữ liệu tĩnh.");
-    currentApiStatus = "fallback";
+    const aiAgentText = document.getElementById('ai-roast-text');
+    const aiAvatarBox = document.getElementById('ai-avatar-box');
+    
+    const now = Date.now();
+    if (matchCache && (now - lastFetchTime < 45000)) {
+        console.log("📦 Dùng cache dữ liệu tối ưu");
+        currentApiStatus = "success";
+        renderMatches(activeTabGlobal);
+        return;
+    }
+
+    currentApiStatus = "connecting";
+
+    try {
+        const response = await fetch('https://worldcup26.ir/get/games');
+        if (!response.ok) throw new Error("Network error or block");
+
+        const data = await response.json();
+        let updated = 0;
+
+        data.games.forEach(apiMatch => {
+            const localMatch = officialMatches.find(m => String(m.id) === String(apiMatch.id));
+            if (localMatch) {
+                // Đồng bộ kết quả nếu trận đấu đã kết thúc
+                if (apiMatch.finished === "TRUE") {
+                    localMatch.result = {
+                        home: parseInt(apiMatch.home_score) || 0,
+                        away: parseInt(apiMatch.away_score) || 0,
+                        goals: []
+                    };
+
+                    const parseScorers = (str, team) => {
+                        if (!str || str === "null") return;
+                        str.replace(/[{}"]/g, '').split(',').forEach(item => {
+                            if (item.trim()) {
+                                const parts = item.trim().split(/\s+(\d+)'?$/);
+                                localMatch.result.goals.push({
+                                    team: team,
+                                    scorer: parts[0] ? parts[0].trim() : item.trim(),
+                                    minute: parts[1] ? parts[1].trim() : ""
+                                });
+                            }
+                        });
+                    };
+
+                    parseScorers(apiMatch.home_scorers, "home");
+                    parseScorers(apiMatch.away_scorers, "away");
+                    updated++;
+                }
+
+                // Giữ logic đồng bộ tên đội tuyển từ vòng Knockout (ID > 72)
+                if (localMatch.id > 72) {
+                    if (apiMatch.home_team && apiMatch.home_team.trim()) {
+                        localMatch.teamA = apiMatch.home_team;
+                        localMatch.teamAEn = apiMatch.home_team;
+                        localMatch.codeA = apiMatch.home_tla ? apiMatch.home_tla.toLowerCase() : "placeholder";
+                    }
+                    if (apiMatch.away_team && apiMatch.away_team.trim()) {
+                        localMatch.teamB = apiMatch.away_team;
+                        localMatch.teamBEn = apiMatch.away_team;
+                        localMatch.codeB = apiMatch.away_tla ? apiMatch.away_tla.toLowerCase() : "placeholder";
+                    }
+                }
+            }
+        });
+
+        matchCache = data;
+        lastFetchTime = now;
+        currentApiStatus = "success";
+
+    } catch (error) {
+        console.log("❌ Không lấy được dữ liệu online → dùng dữ liệu nội bộ");
+        currentApiStatus = "fallback";
+    }
+
     renderMatches(activeTabGlobal);
 }
 
-function applyApiData(data) {
-    // Không dùng vì API lỗi
-    console.log("⛔ applyApiData bị bỏ qua vì API không hoạt động");
+let refreshInterval = null;
+function startLiveRefresh() {
+    if (refreshInterval) clearInterval(refreshInterval);
+    refreshInterval = setInterval(fetchWorldCupData, 3000); // Tự động làm mới mỗi 3 giây
 }
 
-// ==================== KHỞI TẠO APP ====================
+// ==================== KHỞI TẠO APP VÀ VÒNG LẶP ĐỒNG BỘ ====================
 function initApp() {
     currentApiStatus = "welcome";
     updateUINonDynamicText();
@@ -636,21 +687,13 @@ function initApp() {
     renderLeaderboard();
     
     initFirebaseAuth();
-
-    // Render ngay dữ liệu tĩnh
-    renderMatches(activeTabGlobal);
-
-    // Chỉ log, không fetch thật
-    setTimeout(() => {
-        fetchWorldCupData();
-        startLiveRefresh();
-    }, 500);
+    fetchWorldCupData();
+    startLiveRefresh();
 }
 
-// ==================== EXPOSE GLOBAL ====================
-window.filterMatches = filterMatches;
-window.toggleLanguage = toggleLanguage;
-window.toggleWallet = toggleWallet;
-window.showMyPredictions = fetchMyPredictions;
-window.handleSubmissionWithEffects = handleSubmissionWithEffects;
 window.initApp = initApp;
+window.filterMatches = filterMatches;
+window.renderMatches = renderMatches;
+window.handleSubmissionWithEffects = handleSubmissionWithEffects;
+window.getFlagImgHTML = getFlagImgHTML;
+window.getLocalizedDate = getLocalizedDate;

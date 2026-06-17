@@ -191,5 +191,10 @@ const officialMatches = [
     { id: "104", group: "Chung Kết Tổng", groupEn: "World Cup Grand Final", date: "Thứ 2, 20/07/2026", time: "2:00", stadium: "New York/New Jersey Stadium", teamA: "Thắng Trận M101", teamAEn: "Winner M101", codeA: "placeholder", teamB: "Thắng Trận M102", teamBEn: "Winner M102", codeB: "placeholder", type: "chung-ket" }
 ];
 
-// Đồng bộ với app-logic.js
+
+// Export ra window để app-logic.js chắc chắn đọc được
+window.translations = translations;
+window.worldCupGroups = worldCupGroups;
+window.officialMatches = officialMatches;
+window.mockLeaderboard = mockLeaderboard;
 window.userPredictionMemory = window.userPredictionMemory || [];

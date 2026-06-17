@@ -730,8 +730,7 @@ function applyApiData(data) {
         }
     });
 }
-
-// ==================== BIẾN TOÀN CỤC CHO REFRESH ====================
+// ==================== BIẾN TOÀN CỤC & LIVE REFRESH ====================
 let refreshInterval = null;
 let isFirstSuccess = false;
 
@@ -745,7 +744,7 @@ function startLiveRefresh() {
         fetchWorldCupData();
     }, intervalTime);
 
-    console.log(`🔄 Auto refresh mỗi ${intervalTime/1000} giây`);
+    console.log(`🔄 Auto refresh: ${intervalTime === 5000 ? '5 giây' : '10 phút'}`);
 }
 
 // ==================== FETCH WORLD CUP DATA ====================
@@ -755,7 +754,6 @@ async function fetchWorldCupData(retryCount = 0) {
 
     if (matchCache && (now - lastFetchTime < 15000)) return;
 
-    // Cache localStorage
     const cached = localStorage.getItem('worldcup_cache_v2');
     if (cached && !isFirstSuccess) {
         try {
@@ -771,7 +769,7 @@ async function fetchWorldCupData(retryCount = 0) {
     currentApiStatus = "connecting";
 
     try {
-        console.log(`🌐 Fetching World Cup results... (Attempt ${retryCount + 1})`);
+        console.log(`🌐 Fetching World Cup... (Attempt ${retryCount + 1})`);
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -801,7 +799,7 @@ async function fetchWorldCupData(retryCount = 0) {
 
         if (!isFirstSuccess) {
             isFirstSuccess = true;
-            console.log("🔄 Chuyển sang chế độ cập nhật mỗi 10 phút");
+            console.log("🔄 Chuyển sang chế độ 10 phút/lần");
             startLiveRefresh();
         }
 
@@ -812,7 +810,7 @@ async function fetchWorldCupData(retryCount = 0) {
         if (retryCount < MAX_RETRIES) {
             setTimeout(() => fetchWorldCupData(retryCount + 1), 3000);
         } else if (!isFirstSuccess) {
-            console.log("⛔ Dùng dữ liệu tĩnh tạm thời");
+            console.log("⛔ Dùng dữ liệu tĩnh");
             currentApiStatus = "fallback";
             renderMatches(activeTabGlobal);
         }
@@ -829,21 +827,18 @@ function initApp() {
     
     initFirebaseAuth();
 
-    // Render ngay dữ liệu tĩnh
     renderMatches(activeTabGlobal);
 
-    // Bắt đầu fetch online
     setTimeout(() => {
         fetchWorldCupData();
         startLiveRefresh();
     }, 800);
 }
 
-// ==================== EXPOSE GLOBAL FUNCTIONS ====================
+// ==================== EXPOSE CÁC HÀM RA WINDOW ====================
 window.filterMatches = filterMatches;
 window.toggleLanguage = toggleLanguage;
 window.toggleWallet = toggleWallet;
 window.showMyPredictions = fetchMyPredictions;
 window.handleSubmissionWithEffects = handleSubmissionWithEffects;
 window.initApp = initApp;
-window.fetchWorldCupData = fetchWorldCupData;

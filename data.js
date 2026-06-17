@@ -1,6 +1,5 @@
 // data.js
 
-
 const translations = {
     vi: {
         heroTitle: 'Gáy Khét World Cup <br/><span class="gradient-text">Nhận Thưởng Lớn</span>',
@@ -145,6 +144,7 @@ const worldCupGroups = {
     ]
 };
 
+// ==================== DANH SÁCH TRẬN ĐẤU CHÍNH THỨC ====================
 const officialMatches = [
     { id: "1", group: "Bảng A", groupEn: "Group A", date: "Thứ 6, 12/06/2026", time: "2:00", stadium: "Mexico City Stadium", teamA: "Mexico", teamAEn: "Mexico", codeA: "mx", teamB: "Nam Phi", teamBEn: "South Africa", codeB: "za", type: "vong-bang", isHot: true },
     { id: "2", group: "Bảng A", groupEn: "Group A", date: "Thứ 6, 12/06/2026", time: "9:00", stadium: "Guadalajara Stadium", teamA: "Hàn Quốc", teamAEn: "South Korea", codeA: "kr", teamB: "CH Séc", teamBEn: "Czech Republic", codeB: "cz", type: "vong-bang" },
@@ -251,12 +251,8 @@ const officialMatches = [
     { id: "103", group: "Tranh Hạng 3", groupEn: "Third Place Playoff", date: "CN, 19/07/2026", time: "4:00", stadium: "Miami Stadium", teamA: "Thua Trận M101", teamAEn: "Loser M101", codeA: "placeholder", teamB: "Thua Trận M102", teamBEn: "Loser M102", codeB: "placeholder", type: "chung-ket" },
     { id: "104", group: "Chung Kết Tổng", groupEn: "World Cup Grand Final", date: "Thứ 2, 20/07/2026", time: "2:00", stadium: "New York/New Jersey Stadium", teamA: "Thắng Trận M101", teamAEn: "Winner M101", codeA: "placeholder", teamB: "Thắng Trận M102", teamBEn: "Winner M102", codeB: "placeholder", type: "chung-ket" }
 ];
-const mockLeaderboard = [
-    { name: "TayBew", score: 1240, countryCode: "vn" },
-    { name: "HALN", score: 1180, countryCode: "vn" },
-    { name: "Jack", score: 1090, countryCode: "us" },
-    { name: "Puchi", score: 980, countryCode: "br" },
-    { name: "Stravia", score: 920, countryCode: "th" }
-];
 
-const userPredictionMemory = [];
+// Sử dụng window để đồng bộ với app-logic.js
+if (typeof window.userPredictionMemory === 'undefined') {
+    window.userPredictionMemory = [];
+}

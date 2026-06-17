@@ -260,7 +260,10 @@ const mockLeaderboard = [
     { name: "Stravia", score: 920, countryCode: "th" }
 ];
 
-// Đồng bộ với app-logic.js
-if (typeof window.userPredictionMemory === 'undefined') {
-    window.userPredictionMemory = [];
+// Export ra window
+window.translations = translations;
+window.worldCupGroups = worldCupGroups;
+window.officialMatches = officialMatches;
+window.mockLeaderboard = mockLeaderboard;
+window.userPredictionMemory = window.userPredictionMemory || [];
 }

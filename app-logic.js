@@ -607,9 +607,11 @@ async function fetchMyPredictions() {
 window.showMyPredictions = fetchMyPredictions;
 
 
-// ==================== LIVE REFRESH & ONLINE DATA (ĐÃ XỬ LÝ CORS + LỖI API) ====================
+// ==================== LIVE REFRESH & API CONTROL (ĐÃ ỔN ĐỊNH) ====================
 let refreshInterval = null;
 let isFirstSuccess = false;
+let apiFailedCount = 0;
+const MAX_API_FAILS = 3;
 
 function startLiveRefresh() {
     if (refreshInterval) clearInterval(refreshInterval);
@@ -617,14 +619,15 @@ function startLiveRefresh() {
     const intervalTime = isFirstSuccess ? 600000 : 5000; // 10 phút hoặc 5 giây
 
     refreshInterval = setInterval(() => {
-        fetchWorldCupData();
+        if (apiFailedCount < MAX_API_FAILS) {
+            fetchWorldCupData();
+        }
     }, intervalTime);
 
     console.log(`🔄 Auto refresh: ${intervalTime === 5000 ? '5 giây' : '10 phút'}`);
 }
 
 async function fetchWorldCupData(retryCount = 0) {
-    const MAX_RETRIES = 2;
     const now = Date.now();
 
     // Cache ngắn hạn
@@ -640,8 +643,7 @@ async function fetchWorldCupData(retryCount = 0) {
 
         const response = await fetch('https://worldcup26.ir/get/games', {
             method: 'GET',
-            signal: controller.signal,
-            mode: 'cors'
+            signal: controller.signal
         });
 
         clearTimeout(timeoutId);
@@ -659,6 +661,7 @@ async function fetchWorldCupData(retryCount = 0) {
         matchCache = data;
         lastFetchTime = now;
         currentApiStatus = "success";
+        apiFailedCount = 0;
 
         console.log("✅ Đã lấy kết quả online thành công!");
 
@@ -671,16 +674,16 @@ async function fetchWorldCupData(retryCount = 0) {
         renderMatches(activeTabGlobal);
 
     } catch (error) {
-        console.warn(`❌ API không khả dụng:`, error.message);
+        apiFailedCount++;
+        console.warn(`❌ API lỗi (${apiFailedCount}/${MAX_API_FAILS}):`, error.message);
 
-        if (retryCount < MAX_RETRIES) {
+        if (retryCount < 1 && apiFailedCount < MAX_API_FAILS) {
             setTimeout(() => fetchWorldCupData(retryCount + 1), 4000);
-        } else {
-            // Tắt fetch vĩnh viễn nếu API chết
+        } else if (apiFailedCount >= MAX_API_FAILS) {
             if (refreshInterval) {
                 clearInterval(refreshInterval);
-                console.log("⛔ API không hoạt động → Tắt auto refresh, dùng dữ liệu tĩnh");
             }
+            console.log("⛔ API không khả dụng → Tắt auto refresh, dùng dữ liệu tĩnh");
             currentApiStatus = "fallback";
             renderMatches(activeTabGlobal);
         }
@@ -750,7 +753,7 @@ function initApp() {
     }, 800);
 }
 
-// ==================== EXPOSE GLOBAL FUNCTIONS ====================
+// ==================== EXPOSE GLOBAL ====================
 window.filterMatches = filterMatches;
 window.toggleLanguage = toggleLanguage;
 window.toggleWallet = toggleWallet;

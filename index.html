@@ -81,12 +81,34 @@
             animation: border-glow 4s linear infinite;
             border-width: 2px !important;
         }
+        #loading-overlay {
+    backdrop-filter: blur(8px);
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
     </style>
 </head>
 <body class="bg-walrus-dark text-gray-100 min-h-screen font-sans antialiased relative overflow-x-hidden">
 
     <canvas id="effect-canvas" class="absolute top-0 left-0 w-full h-full pointer-events-none z-50"></canvas>
-
+     <!-- LOADING OVERLAY -->
+<div id="loading-overlay" class="fixed inset-0 bg-black/90 flex items-center justify-center z-[9999] transition-opacity duration-500">
+    <div class="text-center">
+        <div class="w-16 h-16 border-4 border-walrus-aqua border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+        <h3 class="text-2xl font-bold text-white mb-2">Đang tải kết quả World Cup...</h3>
+        <p id="loading-text" class="text-gray-400 text-sm">Đang đồng bộ dữ liệu từ Walrus & FIFA</p>
+        
+        <div class="mt-8 text-xs text-gray-500 flex items-center justify-center gap-2">
+            <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+            LIVE UPDATE
+        </div>
+    </div>
+</div>
     <header class="border-b border-gray-800 bg-walrus-dark/80 backdrop-blur sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             <div class="flex items-center gap-3">

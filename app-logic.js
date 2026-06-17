@@ -635,36 +635,53 @@ async function fetchWorldCupData() {
 }
 
 // Hàm map dữ liệu từ GitHub format
+// ==================== ÁP DỤNG DỮ LIỆU TỪ GITHUB VÀO TRẬN ĐẤU ====================
 function applyGitHubData(data) {
-    if (!data || !data.rounds) return;
+    if (!data || !data.rounds) {
+        console.log("❌ Dữ liệu GitHub không đúng format");
+        return;
+    }
+
+    let updatedCount = 0;
 
     data.rounds.forEach(round => {
         if (!round.matches) return;
-        
+
         round.matches.forEach(match => {
-            const localMatch = officialMatches.find(m => String(m.id) === String(match.num || match.id));
+            // Tìm trận theo số thứ tự (match.num hoặc match.id)
+            const matchId = String(match.num || match.id || "");
+            const localMatch = officialMatches.find(m => String(m.id) === matchId);
+
             if (!localMatch) return;
 
-            // Cập nhật kết quả nếu có
-            if (match.score && match.score.ft) {
-                localMatch.result = {
-                    home: parseInt(match.score.ft.split('-')[0]) || 0,
-                    away: parseInt(match.score.ft.split('-')[1]) || 0,
-                    goals: []
-                };
-            }
-
-            // Cập nhật tên đội (đặc biệt vòng knock-out)
+            // Cập nhật tên đội (rất quan trọng cho vòng knock-out)
             if (match.team1 && match.team1.name) {
                 localMatch.teamA = localMatch.teamAEn = match.team1.name;
+                localMatch.codeA = (match.team1.code || "placeholder").toLowerCase();
             }
             if (match.team2 && match.team2.name) {
                 localMatch.teamB = localMatch.teamBEn = match.team2.name;
+                localMatch.codeB = (match.team2.code || "placeholder").toLowerCase();
+            }
+
+            // Cập nhật kết quả nếu trận đã đá xong
+            if (match.score && match.score.ft) {
+                const scores = match.score.ft.split('-').map(s => parseInt(s.trim()));
+                if (scores.length === 2) {
+                    localMatch.result = {
+                        home: scores[0],
+                        away: scores[1],
+                        goals: []
+                    };
+                    updatedCount++;
+                }
             }
         });
     });
-}
 
+    console.log(`✅ Đã cập nhật ${updatedCount} trận đấu từ GitHub`);
+    renderMatches(activeTabGlobal);   // Render lại ngay sau khi cập nhật
+}
 // ==================== KHỞI TẠO APP VỚI LOADING POPUP ====================
 function initApp() {
     currentApiStatus = "welcome";

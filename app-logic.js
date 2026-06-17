@@ -679,21 +679,39 @@ function startLiveRefresh() {
 }
 
 // ==================== KHỞI TẠO APP VÀ VÒNG LẶP ĐỒNG BỘ ====================
+// ==================== KHỞI TẠO APP VỚI LOADING POPUP ====================
 function initApp() {
     currentApiStatus = "welcome";
+    
+    // Hiển thị loading ngay lập tức
+    const loadingOverlay = document.getElementById('loading-overlay');
+    if (loadingOverlay) loadingOverlay.style.opacity = "1";
+
     updateUINonDynamicText();
     renderGroups();
     filterMatches('vong-bang');
     renderLeaderboard();
-    
+
     initFirebaseAuth();
-    fetchWorldCupData();
-    startLiveRefresh();
+
+    // Render dữ liệu tĩnh ngay
+    renderMatches(activeTabGlobal);
+
+    // Ẩn loading sau khi render xong
+    setTimeout(() => {
+        if (loadingOverlay) {
+            loadingOverlay.style.opacity = "0";
+            setTimeout(() => {
+                loadingOverlay.style.display = "none";
+            }, 600);
+        }
+    }, 1200); // 1.2 giây là đủ để render xong
 }
 
-window.initApp = initApp;
+// ==================== EXPOSE ====================
 window.filterMatches = filterMatches;
-window.renderMatches = renderMatches;
+window.toggleLanguage = toggleLanguage;
+window.toggleWallet = toggleWallet;
+window.showMyPredictions = fetchMyPredictions;
 window.handleSubmissionWithEffects = handleSubmissionWithEffects;
-window.getFlagImgHTML = getFlagImgHTML;
-window.getLocalizedDate = getLocalizedDate;
+window.initApp = initApp;

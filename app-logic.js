@@ -274,34 +274,91 @@ function triggerWalrusMemoryAgent(email, displayName) {
 
     if (!aiStatusText || !aiAgentText) return;
 
-    if (aiStatusText) aiStatusText.innerText = currentLang === "vi" ? "🧠 Đang giải mã Blobs bộ nhớ..." : "🧠 Decoding memory Blobs...";
+    aiStatusText.innerText = currentLang === "vi" ? "🧠 Đang giải mã Blobs bộ nhớ..." : "🧠 Decoding memory Blobs...";
     if (aiAvatarBox) aiAvatarBox.innerText = "⏳";
 
     setTimeout(() => {
-        // Tìm lịch sử liên kết với tài khoản trên bộ nhớ lưu trữ Walrus
+        // 1. Lọc lịch sử dự đoán của user này từ bộ nhớ Walrus
         const userHistory = window.userPredictionMemory.filter(item => item.ownerEmail === email);
         const totalPredictions = userHistory.length;
 
         if (aiAvatarBox) aiAvatarBox.innerText = "🦫";
-        if (aiStatusText) aiStatusText.innerText = currentLang === "vi" ? "✅ Bộ nhớ Walrus: Đã đồng bộ" : "✅ Walrus Memory: Synced";
+        aiStatusText.innerText = currentLang === "vi" ? "✅ Bộ nhớ Walrus: Đã đồng bộ" : "✅ Walrus Memory: Synced";
 
-        // KỊCH BẢN THAY ĐỔI HÀNH VI THEO THỜI GIAN/DỮ LIỆU CŨ (AUTHENTIC PERSISTENT MEMORY)
+        // KỊCH BẢN 1: Người dùng mới tinh (Day 1)
         if (totalPredictions === 0) {
             aiAgentText.innerHTML = currentLang === "vi"
                 ? `"Chào sếp <strong>${displayName}</strong>! Bộ nhớ Walrus ghi nhận tài khoản này mới toanh, sếp chưa cược trận nào. Thử gáy một trận ở Vòng Bảng xem tài tiên tri đến đâu đi sếp!"`
                 : `"Hello sếp <strong>${displayName}</strong>! Walrus storage shows a completely new account. You haven't made any predictions yet. Try your luck with a Group Stage match now!"`;
-        } else if (totalPredictions >= 1 && totalPredictions <= 3) {
-            const lastPred = userHistory[userHistory.length - 1];
-            aiAgentText.innerHTML = currentLang === "vi"
-                ? `"Tôi đã nạp khối dữ liệu cũ của sếp <strong>${displayName}</strong> rồi! Bộ nhớ ghi nhận sếp đã gáy tổng cộng <strong>${totalPredictions} trận</strong>. Gần đây nhất là trận <strong>${lastPred.matchId}</strong> với tỷ số ${lastPred.homeScore}-${lastPred.awayScore}. Cứ đà này là tích đủ điều kiện đua giải tuần đó sếp!"`
-                : `"Data blocks loaded for <strong>${displayName}</strong>! Persistent state holds <strong>${totalPredictions} prediction(s)</strong>. Your latest bet was on Match <strong>${lastPred.matchId}</strong> (${lastPred.homeScore}-${lastPred.awayScore}). Keep going to earn your rewards!"`;
-        } else {
-            // Trường hợp người dùng lão luyện sử dụng app trên 4 ngày/nhiều trận đấu
-            aiAgentText.innerHTML = currentLang === "vi"
-                ? `"🔥 <strong>Úi xời, sếp ${displayName} gáy khét quá!</strong> Bộ nhớ Walrus Blobs lưu trữ vĩnh viễn tận <strong>${totalPredictions} dự đoán</strong> của sếp rồi. Tôi thấy sếp phân tích trận đấu rất có flair, để tôi tổng hợp gửi thẳng lên Bảng Vàng Tiên Tri cạnh tranh top 500 WAL nhé!"`
-                : `"🔥 <strong>Impressive, sếp ${displayName}!</strong> Walrus Blobs stores <strong>${totalPredictions} history entries</strong> for you. Your prediction flair is outstanding. I am forwarding your decentralized state directly to the Prophecy Board to compete for the 500 WAL pool!"`;
+            return;
         }
-    }, 1200); // Tạo hiệu ứng trễ giải mã dữ liệu thực tế
+
+        // 2. THUẬT TOÁN NHỚ SÂU: Tìm đội bóng sếp cược thắng nhiều nhất (Bias Tracking)
+        let teamCounts = {};
+        let correctPredictions = 0;
+        let evaluatedMatches = 0;
+
+        userHistory.forEach(pred => {
+            const match = officialMatches.find(m => String(m.id) === String(pred.matchId));
+            if (!match) return;
+
+            // Xác định đội sếp chọn thắng dựa trên tỷ số cược
+            let chosenTeam = null;
+            if (pred.homeScore > pred.awayScore) chosenTeam = match.teamA;
+            else if (pred.awayScore > pred.homeScore) chosenTeam = match.teamB;
+
+            if (chosenTeam) {
+                teamCounts[chosenTeam] = (teamCounts[chosenTeam] || 0) + 1;
+            }
+
+            // Đối chiếu kết quả thật từ API để tính toán độ chính xác (Accuracy Roast)
+            if (match.result && match.result.home !== undefined) {
+                evaluatedMatches++;
+                const realHome = match.result.home;
+                const realAway = match.result.away;
+
+                // Trúng tỷ số hoặc trúng hướng thắng/thua/hòa
+                const predictedTrend = Math.sign(pred.homeScore - pred.awayScore);
+                const realTrend = Math.sign(realHome - realAway);
+                if (predictedTrend === realTrend) {
+                    correctPredictions++;
+                }
+            }
+        });
+
+        // Tìm ra đội bóng được chọn nhiều nhất
+        let favoriteTeam = "Chưa rõ";
+        let maxCount = 0;
+        for (const [team, count] of Object.entries(teamCounts)) {
+            if (count > maxCount) {
+                maxCount = count;
+                favoriteTeam = team;
+            }
+        }
+
+        // Tính tỷ lệ chính xác (%)
+        const accuracyRate = evaluatedMatches > 0 ? Math.round((correctPredictions / evaluatedMatches) * 100) : null;
+        const lastPred = userHistory[userHistory.length - 1];
+
+        // KỊCH BẢN 2: Người dùng hoạt động 2-3 ngày (Day 2-3) - Bắt đầu nhận diện Bias
+        if (totalPredictions >= 1 && totalPredictions <= 3) {
+            aiAgentText.innerHTML = currentLang === "vi"
+                ? `"Tôi đã nạp khối dữ liệu cũ của sếp <strong>${displayName}</strong>! Bộ nhớ ghi nhận sếp gáy <strong>${totalPredictions} trận</strong>. Có vẻ sếp khá thiên vị đội <strong>${favoriteTeam}</strong> đúng không? Gần nhất là trận <strong>${lastPred.matchId}</strong> cược tỷ số ${lastPred.homeScore}-${lastPred.awayScore}. Chờ bóng lăn xem sếp sáng mắt ra không nhé!"`
+                : `"Data blocks loaded for <strong>${displayName}</strong>! Persistent state holds <strong>${totalPredictions} prediction(s)</strong>. My memory senses you are biased towards <strong>${favoriteTeam}</strong>! Your latest bet was on Match <strong>${lastPred.matchId}</strong> (${lastPred.homeScore}-${lastPred.awayScore}). Let's see how it goes!"`;
+        } 
+        // KỊCH BẢN 3: Lão luyện (Day 4+) - Khịa thẳng tay dựa trên tỷ lệ trúng/sai thực tế
+        else {
+            if (accuracyRate !== null && accuracyRate < 50) {
+                aiAgentText.innerHTML = currentLang === "vi"
+                    ? `"🔥 <strong>Úi xời, sếp ${displayName} gáy thì khét mà tỉ lệ trúng có ${accuracyRate}%!</strong> Bộ nhớ vĩnh viễn lưu ${totalPredictions} cược của sếp rồi, sếp bị 'bệnh' tin tưởng quá đà vào <strong>${favoriteTeam}</strong> đấy. Tỉnh táo lại để đua top 500 WAL đi sếp ơi!"`
+                    : `"🔥 <strong>Impressive banter, sếp ${displayName}, but your accuracy is only ${accuracyRate}%!</strong> Walrus Blobs stores ${totalPredictions} history entries for you. You have a huge blind spot for <strong>${favoriteTeam}</strong>. Focus up to secure your WAL rewards!"`;
+            } else {
+                aiAgentText.innerHTML = currentLang === "vi"
+                    ? `"🔥 <strong>Úi xời, sếp ${displayName} gáy khét mà chuẩn đấy!</strong> Tỉ lệ trúng hướng trận đấu đạt <strong>${accuracyRate || 100}%</strong> qua ${totalPredictions} dự đoán. Con mắt tiên tri của sếp linh khứu đấy, để tôi tổng hợp dữ liệu gửi thẳng lên Bảng Vàng Tiên Tri cạnh tranh giải nhé!"`
+                    : `"🔥 <strong>Outstanding, sếp ${displayName}!</strong> Your tournament insight sits at a solid <strong>${accuracyRate || 100}%</strong> across ${totalPredictions} records. Your flair is undeniable. Forwarding your decentralized state directly to the Prophecy Board!"`;
+            }
+        }
+    }, 1200);
 }
 
 // ==================== RENDER MATCHES ====================
@@ -518,12 +575,14 @@ function toggleLanguage() {
 
     if (currentLang === "vi") {
         currentLang = "en";
-        flag.src = "https://flagcdn.com/w20/vn.png";
-        txt.innerText = "VI";
-    } else {
-        currentLang = "vi";
+        // ✅ Đang ngôn ngữ tiếng Anh thì hiển thị cờ Anh (hoặc cờ Mỹ)
         flag.src = "https://flagcdn.com/w20/gb.png";
         txt.innerText = "EN";
+    } else {
+        currentLang = "vi";
+        // ✅ Đang ngôn ngữ tiếng Việt thì hiển thị cờ Việt Nam
+        flag.src = "https://flagcdn.com/w20/vn.png";
+        txt.innerText = "VI";
     }
 
     updateUINonDynamicText();
@@ -550,20 +609,6 @@ function toggleGmail() {
     } else {
         btn.className = "flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 text-sm font-semibold rounded-xl border border-gray-700 transition duration-200";
         txt.innerText = translations[currentLang].btnGmail;
-    }
-}
-
-function toggleWallet() {
-    isWalletConnected = !isWalletConnected;
-    const btn = document.getElementById('walletBtn');
-    const txt = document.getElementById('walletText');
-    if(isWalletConnected) {
-        btn.classList.replace('bg-walrus-card', 'bg-teal-950');
-        btn.classList.add('border-teal-900/50');
-        txt.innerHTML = `<span class="text-emerald-400 font-mono">0xSlush...40a2</span>`;
-    } else {
-        btn.className = "flex items-center gap-2 px-4 py-2 bg-walrus-card hover:bg-opacity-80 text-walrus-aqua text-sm font-semibold rounded-xl border border-walrus-aqua/30 transition duration-200";
-        txt.innerText = translations[currentLang].btnWallet;
     }
 }
 
@@ -664,10 +709,12 @@ async function fetchWorldCupData() {
         lastFetchTime = now;
         currentApiStatus = "success";
 
-    } catch (error) {
+   } catch (error) {
         console.log("❌ Không lấy được dữ liệu online → dùng dữ liệu nội bộ");
         currentApiStatus = "fallback";
     }
+    
+    updateUINonDynamicText(); 
 
     renderMatches(activeTabGlobal);
 }

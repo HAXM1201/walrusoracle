@@ -731,14 +731,13 @@ function applyApiData(data) {
     });
 }
 
-// ==================== LIVE REFRESH - TỰ ĐỘNG CHUYỂN TẦN SUẤT ====================
-let refreshInterval = null;   // Chỉ khai báo 1 lần duy nhất
+// ==================== BIẾN TOÀN CỤC CHO REFRESH ====================
+let refreshInterval = null;
 let isFirstSuccess = false;
 
+// ==================== LIVE REFRESH - TỰ ĐỘNG CHUYỂN TẦN SUẤT ====================
 function startLiveRefresh() {
-    if (refreshInterval) {
-        clearInterval(refreshInterval);
-    }
+    if (refreshInterval) clearInterval(refreshInterval);
 
     const intervalTime = isFirstSuccess ? 600000 : 5000; // 10 phút hoặc 5 giây
 
@@ -746,7 +745,7 @@ function startLiveRefresh() {
         fetchWorldCupData();
     }, intervalTime);
 
-    console.log(`🔄 Auto refresh: ${intervalTime === 5000 ? '5 giây (nhanh)' : '10 phút (thông thường)'}`);
+    console.log(`🔄 Auto refresh mỗi ${intervalTime/1000} giây`);
 }
 
 // ==================== FETCH WORLD CUP DATA ====================
@@ -803,7 +802,7 @@ async function fetchWorldCupData(retryCount = 0) {
         if (!isFirstSuccess) {
             isFirstSuccess = true;
             console.log("🔄 Chuyển sang chế độ cập nhật mỗi 10 phút");
-            startLiveRefresh(); // Restart với tần suất mới
+            startLiveRefresh();
         }
 
         renderMatches(activeTabGlobal);
@@ -813,7 +812,7 @@ async function fetchWorldCupData(retryCount = 0) {
         if (retryCount < MAX_RETRIES) {
             setTimeout(() => fetchWorldCupData(retryCount + 1), 3000);
         } else if (!isFirstSuccess) {
-            console.log("⛔ Dùng dữ liệu tĩnh");
+            console.log("⛔ Dùng dữ liệu tĩnh tạm thời");
             currentApiStatus = "fallback";
             renderMatches(activeTabGlobal);
         }
@@ -833,17 +832,18 @@ function initApp() {
     // Render ngay dữ liệu tĩnh
     renderMatches(activeTabGlobal);
 
-    // Bắt đầu fetch
+    // Bắt đầu fetch online
     setTimeout(() => {
         fetchWorldCupData();
         startLiveRefresh();
     }, 800);
 }
 
-// Expose tất cả hàm ra window để onclick trong HTML hoạt động
+// ==================== EXPOSE GLOBAL FUNCTIONS ====================
 window.filterMatches = filterMatches;
 window.toggleLanguage = toggleLanguage;
 window.toggleWallet = toggleWallet;
 window.showMyPredictions = fetchMyPredictions;
 window.handleSubmissionWithEffects = handleSubmissionWithEffects;
 window.initApp = initApp;
+window.fetchWorldCupData = fetchWorldCupData;

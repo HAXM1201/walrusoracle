@@ -70,18 +70,78 @@ const translations = {
 };
 
 const worldCupGroups = {
-    "Bảng A": [{ name: "Mexico", nameEn: "Mexico", code: "mx" }, { name: "Nam Phi", nameEn: "South Africa", code: "za" }, { name: "Hàn Quốc", nameEn: "South Korea", code: "kr" }, { name: "CH Séc", nameEn: "Czech Republic", code: "cz" }],
-    "Bảng B": [{ name: "Canada", nameEn: "Canada", code: "ca" }, { name: "Bosnia/Herzeg.", nameEn: "Bosnia/Herzeg.", code: "ba" }, { name: "Qatar", nameEn: "Qatar", code: "qa" }, { name: "Thụy Sĩ", nameEn: "Switzerland", code: "ch" }],
-    "Bảng C": [{ name: "Brazil", nameEn: "Brazil", code: "br" }, { name: "Ma Rốc", nameEn: "Morocco", code: "ma" }, { name: "Haiti", nameEn: "Haiti", code: "ht" }, { name: "Scotland", nameEn: "Scotland", code: "gb-sct" }],
-    "Bảng D": [{ name: "Mỹ", nameEn: "USA", code: "us" }, { name: "Paraguay", nameEn: "Paraguay", code: "py" }, { name: "Úc", nameEn: "Australia", code: "au" }, { name: "Thổ Nhĩ Kỳ", nameEn: "Turkey", code: "tr" }],
-    "Bảng E": [{ name: "Đức", nameEn: "Germany", code: "de" }, { name: "Curacao", nameEn: "Curacao", code: "cw" }, { name: "Bờ Biển Ngà", nameEn: "Ivory Coast", code: "ci" }, { name: "Ecuador", nameEn: "Ecuador", code: "ec" }],
-    "Bảng F": [{ name: "Hà Lan", nameEn: "Netherlands", code: "nl" }, { name: "Nhật Bản", nameEn: "Japan", code: "jp" }, { name: "Thụy Điển", nameEn: "Sweden", code: "se" }, { name: "Tunisia", nameEn: "Tunisia", code: "tn" }],
-    "Bảng G": [{ name: "Bỉ", nameEn: "Belgium", code: "be" }, { name: "Ai Cập", nameEn: "Egypt", code: "eg" }, { name: "Iran", nameEn: "Iran", code: "ir" }, { name: "New Zealand", nameEn: "New Zealand", code: "nz" }],
-    "Bảng H": [{ name: "Tây Ban Nha", nameEn: "Spain", code: "es" }, { name: "Cape Verde", nameEn: "Cape Verde", code: "cv" }, { name: "Ả Rập Xê Út", nameEn: "Saudi Arabia", code: "sa" }, { name: "Uruguay", nameEn: "Uruguay", code: "uy" }],
-    "Bảng I": [{ name: "Pháp", nameEn: "France", code: "fr" }, { name: "Senegal", nameEn: "Senegal", code: "sn" }, { name: "Iraq", nameEn: "Iraq", code: "iq" }, { name: "Na Uy", nameEn: "Norway", code: "no" }],
-    "Bảng J": [{ name: "Argentina", nameEn: "Argentina", code: "ar" }, { name: "Algeria", nameEn: "Algeria", code: "dz" }, { name: "Áo", nameEn: "Austria", code: "at" }, { name: "Jordan", nameEn: "Jordan", code: "jo" }],
-    "Bảng K": [{ name: "Bồ Đào Nha", nameEn: "Portugal", code: "pt" }, { name: "Congo", nameEn: "Congo", code: "cg" }, { name: "Uzbekistan", nameEn: "Uzbekistan", code: "uz" }, { name: "Colombia", nameEn: "Colombia", code: "co" }],
-    "Bảng L": [{ name: "Anh", nameEn: "England", code: "gb-eng" }, { name: "Croatia", nameEn: "Croatia", code: "hr" }, { name: "Ghana", nameEn: "Ghana", code: "gh" }, { name: "Panama", nameEn: "Panama", code: "pa" }]
+    "Bảng A": [
+        { name: "Mexico", nameEn: "Mexico", code: "mx" },
+        { name: "Nam Phi", nameEn: "South Africa", code: "za" },
+        { name: "Hàn Quốc", nameEn: "South Korea", code: "kr" },
+        { name: "CH Séc", nameEn: "Czech Republic", code: "cz" }
+    ],
+    "Bảng B": [
+        { name: "Canada", nameEn: "Canada", code: "ca" },
+        { name: "Bosnia/Herzeg.", nameEn: "Bosnia/Herzeg.", code: "ba" },
+        { name: "Qatar", nameEn: "Qatar", code: "qa" },
+        { name: "Thụy Sĩ", nameEn: "Switzerland", code: "ch" }
+    ],
+    "Bảng C": [
+        { name: "Brazil", nameEn: "Brazil", code: "br" },
+        { name: "Ma Rốc", nameEn: "Morocco", code: "ma" },
+        { name: "Haiti", nameEn: "Haiti", code: "ht" },
+        { name: "Scotland", nameEn: "Scotland", code: "gb-sct" }
+    ],
+    "Bảng D": [
+        { name: "Mỹ", nameEn: "USA", code: "us" },
+        { name: "Paraguay", nameEn: "Paraguay", code: "py" },
+        { name: "Úc", nameEn: "Australia", code: "au" },
+        { name: "Thổ Nhĩ Kỳ", nameEn: "Turkey", code: "tr" }
+    ],
+    "Bảng E": [
+        { name: "Đức", nameEn: "Germany", code: "de" },
+        { name: "Curacao", nameEn: "Curacao", code: "cw" },
+        { name: "Bờ Biển Ngà", nameEn: "Ivory Coast", code: "ci" },
+        { name: "Ecuador", nameEn: "Ecuador", code: "ec" }
+    ],
+    "Bảng F": [
+        { name: "Hà Lan", nameEn: "Netherlands", code: "nl" },
+        { name: "Nhật Bản", nameEn: "Japan", code: "jp" },
+        { name: "Thụy Điển", nameEn: "Sweden", code: "se" },
+        { name: "Tunisia", nameEn: "Tunisia", code: "tn" }
+    ],
+    "Bảng G": [
+        { name: "Bỉ", nameEn: "Belgium", code: "be" },
+        { name: "Ai Cập", nameEn: "Egypt", code: "eg" },
+        { name: "Iran", nameEn: "Iran", code: "ir" },
+        { name: "New Zealand", nameEn: "New Zealand", code: "nz" }
+    ],
+    "Bảng H": [
+        { name: "Tây Ban Nha", nameEn: "Spain", code: "es" },
+        { name: "Cape Verde", nameEn: "Cape Verde", code: "cv" },
+        { name: "Ả Rập Xê Út", nameEn: "Saudi Arabia", code: "sa" },
+        { name: "Uruguay", nameEn: "Uruguay", code: "uy" }
+    ],
+    "Bảng I": [
+        { name: "Pháp", nameEn: "France", code: "fr" },
+        { name: "Senegal", nameEn: "Senegal", code: "sn" },
+        { name: "Iraq", nameEn: "Iraq", code: "iq" },
+        { name: "Na Uy", nameEn: "Norway", code: "no" }
+    ],
+    "Bảng J": [
+        { name: "Argentina", nameEn: "Argentina", code: "ar" },
+        { name: "Algeria", nameEn: "Algeria", code: "dz" },
+        { name: "Áo", nameEn: "Austria", code: "at" },
+        { name: "Jordan", nameEn: "Jordan", code: "jo" }
+    ],
+    "Bảng K": [
+        { name: "Bồ Đào Nha", nameEn: "Portugal", code: "pt" },
+        { name: "Congo", nameEn: "Congo", code: "cg" },
+        { name: "Uzbekistan", nameEn: "Uzbekistan", code: "uz" },
+        { name: "Colombia", nameEn: "Colombia", code: "co" }
+    ],
+    "Bảng L": [
+        { name: "Anh", nameEn: "England", code: "gb-eng" },
+        { name: "Croatia", nameEn: "Croatia", code: "hr" },
+        { name: "Ghana", nameEn: "Ghana", code: "gh" },
+        { name: "Panama", nameEn: "Panama", code: "pa" }
+    ]
 };
 
 const officialMatches = [
@@ -200,9 +260,7 @@ const mockLeaderboard = [
     { name: "Stravia", score: 920, countryCode: "th" }
 ];
 
-// Export ra window để app-logic.js chắc chắn đọc được
-window.translations = translations;
-window.worldCupGroups = worldCupGroups;
-window.officialMatches = officialMatches;
-window.mockLeaderboard = mockLeaderboard;
-window.userPredictionMemory = window.userPredictionMemory || [];
+// Đồng bộ với app-logic.js
+if (typeof window.userPredictionMemory === 'undefined') {
+    window.userPredictionMemory = [];
+}

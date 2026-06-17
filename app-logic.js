@@ -607,11 +607,9 @@ async function fetchMyPredictions() {
 window.showMyPredictions = fetchMyPredictions;
 
 
-// ==================== BIẾN TOÀN CỤC & LIVE REFRESH ====================
 let refreshInterval = null;
 let isFirstSuccess = false;
 
-// ==================== LIVE REFRESH - TỰ ĐỘNG CHUYỂN TẦN SUẤT ====================
 function startLiveRefresh() {
     if (refreshInterval) clearInterval(refreshInterval);
 
@@ -621,10 +619,9 @@ function startLiveRefresh() {
         fetchWorldCupData();
     }, intervalTime);
 
-    console.log(`🔄 Auto refresh: ${intervalTime === 5000 ? '5 giây' : '10 phút'}`);
+    console.log(`🔄 Auto refresh: ${intervalTime === 5000 ? '5 giây (nhanh)' : '10 phút'}`);
 }
 
-// ==================== FETCH WORLD CUP DATA ====================
 async function fetchWorldCupData(retryCount = 0) {
     const MAX_RETRIES = 2;
     const now = Date.now();
@@ -694,6 +691,51 @@ async function fetchWorldCupData(retryCount = 0) {
     }
 }
 
+function applyApiData(data) {
+    if (!data?.games) return;
+
+    data.games.forEach(apiMatch => {
+        const localMatch = officialMatches.find(m => String(m.id) === String(apiMatch.id));
+        if (!localMatch) return;
+
+        if (apiMatch.finished === "TRUE" || apiMatch.status === "finished") {
+            localMatch.result = {
+                home: parseInt(apiMatch.home_score) || 0,
+                away: parseInt(apiMatch.away_score) || 0,
+                goals: []
+            };
+
+            const parseScorers = (str, team) => {
+                if (!str || str === "null") return;
+                str.replace(/[{}"]/g, '').split(',').forEach(item => {
+                    if (item.trim()) {
+                        const parts = item.trim().split(/\s+(\d+)'?$/);
+                        localMatch.result.goals.push({
+                            team: team,
+                            scorer: parts[0] ? parts[0].trim() : item.trim(),
+                            minute: parts[1] ? parts[1].trim() : ""
+                        });
+                    }
+                });
+            };
+
+            parseScorers(apiMatch.home_scorers, "home");
+            parseScorers(apiMatch.away_scorers, "away");
+        }
+
+        if (parseInt(localMatch.id) > 72) {
+            if (apiMatch.home_team) {
+                localMatch.teamA = localMatch.teamAEn = apiMatch.home_team;
+                localMatch.codeA = (apiMatch.home_tla || "placeholder").toLowerCase();
+            }
+            if (apiMatch.away_team) {
+                localMatch.teamB = localMatch.teamBEn = apiMatch.away_team;
+                localMatch.codeB = (apiMatch.away_tla || "placeholder").toLowerCase();
+            }
+        }
+    });
+}
+
 // ==================== KHỞI TẠO APP ====================
 function initApp() {
     currentApiStatus = "welcome";
@@ -712,7 +754,7 @@ function initApp() {
     }, 800);
 }
 
-// ==================== EXPOSE CÁC HÀM RA WINDOW ====================
+// ==================== EXPOSE GLOBAL ====================
 window.filterMatches = filterMatches;
 window.toggleLanguage = toggleLanguage;
 window.toggleWallet = toggleWallet;

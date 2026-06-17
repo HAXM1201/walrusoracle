@@ -667,30 +667,25 @@ function applyGitHubData(data) {
 // ==================== KHỞI TẠO APP VỚI LOADING POPUP ====================
 function initApp() {
     currentApiStatus = "welcome";
-    
-    // Hiển thị loading ngay lập tức
-    const loadingOverlay = document.getElementById('loading-overlay');
-    if (loadingOverlay) loadingOverlay.style.opacity = "1";
-
     updateUINonDynamicText();
     renderGroups();
     filterMatches('vong-bang');
     renderLeaderboard();
-
+    
     initFirebaseAuth();
+    
+    renderMatches(activeTabGlobal);   // Render ngay dữ liệu tĩnh
 
-    // Render dữ liệu tĩnh ngay
-    renderMatches(activeTabGlobal);
-
-    // Ẩn loading sau khi render xong
     setTimeout(() => {
-        if (loadingOverlay) {
-            loadingOverlay.style.opacity = "0";
-            setTimeout(() => {
-                loadingOverlay.style.display = "none";
-            }, 600);
-        }
-    }, 1200); // 1.2 giây là đủ để render xong
+        fetchWorldCupData();           // Fetch online sau
+        startLiveRefresh();
+    }, 600);
+}
+
+let refreshInterval = null;
+function startLiveRefresh() {
+    if (refreshInterval) clearInterval(refreshInterval);
+    refreshInterval = setInterval(fetchWorldCupData, 45000); // 45 giây một lần
 }
 
 // ==================== EXPOSE ====================

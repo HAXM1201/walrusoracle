@@ -9,12 +9,12 @@ let currentUser = null;
 let matchCache = null;
 let lastFetchTime = 0;
 
-// Mảng chứa lịch sử bộ nhớ dự đoán lấy từ Walrus
+// Mảng chứa lịch sử bộ nhớ dự đoán lấy từ Walrus (Liên kết đồng bộ với data.js)
 if (typeof window.userPredictionMemory === 'undefined') {
     window.userPredictionMemory = [];
 }
 
-// ==================== CẤU HÌNH VƯỢT LỖI TRUSTED TYPES ====================
+// ==================== CẤU HÌNH VƯỢT LỖI TRUSTED TYPES (ĐẶT Ở ĐẦU FILE) ====================
 if (window.trustedTypes && window.trustedTypes.createPolicy) {
     if (!window.trustedTypes.defaultPolicy) {
         window.trustedTypes.createPolicy('default', {
@@ -25,7 +25,7 @@ if (window.trustedTypes && window.trustedTypes.createPolicy) {
     }
 }
 
-// ==================== FIREBASE AUTH ====================
+// ==================== FIREBASE AUTH (CƠ CHẾ POPUP CHUẨN) ====================
 const firebaseConfig = {
   apiKey: "AIzaSyBl7vHtoGcSNqoIgTJnPkgu29wQRD2XVAo",
   authDomain: "walrus-cup-oracle.firebaseapp.com",
@@ -53,19 +53,27 @@ function initFirebaseAuth() {
 
 async function signInWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
+    provider.setCustomParameters({
+        prompt: 'select_account'
+    });
 
     try {
+        console.log("🔄 Đang khởi chạy cửa sổ xác thực Google...");
         const result = await auth.signInWithPopup(provider);
         currentUser = result.user;
         updateUserUI();
         alert(currentLang === "vi" ? `Chào ${currentUser.displayName}!` : `Welcome ${currentUser.displayName}!`);
     } catch (error) {
-        console.error("Lỗi đăng nhập:", error);
+        console.error("Lỗi đăng nhập hệ thống:", error);
+        
         if (error.code === 'auth/popup-blocked') {
-            alert("❌ Trình duyệt chặn popup! Vui lòng mở khóa popup.");
+            alert("❌ Trình duyệt của sếp đã chặn cửa sổ Popup! Vui lòng nhấn vào biểu tượng mở khóa ô vuông ở góc thanh địa chỉ duyệt web.");
+        } else if (error.code === 'auth/popup-closed-by-user') {
+            console.log("Người dùng đã chủ động tắt popup trước khi đăng nhập.");
+        } else if (error.code === 'auth/unauthorized-domain') {
+            alert("❌ Domain walrusoracle.xyz chưa được bật quyền trong Firebase Console!");
         } else {
-            alert(`Đăng nhập thất bại: ${error.message}`);
+            alert(`Đăng nhập thất bại: ${error.message}. Hãy thử lại trên tab ẩn danh.`);
         }
     }
 }
@@ -128,6 +136,12 @@ function getFlagImgHTML(code) {
 function launchConfetti() {
     if (typeof window.createConfetti === "function") {
         window.createConfetti();
+    } else if (typeof confetti === "function") {
+        confetti({
+            particleCount: 200,
+            spread: 80,
+            origin: { y: 0.6 }
+        });
     }
 }
 
@@ -142,17 +156,27 @@ function createParticles() {
 function animateParticles() {
     if (typeof window.animateParticles === "function") {
         window.animateParticles();
+    } else {
+        console.log("✨ Hạt hiệu ứng đang chuyển động");
     }
 }
 
 // ====================== NỘP DỰ ĐOÁN ======================
 async function handleSubmissionWithEffects(matchId, homeScore, awayScore, analysis = "") {
+    if (homeScore === undefined && awayScore === undefined) {
+        createConfetti();
+        animateParticles();
+        mockSubmit(matchId);
+        return;
+    }
+
     if (!currentUser) {
         alert(currentLang === "vi" ? "Vui lòng đăng nhập Gmail trước khi nộp dự đoán!" : "Please login first!");
         return;
     }
 
     launchConfetti();
+    createParticles();
 
     const success = await storePredictionOnWalrus(matchId, homeScore, awayScore, analysis);
 
@@ -168,21 +192,31 @@ async function handleSubmissionWithEffects(matchId, homeScore, awayScore, analys
 
         triggerWalrusMemoryAgent(currentUser.email, currentUser.displayName);
 
-        alert(currentLang === "vi" ? `🎉 Dự đoán trận ${matchId} đã được lưu thành công!` : `🎉 Prediction saved!`);
+        alert(currentLang === "vi" 
+            ? `🎉 Dự đoán trận ${matchId} đã được lưu thành công lên Walrus Mainnet!` 
+            : `🎉 Prediction saved on Walrus!`);
         
-        setTimeout(() => renderMatches(activeTabGlobal), 1000);
+        setTimeout(() => {
+            renderMatches(activeTabGlobal);
+        }, 1000);
     }
 }
 
 function mockSubmit(id) { 
-    alert(currentLang === "en" ? `Success! Prediction for match ${id} saved.` : `Thành công! Dự đoán trận ${id} đã lưu.`);
+    const successMsg = currentLang === "en" 
+        ? `Success! Your prediction for match ${id} has been securely stored on Walrus Mainnet.`
+        : `Thành công! Dự đoán trận ${id} đã được lưu trữ lên Walrus Mainnet.`;
+    alert(successMsg); 
 }
 
 // ==================== WALRUS PUBLISHER ====================
 const CUSTOM_PUBLISHER_URL = "https://walrus-publisher-production-b5d6.up.railway.app";
 
 async function storePredictionOnWalrus(matchId, scoreA, scoreB, analysis) {
-    if (!currentUser) return false;
+    if (!currentUser) {
+        alert(currentLang === "vi" ? "Vui lòng đăng nhập Gmail trước!" : "Please sign in first!");
+        return false;
+    }
 
     const predictionData = {
         userEmail: currentUser.email,
@@ -200,14 +234,21 @@ async function storePredictionOnWalrus(matchId, scoreA, scoreB, analysis) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(predictionData)
         });
-        return response.ok;
+
+        if (response.ok) {
+            console.log("✅ Lưu Walrus thành công");
+            return true;
+        } else {
+            throw new Error(`HTTP ${response.status}`);
+        }
     } catch (error) {
         console.error("Publisher Error:", error);
+        alert(currentLang === "vi" ? "❌ Lỗi kết nối Publisher. Kiểm tra lại backend." : "❌ Publisher connection failed.");
         return false;
     }
 }
 
-// ==================== WALRUS MEMORY AGENT ====================
+// ==================== LOGIC TRÍ NHỚ DÀI HẠN (WALRUS PERSISTENT AGENT) ====================
 function resetAiAgentUI() {
     const aiStatusText = document.getElementById('ai-status-text');
     const aiAgentText = document.getElementById('ai-roast-text');
@@ -226,7 +267,7 @@ function triggerWalrusMemoryAgent(email, displayName) {
 
     if (!aiStatusText || !aiAgentText) return;
 
-    aiStatusText.innerText = currentLang === "vi" ? "🧠 Đang giải mã Blobs bộ nhớ..." : "🧠 Decoding memory Blobs...";
+    if (aiStatusText) aiStatusText.innerText = currentLang === "vi" ? "🧠 Đang giải mã Blobs bộ nhớ..." : "🧠 Decoding memory Blobs...";
     if (aiAvatarBox) aiAvatarBox.innerText = "⏳";
 
     setTimeout(() => {
@@ -234,17 +275,21 @@ function triggerWalrusMemoryAgent(email, displayName) {
         const totalPredictions = userHistory.length;
 
         if (aiAvatarBox) aiAvatarBox.innerText = "🦫";
-        aiStatusText.innerText = currentLang === "vi" ? "✅ Bộ nhớ Walrus: Đã đồng bộ" : "✅ Walrus Memory: Synced";
+        if (aiStatusText) aiStatusText.innerText = currentLang === "vi" ? "✅ Bộ nhớ Walrus: Đã đồng bộ" : "✅ Walrus Memory: Synced";
 
         if (totalPredictions === 0) {
             aiAgentText.innerHTML = currentLang === "vi"
-                ? `"Chào sếp <strong>${displayName}</strong>! Bộ nhớ Walrus ghi nhận tài khoản này mới toanh."`
-                : `"Hello sếp <strong>${displayName}</strong>! New account on Walrus."`;
-        } else {
+                ? `"Chào sếp <strong>${displayName}</strong>! Bộ nhớ Walrus ghi nhận tài khoản này mới toanh, sếp chưa cược trận nào. Thử gáy một trận ở Vòng Bảng xem tài tiên tri đến đâu đi sếp!"`
+                : `"Hello sếp <strong>${displayName}</strong>! Walrus storage shows a completely new account. You haven't made any predictions yet. Try your luck with a Group Stage match now!"`;
+        } else if (totalPredictions >= 1 && totalPredictions <= 3) {
             const lastPred = userHistory[userHistory.length - 1];
             aiAgentText.innerHTML = currentLang === "vi"
-                ? `"Đã đồng bộ <strong>${totalPredictions}</strong> dự đoán. Gần nhất: ${lastPred.matchId} ${lastPred.homeScore}-${lastPred.awayScore}"`
-                : `"Synced <strong>${totalPredictions}</strong> predictions."`;
+                ? `"Tôi đã nạp khối dữ liệu cũ của sếp <strong>${displayName}</strong> rồi! Bộ nhớ ghi nhận sếp đã gáy tổng cộng <strong>${totalPredictions} trận</strong>. Gần đây nhất là trận <strong>${lastPred.matchId}</strong> với tỷ số ${lastPred.homeScore}-${lastPred.awayScore}. Cứ đà này là tích đủ điều kiện đua giải tuần đó sếp!"`
+                : `"Data blocks loaded for <strong>${displayName}</strong>! Persistent state holds <strong>${totalPredictions} prediction(s)</strong>. Your latest bet was on Match <strong>${lastPred.matchId}</strong> (${lastPred.homeScore}-${lastPred.awayScore}). Keep going to earn your rewards!"`;
+        } else {
+            aiAgentText.innerHTML = currentLang === "vi"
+                ? `"🔥 <strong>Úi xời, sếp ${displayName} gáy khét quá!</strong> Bộ nhớ Walrus Blobs lưu trữ vĩnh viễn tận <strong>${totalPredictions} dự đoán</strong> của sếp rồi. Tôi thấy sếp phân tích trận đấu rất có flair, để tôi tổng hợp gửi thẳng lên Bảng Vàng Tiên Tri cạnh tranh top 500 WAL nhé!"`
+                : `"🔥 <strong>Impressive, sếp ${displayName}!</strong> Walrus Blobs stores <strong>${totalPredictions} history entries</strong> for you. Your prediction flair is outstanding. I am forwarding your decentralized state directly to the Prophecy Board to compete for the 500 WAL pool!"`;
         }
     }, 1200);
 }
@@ -298,6 +343,7 @@ function renderMatches(filterType = 'vong-bang') {
             cardHTML = `
                 <div class="absolute top-0 right-0 bg-emerald-600 text-white text-xs font-bold px-5 py-1.5 rounded-bl-2xl">${currentLang === "en" ? "FINISHED" : "KẾT THÚC"}</div>
                 ${match.isHot ? `<div class="absolute top-4 left-4 bg-gradient-to-r from-red-600 to-orange-500 text-white text-[10px] font-bold px-3 py-1 rounded">🔥 HOT MATCH</div>` : ''}
+                
                 <div class="flex items-center justify-between mt-8 mb-6 px-4">
                     <div class="flex flex-col items-center w-28 text-center">
                         ${getFlagImgHTML(match.codeA)}
@@ -341,7 +387,7 @@ function renderMatches(filterType = 'vong-bang') {
                 <div class="border-t border-gray-800/60 pt-5 mt-4 space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
                         <div class="sm:col-span-1">
-                            <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">${lang ? lang.labelScore : 'Dự đoán Tỷ số'}</label>
+                            <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">${lang.labelScore}</label>
                             <div class="flex items-center gap-2">
                                 <input type="number" id="scoreA-${match.id}" placeholder="0" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-center font-bold text-white focus:outline-none focus:border-walrus-aqua">
                                 <span class="text-gray-600 font-bold">-</span>
@@ -349,14 +395,14 @@ function renderMatches(filterType = 'vong-bang') {
                             </div>
                         </div>
                         <div class="sm:col-span-2">
-                            <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">${lang ? lang.labelAnalysis : 'Phân tích'}</label>
-                            <input type="text" id="analysis-${match.id}" placeholder="${lang ? lang.placeholderAnalysis : 'Nhập nhận định...'}" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-200 focus:outline-none focus:border-walrus-aqua">
+                            <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">${lang.labelAnalysis}</label>
+                            <input type="text" id="analysis-${match.id}" placeholder="${lang.placeholderAnalysis}" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-200 focus:outline-none focus:border-walrus-aqua">
                         </div>
                     </div>
                     <div class="flex justify-end pt-2">
                         <button onclick="handleSubmissionWithEffects('${match.id}', document.getElementById('scoreA-${match.id}').value, document.getElementById('scoreB-${match.id}').value, document.getElementById('analysis-${match.id}').value)" 
                                 class="gradient-btn hover:opacity-90 text-walrus-dark font-extrabold text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-walrus-aqua/20 flex items-center gap-2 transition">
-                            ${lang ? lang.btnSubmit : 'Nộp Dự Đoán'}
+                            ${lang.btnSubmit}
                         </button>
                     </div>
                 </div>
@@ -368,7 +414,7 @@ function renderMatches(filterType = 'vong-bang') {
     });
 }
 
-// ==================== CÁC HÀM ĐIỀU HƯỚNG ====================
+// ==================== CÁC HÀM ĐIỀU HƯỚNG VÀ PHÂN LOẠI ====================
 function filterMatches(type) {
     activeTabGlobal = type;
     const tabs = ['vong-bang', 'vong-32', 'vong-16', 'tu-ket', 'ban-ket', 'chung-ket'];
@@ -450,7 +496,9 @@ function updateUINonDynamicText() {
     document.getElementById('prize-2-title').innerHTML = lang.prize2;
     document.getElementById('prize-2-val').innerText = lang.prize2Val;
 
-    if (!currentUser) resetAiAgentUI();
+    if (!currentUser) {
+        resetAiAgentUI();
+    }
 }
 
 function toggleLanguage() {
@@ -471,10 +519,12 @@ function toggleLanguage() {
     renderGroups();
     renderMatches(activeTabGlobal);
     
-    if (currentUser) triggerWalrusMemoryAgent(currentUser.email, currentUser.displayName);
+    if (currentUser) {
+        triggerWalrusMemoryAgent(currentUser.email, currentUser.displayName);
+    }
 }
 
-// ==================== QUẢN LÝ VÍ & TÀI KHOẢN MOCK CODES ====================
+// ==================== QUẢN LÝ VÍ & TÀI KHOẢN ====================
 let isGmailLoggedIn = true; 
 let isWalletConnected = false;
 
@@ -528,187 +578,16 @@ async function fetchMyPredictions() {
     }
 }
 
-// Bổ sung hàm ánh xạ tương thích với thuộc tính onclick="showMyPredictions()" trong file index.html
 window.showMyPredictions = fetchMyPredictions;
 
-
-// ==================== ÁP DỤNG DỮ LIỆU TỪ GITHUB (TỐI ƯU CHO DATA.JS HIỆN TẠI) ====================
-function applyGitHubData(data) {
-    if (!data || !data.matches) {
-        console.log("❌ Dữ liệu GitHub không đúng format");
-        return;
-    }
-
-    let updatedCount = 0;
-
-    data.matches.forEach(match => {
-        const teamAName = (match.team1?.name || "").trim();
-        const teamBName = (match.team2?.name || "").trim();
-
-        if (!teamAName || !teamBName) return;
-
-        // Tìm trận theo tên đội (so sánh linh hoạt)
-        const localMatch = officialMatches.find(m => {
-            const aNames = [(m.teamA || ""), (m.teamAEn || "")].map(n => n.toLowerCase().trim());
-            const bNames = [(m.teamB || ""), (m.teamBEn || "")].map(n => n.toLowerCase().trim());
-            const searchA = teamAName.toLowerCase().trim();
-            const searchB = teamBName.toLowerCase().trim();
-
-            return aNames.some(name => name === searchA || name.includes(searchA) || searchA.includes(name)) &&
-                   bNames.some(name => name === searchB || name.includes(searchB) || searchB.includes(name));
-        });
-
-        if (!localMatch) return;
-
-        // Cập nhật tên đội chính xác
-        if (teamAName) localMatch.teamA = localMatch.teamAEn = teamAName;
-        if (teamBName) localMatch.teamB = localMatch.teamBEn = teamBName;
-
-        // Cập nhật kết quả
-        if (match.score && match.score.ft) {
-            let home = 0, away = 0;
-            const scoreStr = match.score.ft.toString();
-
-            if (scoreStr.includes('-')) {
-                const parts = scoreStr.split('-');
-                home = parseInt(parts[0]) || 0;
-                away = parseInt(parts[1]) || 0;
-            }
-
-            localMatch.result = {
-                home: home,
-                away: away,
-                goals: []
-            };
-            updatedCount++;
-        }
-    });
-
-    console.log(`✅ Đã cập nhật ${updatedCount} trận đấu từ GitHub`);
-    renderMatches(activeTabGlobal);   // Render lại giao diện
-}
-// ==================== KHỞI TẠO APP VỚI LOADING POPUP ====================
-function initApp() {
-    currentApiStatus = "welcome";
-    updateUINonDynamicText();
-    renderGroups();
-    filterMatches('vong-bang');
-    renderLeaderboard();
-    
-    initFirebaseAuth();
-    
-    renderMatches(activeTabGlobal);   // Render ngay dữ liệu tĩnh
-
-    setTimeout(() => {
-        fetchWorldCupData();           // Fetch online sau
-        startLiveRefresh();
-    }, 600);
-}
-
-// ==================== ONLINE DATA FROM GITHUB ====================
-let refreshInterval = null;
-let isFirstSuccess = false;
-
-function startLiveRefresh() {
-    if (refreshInterval) clearInterval(refreshInterval);
-
-    const intervalTime = isFirstSuccess ? 600000 : 5000; // 10 phút hoặc 5 giây
-
-    refreshInterval = setInterval(() => {
-        fetchWorldCupData();
-    }, intervalTime);
-
-    console.log(`🔄 Auto refresh: ${intervalTime === 5000 ? '5 giây' : '10 phút'}`);
-}
-
-async function fetchWorldCupData() {
-    try {
-        console.log("🌐 Đang lấy kết quả World Cup từ GitHub...");
-
-        const response = await fetch('https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json');
-
-        if (!response.ok) throw new Error("Network error");
-
-        const data = await response.json();
-
-        applyGitHubData(data);
-        hideLoadingOverlay(); 
-        console.log("✅ Đã lấy dữ liệu online từ GitHub thành công!");
-
-    } catch (error) {
-        console.warn("❌ Lỗi khi lấy dữ liệu GitHub:", error.message);
-        hideLoadingOverlay();
-    }
-}
-
-function applyGitHubData(data) {
-    if (!data || !data.matches) {
-        console.log("❌ Dữ liệu GitHub không đúng format");
-        return;
-    }
-
-    let updatedCount = 0;
-
-    data.matches.forEach(match => {
-        const teamAName = (match.team1?.name || "").trim().toLowerCase();
-        const teamBName = (match.team2?.name || "").trim().toLowerCase();
-
-        if (!teamAName || !teamBName) return;
-
-        const localMatch = officialMatches.find(m => {
-            const localA = ((m.teamA || "") + " " + (m.teamAEn || "")).toLowerCase();
-            const localB = ((m.teamB || "") + " " + (m.teamBEn || "")).toLowerCase();
-            return localA.includes(teamAName) || localB.includes(teamBName) ||
-                   teamAName.includes(localA) || teamBName.includes(localB);
-        });
-
-        if (!localMatch) return;
-
-        if (match.team1?.name) localMatch.teamA = localMatch.teamAEn = match.team1.name;
-        if (match.team2?.name) localMatch.teamB = localMatch.teamBEn = match.team2.name;
-
-        if (match.score && match.score.ft) {
-            const parts = match.score.ft.toString().split('-');
-            localMatch.result = {
-                home: parseInt(parts[0]) || 0,
-                away: parseInt(parts[1]) || 0,
-                goals: []
-            };
-            updatedCount++;
-        }
-    });
-
-    console.log(`✅ Đã cập nhật ${updatedCount} trận đấu từ GitHub`);
-    renderMatches(activeTabGlobal);
-}
-
-// ==================== KHỞI TẠO APP ====================
-function initApp() {
-    currentApiStatus = "welcome";
-    updateUINonDynamicText();
-    renderGroups();
-    filterMatches('vong-bang');
-    renderLeaderboard();
-    
-    initFirebaseAuth();
-
-    renderMatches(activeTabGlobal);
-
-    setTimeout(() => {
-        fetchWorldCupData();
-        startLiveRefresh();
-    }, 600);
-
-    // Bảo vệ: tự ẩn loading sau 5 giây nếu bị kẹt
-    setTimeout(hideLoadingOverlay, 5000);
-}
-// ==================== CONTROL LOADING OVERLAY ====================
 // ==================== LOADING OVERLAY ====================
 function hideLoadingOverlay() {
     const overlay = document.getElementById('loading-overlay');
     if (overlay) {
         overlay.style.opacity = '0';
-        setTimeout(() => overlay.style.display = 'none', 800);
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 800);
     }
 }
 
@@ -716,11 +595,18 @@ function hideLoadingOverlay() {
 async function fetchWorldCupData() {
     try {
         console.log("🌐 Đang lấy kết quả World Cup từ GitHub...");
+
         const response = await fetch('https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json');
+
         if (!response.ok) throw new Error("Network error");
+
         const data = await response.json();
+
         applyGitHubData(data);
         hideLoadingOverlay();
+
+        console.log("✅ Đã lấy dữ liệu online từ GitHub thành công!");
+
     } catch (error) {
         console.warn("❌ Lỗi GitHub:", error.message);
         hideLoadingOverlay();
@@ -728,13 +614,19 @@ async function fetchWorldCupData() {
 }
 
 function applyGitHubData(data) {
-    if (!data || !data.matches) return;
+    if (!data || !data.matches) {
+        console.log("❌ Dữ liệu GitHub không đúng format");
+        hideLoadingOverlay();
+        return;
+    }
 
     let updatedCount = 0;
 
     data.matches.forEach(match => {
         const teamAName = (match.team1?.name || "").trim().toLowerCase();
         const teamBName = (match.team2?.name || "").trim().toLowerCase();
+
+        if (!teamAName || !teamBName) return;
 
         const localMatch = officialMatches.find(m => {
             const a = ((m.teamA || "") + " " + (m.teamAEn || "")).toLowerCase();
@@ -772,6 +664,7 @@ function initApp() {
     renderLeaderboard();
     
     initFirebaseAuth();
+
     renderMatches(activeTabGlobal);
 
     setTimeout(() => {

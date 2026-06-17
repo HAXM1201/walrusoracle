@@ -592,93 +592,78 @@ async function fetchMyPredictions() {
 // Bổ sung hàm ánh xạ tương thích với thuộc tính onclick="showMyPredictions()" trong file index.html
 window.showMyPredictions = fetchMyPredictions;
 
-// ==================== FETCH DỮ LIỆU TỐI ƯU KHÔNG GÂY CORS PROXY ====================
+// ==================== FETCH DỮ LIỆU ONLINE TỪ GITHUB (ỔN ĐỊNH HƠN) ====================
 async function fetchWorldCupData() {
-    const aiAgentText = document.getElementById('ai-roast-text');
-    const aiAvatarBox = document.getElementById('ai-avatar-box');
-    
     const now = Date.now();
-    if (matchCache && (now - lastFetchTime < 45000)) {
-        console.log("📦 Dùng cache dữ liệu tối ưu");
-        currentApiStatus = "success";
+
+    // Cache memory
+    if (matchCache && (now - lastFetchTime < 30000)) {
+        console.log("📦 Dùng cache memory");
         renderMatches(activeTabGlobal);
         return;
     }
 
-    currentApiStatus = "connecting";
-
     try {
-        const response = await fetch('https://worldcup26.ir/get/games');
-        if (!response.ok) throw new Error("Network error or block");
+        console.log("🌐 Đang lấy kết quả World Cup từ GitHub...");
+
+        const response = await fetch('https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json', {
+            method: 'GET',
+            cache: 'no-store'
+        });
+
+        if (!response.ok) throw new Error("GitHub API error");
 
         const data = await response.json();
-        let updated = 0;
 
-        data.games.forEach(apiMatch => {
-            const localMatch = officialMatches.find(m => String(m.id) === String(apiMatch.id));
-            if (localMatch) {
-                // Đồng bộ kết quả nếu trận đấu đã kết thúc
-                if (apiMatch.finished === "TRUE") {
-                    localMatch.result = {
-                        home: parseInt(apiMatch.home_score) || 0,
-                        away: parseInt(apiMatch.away_score) || 0,
-                        goals: []
-                    };
-
-                    const parseScorers = (str, team) => {
-                        if (!str || str === "null") return;
-                        str.replace(/[{}"]/g, '').split(',').forEach(item => {
-                            if (item.trim()) {
-                                const parts = item.trim().split(/\s+(\d+)'?$/);
-                                localMatch.result.goals.push({
-                                    team: team,
-                                    scorer: parts[0] ? parts[0].trim() : item.trim(),
-                                    minute: parts[1] ? parts[1].trim() : ""
-                                });
-                            }
-                        });
-                    };
-
-                    parseScorers(apiMatch.home_scorers, "home");
-                    parseScorers(apiMatch.away_scorers, "away");
-                    updated++;
-                }
-
-                // Giữ logic đồng bộ tên đội tuyển từ vòng Knockout (ID > 72)
-                if (localMatch.id > 72) {
-                    if (apiMatch.home_team && apiMatch.home_team.trim()) {
-                        localMatch.teamA = apiMatch.home_team;
-                        localMatch.teamAEn = apiMatch.home_team;
-                        localMatch.codeA = apiMatch.home_tla ? apiMatch.home_tla.toLowerCase() : "placeholder";
-                    }
-                    if (apiMatch.away_team && apiMatch.away_team.trim()) {
-                        localMatch.teamB = apiMatch.away_team;
-                        localMatch.teamBEn = apiMatch.away_team;
-                        localMatch.codeB = apiMatch.away_tla ? apiMatch.away_tla.toLowerCase() : "placeholder";
-                    }
-                }
-            }
-        });
+        // Áp dụng dữ liệu (cần map lại một chút vì format khác)
+        applyGitHubData(data);
 
         matchCache = data;
         lastFetchTime = now;
         currentApiStatus = "success";
 
+        console.log("✅ Đã lấy dữ liệu online từ GitHub thành công!");
+        renderMatches(activeTabGlobal);
+
     } catch (error) {
-        console.log("❌ Không lấy được dữ liệu online → dùng dữ liệu nội bộ");
+        console.warn("❌ GitHub API lỗi:", error.message);
+        console.log("→ Dùng dữ liệu tĩnh từ data.js");
         currentApiStatus = "fallback";
+        renderMatches(activeTabGlobal);
     }
-
-    renderMatches(activeTabGlobal);
 }
 
-let refreshInterval = null;
-function startLiveRefresh() {
-    if (refreshInterval) clearInterval(refreshInterval);
-    refreshInterval = setInterval(fetchWorldCupData, 3000); // Tự động làm mới mỗi 3 giây
+// Hàm map dữ liệu từ GitHub format
+function applyGitHubData(data) {
+    if (!data || !data.rounds) return;
+
+    data.rounds.forEach(round => {
+        if (!round.matches) return;
+        
+        round.matches.forEach(match => {
+            const localMatch = officialMatches.find(m => String(m.id) === String(match.num || match.id));
+            if (!localMatch) return;
+
+            // Cập nhật kết quả nếu có
+            if (match.score && match.score.ft) {
+                localMatch.result = {
+                    home: parseInt(match.score.ft.split('-')[0]) || 0,
+                    away: parseInt(match.score.ft.split('-')[1]) || 0,
+                    goals: []
+                };
+            }
+
+            // Cập nhật tên đội (đặc biệt vòng knock-out)
+            if (match.team1 && match.team1.name) {
+                localMatch.teamA = localMatch.teamAEn = match.team1.name;
+            }
+            if (match.team2 && match.team2.name) {
+                localMatch.teamB = localMatch.teamBEn = match.team2.name;
+            }
+        });
+    });
 }
 
-// ==================== KHỞI TẠO APP VÀ VÒNG LẶP ĐỒNG BỘ ====================
 // ==================== KHỞI TẠO APP VỚI LOADING POPUP ====================
 function initApp() {
     currentApiStatus = "welcome";

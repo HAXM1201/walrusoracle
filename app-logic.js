@@ -607,6 +607,7 @@ async function fetchMyPredictions() {
 window.showMyPredictions = fetchMyPredictions;
 
 
+// ==================== LIVE REFRESH & ONLINE DATA (ĐÃ XỬ LÝ CORS + LỖI API) ====================
 let refreshInterval = null;
 let isFirstSuccess = false;
 
@@ -619,26 +620,15 @@ function startLiveRefresh() {
         fetchWorldCupData();
     }, intervalTime);
 
-    console.log(`🔄 Auto refresh: ${intervalTime === 5000 ? '5 giây (nhanh)' : '10 phút'}`);
+    console.log(`🔄 Auto refresh: ${intervalTime === 5000 ? '5 giây' : '10 phút'}`);
 }
 
 async function fetchWorldCupData(retryCount = 0) {
     const MAX_RETRIES = 2;
     const now = Date.now();
 
-    if (matchCache && (now - lastFetchTime < 15000)) return;
-
-    const cached = localStorage.getItem('worldcup_cache_v2');
-    if (cached && !isFirstSuccess) {
-        try {
-            const parsed = JSON.parse(cached);
-            if (now - parsed.timestamp < 15 * 60 * 1000) {
-                applyApiData(parsed.data);
-                renderMatches(activeTabGlobal);
-                return;
-            }
-        } catch (e) {}
-    }
+    // Cache ngắn hạn
+    if (matchCache && (now - lastFetchTime < 30000)) return;
 
     currentApiStatus = "connecting";
 
@@ -646,11 +636,12 @@ async function fetchWorldCupData(retryCount = 0) {
         console.log(`🌐 Fetching World Cup... (Attempt ${retryCount + 1})`);
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
 
         const response = await fetch('https://worldcup26.ir/get/games', {
             method: 'GET',
-            signal: controller.signal
+            signal: controller.signal,
+            mode: 'cors'
         });
 
         clearTimeout(timeoutId);
@@ -680,11 +671,16 @@ async function fetchWorldCupData(retryCount = 0) {
         renderMatches(activeTabGlobal);
 
     } catch (error) {
-        console.warn(`❌ Fetch thất bại:`, error.message);
+        console.warn(`❌ API không khả dụng:`, error.message);
+
         if (retryCount < MAX_RETRIES) {
-            setTimeout(() => fetchWorldCupData(retryCount + 1), 3000);
-        } else if (!isFirstSuccess) {
-            console.log("⛔ Dùng dữ liệu tĩnh");
+            setTimeout(() => fetchWorldCupData(retryCount + 1), 4000);
+        } else {
+            // Tắt fetch vĩnh viễn nếu API chết
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                console.log("⛔ API không hoạt động → Tắt auto refresh, dùng dữ liệu tĩnh");
+            }
             currentApiStatus = "fallback";
             renderMatches(activeTabGlobal);
         }
@@ -754,7 +750,7 @@ function initApp() {
     }, 800);
 }
 
-// ==================== EXPOSE GLOBAL ====================
+// ==================== EXPOSE GLOBAL FUNCTIONS ====================
 window.filterMatches = filterMatches;
 window.toggleLanguage = toggleLanguage;
 window.toggleWallet = toggleWallet;

@@ -1,4 +1,4 @@
-// data.js
+// data.js - ĐÃ ĐỒNG BỘ VỚI GITHUB
 
 const translations = {
     vi: {
@@ -15,11 +15,6 @@ const translations = {
         tabTuKet: 'Tứ Kết', 
         tabBanKet: 'Bán Kết', 
         tabChungKet: 'Chung Kết',
-        aiReading: 'Đang đọc bộ nhớ Walrus Mainnet...',
-        aiWelcome: '"Chào sếp! Hãy kết nối ví Slush hoặc đăng nhập Gmail để tôi quét lịch sử gáy trận đấu của sếp trên mạng lưới Walrus nhé."',
-        aiConnecting: '"Đang kết nối API football-data.org để lấy kết quả World Cup 2026 thời gian thực..."',
-        aiSuccess: '"Đã đồng bộ thành công dữ liệu từ FIFA! Sơ đồ Vòng 32 Đội và kết quả các trận đấu đã được cập nhật chính xác theo thời gian thực. Vào gáy tiếp đi sếp!"',
-        aiFallback: '"Không kết nối được API bên ngoài, tôi đang sử dụng dữ liệu bộ nhớ dự phòng có sẵn trên mạng lưới Walrus cho sếp nhé!"',
         btnGmail: 'Đăng nhập Gmail', 
         btnWallet: 'Kết nối ví Slush',
         btnHistory: 'Lịch sử dự đoán',
@@ -31,8 +26,7 @@ const translations = {
         labelAnalysis: 'Lý do phân tích / Câu gáy hài hước', 
         placeholderAnalysis: 'Nhập nhận định lầy lội của bạn tại đây...', 
         btnSubmit: '<i class="fa-solid fa-cloud-arrow-up"></i> Nộp Dự Đoán',
-        matchUnit: 'trận', 
-        resultStr: 'Kết quả'
+        matchUnit: 'trận'
     },
     en: {
         heroTitle: 'Roast The World Cup <br/><span class="gradient-text">Win Massive Rewards</span>',
@@ -48,11 +42,6 @@ const translations = {
         tabTuKet: 'Quarter-Finals', 
         tabBanKet: 'Semi-Finals', 
         tabChungKet: 'Finals',
-        aiReading: 'Reading Walrus Mainnet storage...',
-        aiWelcome: '"Hello boss! Connect your Slush Wallet or sign in with Gmail so I can scan your historical prediction logs on the Walrus Network."',
-        aiConnecting: '"Connecting to football-data.org API to fetch live World Cup 2026 results in real-time..."',
-        aiSuccess: '"FIFA data sync successful! Round of 32 configurations and real-time scores updated via Walrus Memory. Let the roasted games begin!"',
-        aiFallback: '"External API offline, I am actively recovering backup tournament state from the secure Walrus decentralized nodes!"',
         btnGmail: 'Sign in with Gmail', 
         btnWallet: 'Connect Slush Wallet',
         btnHistory: 'Prediction History',
@@ -64,8 +53,7 @@ const translations = {
         labelAnalysis: 'Analysis / Banter Comment', 
         placeholderAnalysis: 'Type your funny, trash-talk prediction here...', 
         btnSubmit: '<i class="fa-solid fa-cloud-arrow-up"></i> Submit Prediction',
-        matchUnit: 'matches', 
-        resultStr: 'Result'
+        matchUnit: 'matches'
     }
 };
 
@@ -78,7 +66,7 @@ const worldCupGroups = {
     ],
     "Bảng B": [
         { name: "Canada", nameEn: "Canada", code: "ca" },
-        { name: "Bosnia/Herzeg.", nameEn: "Bosnia/Herzeg.", code: "ba" },
+        { name: "Bosnia & Herzegovina", nameEn: "Bosnia & Herzegovina", code: "ba" },
         { name: "Qatar", nameEn: "Qatar", code: "qa" },
         { name: "Thụy Sĩ", nameEn: "Switzerland", code: "ch" }
     ],
@@ -96,7 +84,7 @@ const worldCupGroups = {
     ],
     "Bảng E": [
         { name: "Đức", nameEn: "Germany", code: "de" },
-        { name: "Curacao", nameEn: "Curacao", code: "cw" },
+        { name: "Curaçao", nameEn: "Curaçao", code: "cw" },
         { name: "Bờ Biển Ngà", nameEn: "Ivory Coast", code: "ci" },
         { name: "Ecuador", nameEn: "Ecuador", code: "ec" }
     ],
@@ -132,7 +120,7 @@ const worldCupGroups = {
     ],
     "Bảng K": [
         { name: "Bồ Đào Nha", nameEn: "Portugal", code: "pt" },
-        { name: "Congo", nameEn: "Congo", code: "cg" },
+        { name: "DR Congo", nameEn: "DR Congo", code: "cd" },
         { name: "Uzbekistan", nameEn: "Uzbekistan", code: "uz" },
         { name: "Colombia", nameEn: "Colombia", code: "co" }
     ],
@@ -144,6 +132,7 @@ const worldCupGroups = {
     ]
 };
 
+// ==================== OFFICIAL MATCHES  ====================
 const officialMatches = [
     { id: "1", group: "Bảng A", groupEn: "Group A", date: "Thứ 6, 12/06/2026", time: "2:00", stadium: "Mexico City Stadium", teamA: "Mexico", teamAEn: "Mexico", codeA: "mx", teamB: "Nam Phi", teamBEn: "South Africa", codeB: "za", type: "vong-bang", isHot: true },
     { id: "2", group: "Bảng A", groupEn: "Group A", date: "Thứ 6, 12/06/2026", time: "9:00", stadium: "Guadalajara Stadium", teamA: "Hàn Quốc", teamAEn: "South Korea", codeA: "kr", teamB: "CH Séc", teamBEn: "Czech Republic", codeB: "cz", type: "vong-bang" },
@@ -266,4 +255,3 @@ window.worldCupGroups = worldCupGroups;
 window.officialMatches = officialMatches;
 window.mockLeaderboard = mockLeaderboard;
 window.userPredictionMemory = window.userPredictionMemory || [];
-}

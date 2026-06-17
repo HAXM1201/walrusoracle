@@ -300,7 +300,7 @@ function renderMatches(filterType = 'vong-bang') {
 
         let cardHTML = '';
 
-        if (match.result && match.result.home !== null) {
+        if (match.result && match.result.home !== null && match.result.away !== null) {
             cardHTML = `
                 <div class="absolute top-0 right-0 bg-emerald-600 text-white text-xs font-bold px-5 py-1.5 rounded-bl-2xl">KẾT THÚC</div>
                 <div class="flex items-center justify-between mt-8 mb-6 px-4">
@@ -425,26 +425,33 @@ async function fetchWorldCupData() {
         if (!response.ok) throw new Error("Network error");
         const data = await response.json();
 
-        officialMatches = data.matches.map((m, index) => ({
-            id: String(m.num || index + 1),
-            group: "Vòng Bảng",
-            groupEn: "Group Stage",
-            date: m.date || "2026-06-11",
-            time: m.time || "TBD",
-            stadium: m.stadium || "TBD",
-            teamA: m.team1 ? m.team1.name : "TBD",
-            teamAEn: m.team1 ? m.team1.name : "TBD",
-            codeA: m.team1 && m.team1.code ? m.team1.code.toLowerCase() : "xx",
-            teamB: m.team2 ? m.team2.name : "TBD",
-            teamBEn: m.team2 ? m.team2.name : "TBD",
-            codeB: m.team2 && m.team2.code ? m.team2.code.toLowerCase() : "xx",
-            type: "vong-bang",
-            isHot: false,
-            result: m.score && m.score.ft ? {
-                home: parseInt(m.score.ft.split('-')[0]) || 0,
-                away: parseInt(m.score.ft.split('-')[1]) || 0
-            } : null
-        }));
+        officialMatches = data.matches.map((m, index) => {
+            let homeScore = null;
+            let awayScore = null;
+            if (m.score && m.score.ft) {
+                const ft = m.score.ft.toString();
+                const parts = ft.split('-');
+                homeScore = parseInt(parts[0]) || 0;
+                awayScore = parseInt(parts[1]) || 0;
+            }
+            return {
+                id: String(m.num || index + 1),
+                group: "Vòng Bảng",
+                groupEn: "Group Stage",
+                date: m.date || "2026-06-11",
+                time: m.time || "TBD",
+                stadium: m.stadium || "TBD",
+                teamA: m.team1 ? m.team1.name : "TBD",
+                teamAEn: m.team1 ? m.team1.name : "TBD",
+                codeA: m.team1 && m.team1.code ? m.team1.code.toLowerCase() : "xx",
+                teamB: m.team2 ? m.team2.name : "TBD",
+                teamBEn: m.team2 ? m.team2.name : "TBD",
+                codeB: m.team2 && m.team2.code ? m.team2.code.toLowerCase() : "xx",
+                type: "vong-bang",
+                isHot: false,
+                result: (homeScore !== null && awayScore !== null) ? { home: homeScore, away: awayScore } : null
+            };
+        });
 
         console.log(`✅ Tải thành công ${officialMatches.length} trận từ GitHub`);
         hideLoadingOverlay();

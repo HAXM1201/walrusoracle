@@ -635,52 +635,78 @@ async function fetchWorldCupData() {
 }
 
 // Hàm map dữ liệu từ GitHub format
-// ==================== ÁP DỤNG DỮ LIỆU TỪ GITHUB VÀO TRẬN ĐẤU ====================
+// ==================== ÁP DỤNG DỮ LIỆU TỪ GITHUB (ĐÃ SỬA FORMAT) ====================
 function applyGitHubData(data) {
-    if (!data || !data.rounds) {
+    if (!data || !data.matches) {
         console.log("❌ Dữ liệu GitHub không đúng format");
         return;
     }
 
     let updatedCount = 0;
 
-    data.rounds.forEach(round => {
-        if (!round.matches) return;
+    data.matches.forEach(match => {
+        const matchId = String(match.num || match.id || "").trim();
+        if (!matchId) return;
 
-        round.matches.forEach(match => {
-            // Tìm trận theo số thứ tự (match.num hoặc match.id)
-            const matchId = String(match.num || match.id || "");
-            const localMatch = officialMatches.find(m => String(m.id) === matchId);
+        const localMatch = officialMatches.find(m => String(m.id) === matchId);
+        if (!localMatch) return;
 
-            if (!localMatch) return;
+        // Cập nhật tên đội
+        if (match.team1 && match.team1.name) {
+            localMatch.teamA = localMatch.teamAEn = match.team1.name;
+            if (match.team1.code) localMatch.codeA = match.team1.code.toLowerCase();
+        }
+        if (match.team2 && match.team2.name) {
+            localMatch.teamB = localMatch.teamBEn = match.team2.name;
+            if (match.team2.code) localMatch.codeB = match.team2.code.toLowerCase();
+        }
 
-            // Cập nhật tên đội (rất quan trọng cho vòng knock-out)
-            if (match.team1 && match.team1.name) {
-                localMatch.teamA = localMatch.teamAEn = match.team1.name;
-                localMatch.codeA = (match.team1.code || "placeholder").toLowerCase();
+        // Cập nhật kết quả trận đấu
+        if (match.score && match.score.ft) {
+            const ft = match.score.ft;
+            let homeScore = 0, awayScore = 0;
+
+            if (Array.isArray(ft)) {
+                homeScore = parseInt(ft[0]) || 0;
+                awayScore = parseInt(ft[1]) || 0;
+            } else if (typeof ft === 'string') {
+                const scores = ft.split('-').map(s => parseInt(s.trim()));
+                homeScore = scores[0] || 0;
+                awayScore = scores[1] || 0;
             }
-            if (match.team2 && match.team2.name) {
-                localMatch.teamB = localMatch.teamBEn = match.team2.name;
-                localMatch.codeB = (match.team2.code || "placeholder").toLowerCase();
+
+            localMatch.result = {
+                home: homeScore,
+                away: awayScore,
+                goals: []
+            };
+
+            // Thêm bàn thắng (nếu có)
+            if (match.goals1) {
+                match.goals1.forEach(g => {
+                    localMatch.result.goals.push({
+                        team: "home",
+                        scorer: g.name || "Unknown",
+                        minute: g.minute || ""
+                    });
+                });
+            }
+            if (match.goals2) {
+                match.goals2.forEach(g => {
+                    localMatch.result.goals.push({
+                        team: "away",
+                        scorer: g.name || "Unknown",
+                        minute: g.minute || ""
+                    });
+                });
             }
 
-            // Cập nhật kết quả nếu trận đã đá xong
-            if (match.score && match.score.ft) {
-                const scores = match.score.ft.split('-').map(s => parseInt(s.trim()));
-                if (scores.length === 2) {
-                    localMatch.result = {
-                        home: scores[0],
-                        away: scores[1],
-                        goals: []
-                    };
-                    updatedCount++;
-                }
-            }
-        });
+            updatedCount++;
+        }
     });
 
     console.log(`✅ Đã cập nhật ${updatedCount} trận đấu từ GitHub`);
-    renderMatches(activeTabGlobal);   // Render lại ngay sau khi cập nhật
+    renderMatches(activeTabGlobal);   // Render lại giao diện
 }
 // ==================== KHỞI TẠO APP VỚI LOADING POPUP ====================
 function initApp() {

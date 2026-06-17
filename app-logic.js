@@ -622,7 +622,7 @@ async function fetchMyPredictions() {
 
     alert(currentLang === "en" ? "Fetching your prediction history from Walrus..." : "Đang truy xuất lịch sử dự đoán từ Walrus...");
     
-    const myHistory = window.userPredictionMemory.filter(item => item.ownerEmail === email);
+    const myHistory = (window.userPredictionMemory || []).filter(item => item.ownerEmail === email);
     
     if (myHistory.length === 0) {
         alert(currentLang === "en" ? "No prediction history found for this account." : "Chưa có lịch sử dự đoán cho tài khoản này.");

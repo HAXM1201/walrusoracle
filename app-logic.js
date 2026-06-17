@@ -732,10 +732,13 @@ function applyApiData(data) {
 }
 
 // ==================== LIVE REFRESH - TỰ ĐỘNG CHUYỂN TẦN SUẤT ====================
-let refreshInterval = null;
+let refreshInterval = null;   // Chỉ khai báo 1 lần duy nhất
+let isFirstSuccess = false;
 
 function startLiveRefresh() {
-    if (refreshInterval) clearInterval(refreshInterval);
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+    }
 
     const intervalTime = isFirstSuccess ? 600000 : 5000; // 10 phút hoặc 5 giây
 
@@ -743,10 +746,81 @@ function startLiveRefresh() {
         fetchWorldCupData();
     }, intervalTime);
 
-    console.log(`🔄 Auto refresh được thiết lập mỗi ${intervalTime/1000} giây`);
+    console.log(`🔄 Auto refresh: ${intervalTime === 5000 ? '5 giây (nhanh)' : '10 phút (thông thường)'}`);
 }
 
-// ==================== INIT APP ====================
+// ==================== FETCH WORLD CUP DATA ====================
+async function fetchWorldCupData(retryCount = 0) {
+    const MAX_RETRIES = 2;
+    const now = Date.now();
+
+    if (matchCache && (now - lastFetchTime < 15000)) return;
+
+    // Cache localStorage
+    const cached = localStorage.getItem('worldcup_cache_v2');
+    if (cached && !isFirstSuccess) {
+        try {
+            const parsed = JSON.parse(cached);
+            if (now - parsed.timestamp < 15 * 60 * 1000) {
+                applyApiData(parsed.data);
+                renderMatches(activeTabGlobal);
+                return;
+            }
+        } catch (e) {}
+    }
+
+    currentApiStatus = "connecting";
+
+    try {
+        console.log(`🌐 Fetching World Cup results... (Attempt ${retryCount + 1})`);
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+        const response = await fetch('https://worldcup26.ir/get/games', {
+            method: 'GET',
+            signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const data = await response.json();
+
+        localStorage.setItem('worldcup_cache_v2', JSON.stringify({
+            timestamp: now,
+            data: data
+        }));
+
+        applyApiData(data);
+        matchCache = data;
+        lastFetchTime = now;
+        currentApiStatus = "success";
+
+        console.log("✅ Đã lấy kết quả online thành công!");
+
+        if (!isFirstSuccess) {
+            isFirstSuccess = true;
+            console.log("🔄 Chuyển sang chế độ cập nhật mỗi 10 phút");
+            startLiveRefresh(); // Restart với tần suất mới
+        }
+
+        renderMatches(activeTabGlobal);
+
+    } catch (error) {
+        console.warn(`❌ Fetch thất bại:`, error.message);
+        if (retryCount < MAX_RETRIES) {
+            setTimeout(() => fetchWorldCupData(retryCount + 1), 3000);
+        } else if (!isFirstSuccess) {
+            console.log("⛔ Dùng dữ liệu tĩnh");
+            currentApiStatus = "fallback";
+            renderMatches(activeTabGlobal);
+        }
+    }
+}
+
+// ==================== KHỞI TẠO APP ====================
 function initApp() {
     currentApiStatus = "welcome";
     updateUINonDynamicText();
@@ -759,53 +833,17 @@ function initApp() {
     // Render ngay dữ liệu tĩnh
     renderMatches(activeTabGlobal);
 
-    // Bắt đầu fetch nhanh
+    // Bắt đầu fetch
     setTimeout(() => {
         fetchWorldCupData();
         startLiveRefresh();
     }, 800);
 }
-// ==================== KHỞI TẠO APP ====================
-function initApp() {
-    currentApiStatus = "welcome";
-    updateUINonDynamicText();
-    renderGroups();
-    filterMatches('vong-bang');
-    renderLeaderboard();
-    
-    initFirebaseAuth();
-    
-    // Load ngay dữ liệu tĩnh trước
-    renderMatches(activeTabGlobal);
-    
-    // Sau đó mới fetch API ngầm
-    setTimeout(() => {
-        fetchWorldCupData();
-        startLiveRefresh();
-    }, 800); // Delay nhẹ để UI render trước
-}
 
-let refreshInterval = null;
-function startLiveRefresh() {
-    if (refreshInterval) clearInterval(refreshInterval);
-    refreshInterval = setInterval(fetchWorldCupData, 90000); // Tăng lên 90 giây
-}
-// ==================== KHỞI TẠO APP VÀ VÒNG LẶP ĐỒNG BỘ ====================
-function initApp() {
-    currentApiStatus = "welcome";
-    updateUINonDynamicText();
-    renderGroups();
-    filterMatches('vong-bang');
-    renderLeaderboard();
-    
-    initFirebaseAuth();
-    fetchWorldCupData();
-    startLiveRefresh();
-}
-
-window.initApp = initApp;
+// Expose tất cả hàm ra window để onclick trong HTML hoạt động
 window.filterMatches = filterMatches;
-window.renderMatches = renderMatches;
+window.toggleLanguage = toggleLanguage;
+window.toggleWallet = toggleWallet;
+window.showMyPredictions = fetchMyPredictions;
 window.handleSubmissionWithEffects = handleSubmissionWithEffects;
-window.getFlagImgHTML = getFlagImgHTML;
-window.getLocalizedDate = getLocalizedDate;
+window.initApp = initApp;

@@ -592,7 +592,7 @@ async function fetchMyPredictions() {
 // Bổ sung hàm ánh xạ tương thích với thuộc tính onclick="showMyPredictions()" trong file index.html
 window.showMyPredictions = fetchMyPredictions;
 
-// ==================== FETCH DỮ LIỆU ONLINE TỪ GITHUB (ỔN ĐỊNH HƠN) ====================
+
 // ==================== ÁP DỤNG DỮ LIỆU TỪ GITHUB (TỐI ƯU CHO DATA.JS HIỆN TẠI) ====================
 function applyGitHubData(data) {
     if (!data || !data.matches) {
@@ -603,35 +603,35 @@ function applyGitHubData(data) {
     let updatedCount = 0;
 
     data.matches.forEach(match => {
-        const teamAName = (match.team1?.name || "").trim().toLowerCase();
-        const teamBName = (match.team2?.name || "").trim().toLowerCase();
+        const teamAName = (match.team1?.name || "").trim();
+        const teamBName = (match.team2?.name || "").trim();
 
         if (!teamAName || !teamBName) return;
 
         // Tìm trận theo tên đội (so sánh linh hoạt)
         const localMatch = officialMatches.find(m => {
-            const localA = (m.teamA || m.teamAEn || "").toLowerCase();
-            const localB = (m.teamB || m.teamBEn || "").toLowerCase();
+            const aNames = [(m.teamA || ""), (m.teamAEn || "")].map(n => n.toLowerCase().trim());
+            const bNames = [(m.teamB || ""), (m.teamBEn || "")].map(n => n.toLowerCase().trim());
+            const searchA = teamAName.toLowerCase().trim();
+            const searchB = teamBName.toLowerCase().trim();
 
-            return (localA.includes(teamAName) || teamAName.includes(localA)) &&
-                   (localB.includes(teamBName) || teamBName.includes(localB));
+            return aNames.some(name => name === searchA || name.includes(searchA) || searchA.includes(name)) &&
+                   bNames.some(name => name === searchB || name.includes(searchB) || searchB.includes(name));
         });
 
         if (!localMatch) return;
 
-        // Cập nhật tên đội chính xác từ GitHub
-        if (match.team1?.name) localMatch.teamA = localMatch.teamAEn = match.team1.name;
-        if (match.team2?.name) localMatch.teamB = localMatch.teamBEn = match.team2.name;
+        // Cập nhật tên đội chính xác
+        if (teamAName) localMatch.teamA = localMatch.teamAEn = teamAName;
+        if (teamBName) localMatch.teamB = localMatch.teamBEn = teamBName;
 
-        // Cập nhật kết quả trận đấu
+        // Cập nhật kết quả
         if (match.score && match.score.ft) {
             let home = 0, away = 0;
+            const scoreStr = match.score.ft.toString();
 
-            if (Array.isArray(match.score.ft)) {
-                home = parseInt(match.score.ft[0]) || 0;
-                away = parseInt(match.score.ft[1]) || 0;
-            } else if (typeof match.score.ft === 'string') {
-                const parts = match.score.ft.split('-');
+            if (scoreStr.includes('-')) {
+                const parts = scoreStr.split('-');
                 home = parseInt(parts[0]) || 0;
                 away = parseInt(parts[1]) || 0;
             }
@@ -641,15 +641,12 @@ function applyGitHubData(data) {
                 away: away,
                 goals: []
             };
-
             updatedCount++;
         }
     });
 
     console.log(`✅ Đã cập nhật ${updatedCount} trận đấu từ GitHub`);
-    
-    // Render lại toàn bộ danh sách trận
-    renderMatches(activeTabGlobal);
+    renderMatches(activeTabGlobal);   // Render lại giao diện
 }
 // ==================== KHỞI TẠO APP VỚI LOADING POPUP ====================
 function initApp() {

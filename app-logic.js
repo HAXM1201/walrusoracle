@@ -459,12 +459,26 @@ function renderGroups() {
         container.appendChild(groupCard);
     }
 }
-
+// ==================== FALLBACK NẾU DATA.JS CHƯA LOAD ====================
+if (typeof mockLeaderboard === 'undefined') {
+    window.mockLeaderboard = [
+        { name: "TayBew", score: 1240, countryCode: "vn" },
+        { name: "HALN", score: 1180, countryCode: "vn" },
+        { name: "Jack", score: 1090, countryCode: "us" },
+        { name: "Puchi", score: 980, countryCode: "br" },
+        { name: "Stravia", score: 920, countryCode: "th" }
+    ];
+}
 function renderLeaderboard() {
     const container = document.getElementById('leaderboard-container');
     if (!container) return;
+    
     container.innerHTML = '';
-    mockLeaderboard.forEach((user, index) => {
+    
+    // Sử dụng window.mockLeaderboard để an toàn
+    const leaderboardData = window.mockLeaderboard || mockLeaderboard || [];
+    
+    leaderboardData.forEach((user, index) => {
         const row = document.createElement('div');
         row.className = "flex items-center justify-between p-2.5 bg-gray-950/40 border border-gray-800/60 rounded-xl text-xs";
         let medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;

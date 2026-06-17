@@ -26,6 +26,7 @@ if (window.trustedTypes && window.trustedTypes.createPolicy) {
 }
 
 // ==================== FIREBASE AUTH (CƠ CHẾ POPUP CHUẨN) ====================
+// ==================== FIREBASE AUTH (BẢN CHUẨN ĐÃ ĐƯỢC TỐI ƯU CHỐNG BẤT ĐỒNG BỘ) ====================
 const firebaseConfig = {
   apiKey: "AIzaSyBl7vHtoGcSNqoIgTJnPkgu29wQRD2XVAo",
   authDomain: "walrus-cup-oracle.firebaseapp.com",
@@ -41,35 +42,39 @@ const auth = firebase.auth();
 function initFirebaseAuth() {
     auth.onAuthStateChanged(user => {
         currentUser = user;
+        
+        // Đảm bảo mảng bộ nhớ Walrus luôn tồn tại khi Firebase kiểm tra trạng thái
+        if (typeof window.userPredictionMemory === 'undefined' || !window.userPredictionMemory) {
+            window.userPredictionMemory = [];
+        }
+
         if (user) {
             updateUserUI();
-            // KÍCH HOẠT BỘ NHỚ: Khi đăng nhập thành công, ép Hải Ly đọc bộ nhớ lịch sử Walrus ngay
-            triggerWalrusMemoryAgent(user.email, user.displayName);
+            // Đợi 200ms để chắc chắn hạ tầng window toàn cục ổn định rồi mới ép Hải Ly đọc ví
+            setTimeout(() => {
+                triggerWalrusMemoryAgent(user.email, user.displayName);
+            }, 200);
         } else {
             resetUserUI();
-            // Trả con AI về trạng thái ban đầu khi logout
             resetAiAgentUI();
         }
     });
 }
 
 async function signInWithGoogle() {
-    // Ép cấu hình customParameters để Google xử lý luồng popup độc lập, giảm xung đột COOP
     const provider = new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({
-        prompt: 'select_account'
-    });
+    provider.setCustomParameters({ prompt: 'select_account' });
 
     try {
         console.log("🔄 Đang khởi chạy cửa sổ xác thực Google...");
         const result = await auth.signInWithPopup(provider);
         currentUser = result.user;
-        updateUserUI();
+        
+        // ✅ Bỏ updateUserUI() ở đây để onAuthStateChanged tự quản lý duy nhất 1 luồng chuẩn
         alert(currentLang === "vi" ? `Chào ${currentUser.displayName}!` : `Welcome ${currentUser.displayName}!`);
     } catch (error) {
         console.error("Lỗi đăng nhập hệ thống:", error);
         
-        // Bắt chính xác các kịch bản lỗi để hướng dẫn người dùng
         if (error.code === 'auth/popup-blocked') {
             alert("❌ Trình duyệt của sếp đã chặn cửa sổ Popup! Vui lòng nhấn vào biểu tượng mở khóa ô vuông ở góc thanh địa chỉ duyệt web.");
         } else if (error.code === 'auth/popup-closed-by-user') {
@@ -84,10 +89,10 @@ async function signInWithGoogle() {
 
 function updateUserUI() {
     const btn = document.getElementById('googleBtn');
-    if (btn) {
+    if (btn && currentUser) {
         btn.innerHTML = `
             <img src="${currentUser.photoURL}" class="w-6 h-6 rounded-full border border-gray-300" alt="">
-            <span class="text-emerald-600 font-medium">${currentUser.displayName}</span>
+            <span class="text-emerald-400 font-medium">${currentUser.displayName}</span>
         `;
         btn.onclick = signOut;
     }
@@ -98,7 +103,7 @@ function resetUserUI() {
     if (btn) {
         btn.innerHTML = `
             <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" class="w-5 h-5" alt="Google">
-            <span id="gmailText">Đăng nhập bằng Google</span>
+            <span id="gmailText">${currentLang === "vi" ? "Đăng nhập bằng Google" : "Sign in with Google"}</span>
         `;
         btn.onclick = signInWithGoogle;
     }

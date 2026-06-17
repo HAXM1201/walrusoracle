@@ -669,22 +669,102 @@ function initApp() {
     }, 600);
 }
 
+// ==================== ONLINE DATA FROM GITHUB ====================
 let refreshInterval = null;
+let isFirstSuccess = false;
+
 function startLiveRefresh() {
     if (refreshInterval) clearInterval(refreshInterval);
-    refreshInterval = setInterval(fetchWorldCupData, 45000); // 45 giây một lần
+
+    const intervalTime = isFirstSuccess ? 600000 : 5000; // 10 phút hoặc 5 giây
+
+    refreshInterval = setInterval(() => {
+        fetchWorldCupData();
+    }, intervalTime);
+
+    console.log(`🔄 Auto refresh: ${intervalTime === 5000 ? '5 giây' : '10 phút'}`);
 }
-// ==================== LOADING OVERLAY CONTROL ====================
-function hideLoadingOverlay() {
-    const loadingOverlay = document.getElementById('loading-overlay');
-    if (loadingOverlay) {
-        loadingOverlay.style.opacity = "0";
-        setTimeout(() => {
-            loadingOverlay.style.display = "none";
-        }, 600);
+
+async function fetchWorldCupData() {
+    try {
+        console.log("🌐 Đang lấy kết quả World Cup từ GitHub...");
+
+        const response = await fetch('https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json');
+
+        if (!response.ok) throw new Error("Network error");
+
+        const data = await response.json();
+
+        applyGitHubData(data);
+
+        console.log("✅ Đã lấy dữ liệu online từ GitHub thành công!");
+
+    } catch (error) {
+        console.warn("❌ Lỗi khi lấy dữ liệu GitHub:", error.message);
+        console.log("→ Đang dùng dữ liệu tĩnh");
     }
 }
-// ==================== EXPOSE ====================
+
+function applyGitHubData(data) {
+    if (!data || !data.matches) {
+        console.log("❌ Dữ liệu GitHub không đúng format");
+        return;
+    }
+
+    let updatedCount = 0;
+
+    data.matches.forEach(match => {
+        const teamAName = (match.team1?.name || "").trim().toLowerCase();
+        const teamBName = (match.team2?.name || "").trim().toLowerCase();
+
+        if (!teamAName || !teamBName) return;
+
+        const localMatch = officialMatches.find(m => {
+            const localA = ((m.teamA || "") + " " + (m.teamAEn || "")).toLowerCase();
+            const localB = ((m.teamB || "") + " " + (m.teamBEn || "")).toLowerCase();
+            return localA.includes(teamAName) || localB.includes(teamBName) ||
+                   teamAName.includes(localA) || teamBName.includes(localB);
+        });
+
+        if (!localMatch) return;
+
+        if (match.team1?.name) localMatch.teamA = localMatch.teamAEn = match.team1.name;
+        if (match.team2?.name) localMatch.teamB = localMatch.teamBEn = match.team2.name;
+
+        if (match.score && match.score.ft) {
+            const parts = match.score.ft.toString().split('-');
+            localMatch.result = {
+                home: parseInt(parts[0]) || 0,
+                away: parseInt(parts[1]) || 0,
+                goals: []
+            };
+            updatedCount++;
+        }
+    });
+
+    console.log(`✅ Đã cập nhật ${updatedCount} trận đấu từ GitHub`);
+    renderMatches(activeTabGlobal);
+}
+
+// ==================== KHỞI TẠO APP ====================
+function initApp() {
+    currentApiStatus = "welcome";
+    updateUINonDynamicText();
+    renderGroups();
+    filterMatches('vong-bang');
+    renderLeaderboard();
+    
+    initFirebaseAuth();
+
+    renderMatches(activeTabGlobal);
+
+    setTimeout(() => {
+        fetchWorldCupData();
+        startLiveRefresh();
+    }, 600);
+}
+
+// ==================== EXPOSE GLOBAL ====================
 window.filterMatches = filterMatches;
 window.toggleLanguage = toggleLanguage;
 window.toggleWallet = toggleWallet;

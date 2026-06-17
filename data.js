@@ -192,6 +192,14 @@ const officialMatches = [
 ];
 
 
+const mockLeaderboard = [
+    { name: "TayBew", score: 1240, countryCode: "vn" },
+    { name: "HALN", score: 1180, countryCode: "vn" },
+    { name: "Jack", score: 1090, countryCode: "us" },
+    { name: "Puchi", score: 980, countryCode: "br" },
+    { name: "Stravia", score: 920, countryCode: "th" }
+];
+
 // Export ra window để app-logic.js chắc chắn đọc được
 window.translations = translations;
 window.worldCupGroups = worldCupGroups;

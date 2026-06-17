@@ -43,14 +43,14 @@ function initFirebaseAuth() {
     auth.onAuthStateChanged(user => {
         currentUser = user;
         
-        // Đảm bảo mảng bộ nhớ Walrus luôn tồn tại khi Firebase kiểm tra trạng thái
+        // Đảm bảo mảng bộ nhớ Walrus luôn tồn tại trong bộ nhớ Client toàn cục
         if (typeof window.userPredictionMemory === 'undefined' || !window.userPredictionMemory) {
             window.userPredictionMemory = [];
         }
 
         if (user) {
             updateUserUI();
-            // Đợi 200ms để chắc chắn hạ tầng window toàn cục ổn định rồi mới ép Hải Ly đọc ví
+            // Đợi 200ms cho môi trường window ổn định rồi mới cho Hải Ly đọc bộ nhớ Walrus Blobs
             setTimeout(() => {
                 triggerWalrusMemoryAgent(user.email, user.displayName);
             }, 200);
@@ -62,25 +62,28 @@ function initFirebaseAuth() {
 }
 
 async function signInWithGoogle() {
+    // 1. Tạo đối tượng Provider chuẩn của Firebase
     const provider = new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
+    
+    // 🔥 TUYỆT CHIÊU BẺ KHÓA COOP: Ép Google xử lý luồng xác thực độc lập bằng tài khoản
+    provider.setCustomParameters({
+        prompt: 'select_account'
+    });
 
     try {
-        console.log("🔄 Đang khởi chạy cửa sổ xác thực Google...");
+        console.log("🔄 Đang khởi chạy cửa sổ xác thực Google bằng Popup chuẩn...");
+        
+        // 2. Kích hoạt Popup cửa sổ
         const result = await auth.signInWithPopup(provider);
         currentUser = result.user;
         
-        // ✅ Bỏ updateUserUI() ở đây để onAuthStateChanged tự quản lý duy nhất 1 luồng chuẩn
         alert(currentLang === "vi" ? `Chào ${currentUser.displayName}!` : `Welcome ${currentUser.displayName}!`);
     } catch (error) {
         console.error("Lỗi đăng nhập hệ thống:", error);
         
+        // Bắt chính xác lỗi để hướng dẫn người dùng trên trình duyệt
         if (error.code === 'auth/popup-blocked') {
             alert("❌ Trình duyệt của sếp đã chặn cửa sổ Popup! Vui lòng nhấn vào biểu tượng mở khóa ô vuông ở góc thanh địa chỉ duyệt web.");
-        } else if (error.code === 'auth/popup-closed-by-user') {
-            console.log("Người dùng đã chủ động tắt popup trước khi đăng nhập.");
-        } else if (error.code === 'auth/unauthorized-domain') {
-            alert("❌ Domain walrusoracle.xyz chưa được bật quyền trong Firebase Console!");
         } else {
             alert(`Đăng nhập thất bại: ${error.message}. Hãy thử lại trên tab ẩn danh.`);
         }

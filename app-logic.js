@@ -696,12 +696,12 @@ async function fetchWorldCupData() {
         const data = await response.json();
 
         applyGitHubData(data);
-
+        hideLoadingOverlay(); 
         console.log("✅ Đã lấy dữ liệu online từ GitHub thành công!");
 
     } catch (error) {
         console.warn("❌ Lỗi khi lấy dữ liệu GitHub:", error.message);
-        console.log("→ Đang dùng dữ liệu tĩnh");
+        hideLoadingOverlay();
     }
 }
 
@@ -762,8 +762,20 @@ function initApp() {
         fetchWorldCupData();
         startLiveRefresh();
     }, 600);
-}
 
+    // Bảo vệ: tự ẩn loading sau 5 giây nếu bị kẹt
+    setTimeout(hideLoadingOverlay, 5000);
+}
+// ==================== CONTROL LOADING OVERLAY ====================
+function hideLoadingOverlay() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 800);
+    }
+}
 // ==================== EXPOSE GLOBAL ====================
 window.filterMatches = filterMatches;
 window.toggleLanguage = toggleLanguage;

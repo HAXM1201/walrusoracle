@@ -629,6 +629,7 @@ async function fetchMyPredictions() {
 window.showMyPredictions = fetchMyPredictions;
 
 // ==================== BỘ PHÂN GIẢI & ĐỒNG BỘ DỮ LIỆU ĐỘNG (OPENFOOTBALL 2026 BRACKETS) ====================
+// ==================== BỘ PHÂN GIẢI & ĐỒNG BỘ DỮ LIỆU ĐỘNG (BẢN AN TOÀN TUYỆT ĐỐI) ====================
 async function fetchWorldCupData() {
     const aiAgentText = document.getElementById('ai-roast-text');
     const aiAvatarBox = document.getElementById('ai-avatar-box');
@@ -641,10 +642,11 @@ async function fetchWorldCupData() {
     }
 
     currentApiStatus = "connecting";
-    if (aiAgentText) aiAgentText.innerHTML = translations[currentLang].aiConnecting;
+    if (aiAgentText && translations[currentLang]) aiAgentText.innerHTML = translations[currentLang].aiConnecting;
 
     try {
-        // Tải song song 4 file JSON cốt lõi từ kho lưu trữ OpenFootball 2026 trên GitHub
+        console.log("🔄 Đang tải song song dữ liệu từ GitHub OpenFootball 2026...");
+        // Tải dữ liệu thô
         const [teamsRes, stadiumsRes, groupsRes, matchesRes] = await Promise.all([
             fetch(RAW_TEAM_URL).then(r => r.json()),
             fetch(RAW_STADIUM_URL).then(r => r.json()),
@@ -652,78 +654,91 @@ async function fetchWorldCupData() {
             fetch(RAW_MATCH_URL).then(r => r.json())
         ]);
 
-        // 1. Ánh xạ Đội tuyển & Mã Code Quốc Kỳ ISO chuẩn
+        // 1. Chuẩn hóa Đội tuyển (Hỗ trợ cả mảng thuần và object chứa thuộc tính teams)
         let teamMap = {};
-       // Kiểm tra nếu teamsRes là mảng thuần (gốc của OpenFootball GitHub)
-       const actualTeams = Array.isArray(teamsRes) ? teamsRes : (teamsRes.teams || []);
-
-       actualTeams.forEach(t => {
-            teamMap[t.name] = {
-                name: t.name,
-                nameEn: t.name,
-                code: t.code ? t.code.toLowerCase() : "placeholder"
-            };
+        const actualTeams = Array.isArray(teamsRes) ? teamsRes : (teamsRes.teams || []);
+        actualTeams.forEach(t => {
+            if (t && t.name) {
+                teamMap[t.name] = {
+                    name: t.name,
+                    nameEn: t.name,
+                    code: t.code ? t.code.toLowerCase() : "placeholder"
+                };
+            }
         });
 
-        // 2. Định hình Cục diện 12 Bảng đấu (48 Đội)
-        worldCupGroups = {};
-        groupsRes.groups.forEach(g => {
-            worldCupGroups[g.name] = g.teams.map(teamName => {
-                return teamMap[teamName] || { name: teamName, nameEn: teamName, code: "placeholder" };
-            });
-        });
-
-        // 3. Phân loại cấu trúc Sân vận động công bố
+        // 2. Chuẩn hóa Sân vận động
         let stadiumMap = {};
-        stadiumsRes.stadiums.forEach(s => { stadiumMap[s.key] = s.name; });
+        const actualStadiums = Array.isArray(stadiumsRes) ? stadiumsRes : (stadiumsRes.stadiums || []);
+        actualStadiums.forEach(s => { 
+            if (s && s.key) stadiumMap[s.key] = s.name; 
+        });
 
-        // 4. Đồng bộ danh sách 104 trận đấu động (Cả Vòng Bảng lẫn Knockout)
+        // 3. Chuẩn hóa Cục diện Bảng đấu (Hỗ trợ cả mảng thuần và object chứa thuộc tính groups)
+        worldCupGroups = {};
+        const actualGroups = Array.isArray(groupsRes) ? groupsRes : (groupsRes.groups || []);
+        actualGroups.forEach(g => {
+            if (g && g.name && g.teams) {
+                worldCupGroups[g.name] = g.teams.map(teamName => {
+                    // Nếu teamName là object hoặc chuỗi văn bản thuần
+                    const nameKey = (typeof teamName === 'object') ? teamName.name : teamName;
+                    return teamMap[nameKey] || { name: nameKey, nameEn: nameKey, code: "placeholder" };
+                });
+            }
+        });
+
+        // 4. Chuẩn hóa Lịch thi đấu 104 trận (Hỗ trợ an toàn tuyệt đối các cấp vòng lặp)
         officialMatches = [];
         let matchCounter = 1;
+        const actualRounds = matchesRes && (Array.isArray(matchesRes.rounds) ? matchesRes.rounds : (Array.isArray(matchesRes) ? matchesRes : []));
 
-        matchesRes.rounds.forEach(round => {
+        actualRounds.forEach(round => {
+            if (!round || !round.matches) return;
+
             let roundType = "vong-bang";
-            if (round.name.includes("Round of 32")) roundType = "vong-32";
-            else if (round.name.includes("Round of 16")) roundType = "vong-16";
-            else if (round.name.includes("Quarter-finals")) roundType = "u-ket";
-            else if (round.name.includes("Semi-finals")) roundType = "ban-ket";
-            else if (round.name.includes("Final")) roundType = "chung-ket";
+            const rName = round.name || "";
+            if (rName.includes("Round of 32")) roundType = "vong-32";
+            else if (rName.includes("Round of 16")) roundType = "vong-16";
+            else if (rName.includes("Quarter-finals")) roundType = "tu-ket";
+            else if (rName.includes("Semi-finals")) roundType = "ban-ket";
+            else if (rName.includes("Final")) roundType = "chung-ket";
 
             round.matches.forEach(m => {
+                if (!m) return;
+                
                 let localMatch = {
                     id: String(m.num || matchCounter++),
-                    group: round.name,
-                    groupEn: round.name,
-                    date: m.date,
+                    group: rName,
+                    groupEn: rName,
+                    date: m.date || "",
                     time: m.time || "00:00",
                     stadium: stadiumMap[m.stadium] || m.stadium || "FIFA Stadium",
-                    teamA: m.team1,
-                    teamAEn: m.team1,
+                    teamA: m.team1 || "TBD",
+                    teamAEn: m.team1 || "TBD",
                     codeA: teamMap[m.team1] ? teamMap[m.team1].code : "placeholder",
-                    teamB: m.team2,
-                    teamBEn: m.team2,
+                    teamB: m.team2 || "TBD",
+                    teamBEn: m.team2 || "TBD",
                     codeB: teamMap[m.team2] ? teamMap[m.team2].code : "placeholder",
                     type: roundType,
-                    isHot: m.num % 6 === 0 ? true : false // Đánh dấu trận Hot động ngẫu nhiên theo ID
+                    isHot: matchCounter % 6 === 0
                 };
 
-                // Đồng bộ hóa kết quả trực tiếp, cầu thủ ghi bàn từ tệp JSON động
-                if (m.score1 !== undefined && m.score2 !== undefined) {
+                // Nhận diện tỉ số kết quả thật nếu có
+                if (m.score1 !== undefined && m.score2 !== undefined && m.score1 !== null) {
                     localMatch.result = {
                         home: m.score1,
                         away: m.score2,
                         goals: []
                     };
                     
-                    // Nếu tệp cấu hình nguồn mở có mảng danh sách ghi bàn (goals)
-                    if (m.goals1) {
+                    if (Array.isArray(m.goals1)) {
                         m.goals1.forEach(g => {
-                            localMatch.result.goals.push({ team: 'home', scorer: g.name, minute: g.minute });
+                            if (g) localMatch.result.goals.push({ team: 'home', scorer: g.name || "Player", minute: g.minute || "" });
                         });
                     }
-                    if (m.goals2) {
+                    if (Array.isArray(m.goals2)) {
                         m.goals2.forEach(g => {
-                            localMatch.result.goals.push({ team: 'away', scorer: g.name, minute: g.minute });
+                            if (g) localMatch.result.goals.push({ team: 'away', scorer: g.name || "Player", minute: g.minute || "" });
                         });
                     }
                 }
@@ -736,22 +751,16 @@ async function fetchWorldCupData() {
         lastFetchTime = now;
         currentApiStatus = "success";
         
-        console.log("✅ Đã đồng bộ hoàn tất 104 trận đấu từ kho dữ liệu OpenFootball 2026!");
+        console.log("✅ Đã đồng bộ thành công dữ liệu giải đấu từ OpenFootball!");
     } catch (error) {
-        console.error("❌ Lỗi Fetch GitHub OpenFootball -> Chuyển vùng bộ nhớ Walrus dự phòng:", error);
+        console.error("❌ Không thể phân giải cấu trúc JSON động -> Dùng dự phòng:", error);
         currentApiStatus = "fallback";
     }
 
-    // Ép làm mới chữ của Hải Ly Tiên Tri và vẽ lại các Box Card trên UI
+    // Làm mới giao diện chữ và cập nhật các bảng đấu
     updateUINonDynamicText();
     renderGroups();
     renderMatches(activeTabGlobal);
-}
-
-let refreshInterval = null;
-function startLiveRefresh() {
-    if (refreshInterval) clearInterval(refreshInterval);
-    refreshInterval = setInterval(fetchWorldCupData, 60000);
 }
 
 // ==================== KHỞI TẠO ĐỘC LẬP TỪ INDEX ====================

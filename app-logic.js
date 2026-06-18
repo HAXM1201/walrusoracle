@@ -654,7 +654,10 @@ async function fetchWorldCupData() {
 
         // 1. Ánh xạ Đội tuyển & Mã Code Quốc Kỳ ISO chuẩn
         let teamMap = {};
-        teamsRes.teams.forEach(t => {
+       // Kiểm tra nếu teamsRes là mảng thuần (gốc của OpenFootball GitHub)
+       const actualTeams = Array.isArray(teamsRes) ? teamsRes : (teamsRes.teams || []);
+
+       actualTeams.forEach(t => {
             teamMap[t.name] = {
                 name: t.name,
                 nameEn: t.name,

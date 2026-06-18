@@ -757,6 +757,13 @@ async function fetchWorldCupData() {
         currentApiStatus = "fallback";
     }
 
+    // 🔥 GỠ BỎ MÀN HÌNH CHỜ (LOADING SCREEN) NGAY KHI NẠP XONG DATA
+    const loadingScreen = document.getElementById('loading-screen') || document.getElementById('loading');
+    if (loadingScreen) {
+        loadingScreen.classList.add('hidden'); // Cách ẩn nhanh bằng class ẩn của Tailwind
+        loadingScreen.style.display = 'none';  // Phòng hờ nếu sếp dùng style inline thuần
+    }
+
     // Làm mới giao diện chữ và cập nhật các bảng đấu
     updateUINonDynamicText();
     renderGroups();

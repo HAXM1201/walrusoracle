@@ -293,10 +293,9 @@ function renderMatches(filterType = 'vong-bang') {
         const card = document.createElement('div');
         card.className = "bg-walrus-card border border-gray-800 rounded-2xl p-6 shadow-xl relative overflow-hidden transition hover:border-gray-700";
         
-        let displayGroup = currentLang === "en" && match.groupEn ? match.groupEn : match.group;
         let displayDate = getLocalizedDate(match);
-        let displayTeamA = currentLang === "en" ? (match.teamAEn || match.teamA) : match.teamA;
-        let displayTeamB = currentLang === "en" ? (match.teamBEn || match.teamB) : match.teamB;
+        let displayTeamA = match.teamA;
+        let displayTeamB = match.teamB;
 
         let cardHTML = '';
 
@@ -428,9 +427,8 @@ async function fetchWorldCupData() {
         officialMatches = data.matches.map((m, index) => {
             let homeScore = null;
             let awayScore = null;
-            if (m.score && m.score.ft) {
-                const ft = m.score.ft.toString();
-                const parts = ft.split('-');
+            if (m.score && typeof m.score.ft === 'string') {
+                const parts = m.score.ft.split('-');
                 homeScore = parseInt(parts[0]) || 0;
                 awayScore = parseInt(parts[1]) || 0;
             }

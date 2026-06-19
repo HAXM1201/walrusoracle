@@ -204,14 +204,18 @@ function triggerWalrusMemoryAgent(email, displayName) {
 }
 
 // FETCH DỮ LIỆU ĐỘNG TỪ GITHUB OPENFOOTBALL
+// ==================== FETCH DỮ LIỆU ĐỘNG THEO CHUẨN CẤU TRÚC MỚI CỦA GITHUB ====================
 async function fetchWorldCupData() {
     const aiStatusText = document.getElementById('ai-status-text');
     if (aiStatusText) aiStatusText.innerText = translations[currentLang].aiConnecting;
 
     try {
+        console.log("🔄 Đang tải dữ liệu chuẩn từ GitHub openfootball...");
         const response = await fetch('https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json');
         if (!response.ok) throw new Error("GitHub Network error");
         const data = await response.json();
+
+        if (!data || !data.matches) throw new Error("Cấu trúc JSON GitHub không hợp lệ");
 
         officialMatches = [];
         worldCupGroups = {};
@@ -222,9 +226,11 @@ async function fetchWorldCupData() {
             let rawTeam1 = item.team1 || "TBD";
             let rawTeam2 = item.team2 || "TBD";
 
+            // Đối chiếu tìm thông tin map quốc gia (Cơ chế Safe Fallback tránh crash)
             const teamAInfo = countryMap[rawTeam1] || { vi: rawTeam1, code: "placeholder" };
             const teamBInfo = countryMap[rawTeam2] || { vi: rawTeam2, code: "placeholder" };
 
+            // Phân loại Vòng Đấu động dựa trên trường round
             let type = "vong-bang";
             const roundLower = item.round ? item.round.toLowerCase() : "";
             
@@ -234,6 +240,7 @@ async function fetchWorldCupData() {
             else if (roundLower.includes("semi")) type = "ban-ket";
             else if (roundLower.includes("final") || roundLower.includes("third place")) type = "chung-ket";
 
+            // Gom và phân loại cấu trúc bảng đấu vòng bảng động
             if (item.group && type === "vong-bang") {
                 const groupName = item.group;
                 if (!worldCupGroups[groupName]) worldCupGroups[groupName] = [];
@@ -242,15 +249,41 @@ async function fetchWorldCupData() {
                 }
             }
 
+            // XỬ LÝ TỶ SỐ & DIỄN BIẾN THEO ĐÚNG CHUẨN ĐỊNH DẠNG MỚI CỦA NGƯỜI TA
             let matchResult = null;
-            if (item.hasOwnProperty('score1') && item.hasOwnProperty('score2') && item.score1 !== null && item.score2 !== null) {
+            if (item.score && item.score.ft && Array.isArray(item.score.ft)) {
+                let goalsList = [];
+
+                // Đọc danh sách ghi bàn đội 1 (Home)
+                if (item.goals1 && Array.isArray(item.goals1)) {
+                    item.goals1.forEach(g => {
+                        goalsList.push({
+                            team: 'home',
+                            scorer: g.name,
+                            minute: g.minute
+                        });
+                    });
+                }
+
+                // Đọc danh sách ghi bàn đội 2 (Away)
+                if (item.goals2 && Array.isArray(item.goals2)) {
+                    item.goals2.forEach(g => {
+                        goalsList.push({
+                            team: 'away',
+                            scorer: g.name,
+                            minute: g.minute
+                        });
+                    });
+                }
+
                 matchResult = {
-                    home: parseInt(item.score1),
-                    away: parseInt(item.score2),
-                    goals: []
+                    home: item.score.ft[0], // Tỷ số đội nhà
+                    away: item.score.ft[1], // Tỷ số đội khách
+                    goals: goalsList        // Mảng diễn biến bàn thắng
                 };
             }
 
+            // Đẩy vào mảng chuẩn để phục vụ render giao diện
             officialMatches.push({
                 id: matchId,
                 group: item.group || item.round,
@@ -265,7 +298,7 @@ async function fetchWorldCupData() {
                 teamBEn: rawTeam2,
                 codeB: teamBInfo.code,
                 type: type,
-                isHot: idx % 10 === 0,
+                isHot: idx % 10 === 0, // Gán nhãn HOT ngẫu nhiên hệ thống
                 result: matchResult
             });
         });
@@ -274,7 +307,7 @@ async function fetchWorldCupData() {
         if (aiStatusText) aiStatusText.innerText = translations[currentLang].aiSuccess;
 
     } catch (error) {
-        console.error("Lỗi dòng nạp GitHub:", error);
+        console.error("❌ Lỗi luồng fetch dữ liệu GitHub:", error);
         currentApiStatus = "fallback";
     } finally {
         renderGroups();

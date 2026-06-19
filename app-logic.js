@@ -298,13 +298,25 @@ async function fetchWorldCupData() {
         });
 
         // 🎯 THUẬT TOÁN SẮP XẾP TRẬN ĐẤU THEO THỜI GIAN TĂNG DẦN
+        // 🎯 THUẬT TOÁN QUY HOẠCH THỨ TỰ TRẬN ĐẤU CHUẨN THEO THỜI GIAN ĐÁ
         officialMatches.sort((a, b) => {
-            // Tách chuỗi thời gian sạch (Bỏ bớt UTC offset để tạo Object Date chuẩn)
-            const timeA = a.time.split(" ")[0] || "00:00";
-            const timeB = b.time.split(" ")[0] || "00:00";
-            const dateA = new Date(`${a.date}T${timeA}`);
-            const dateB = new Date(`${b.date}T${timeB}`);
-            return dateA - dateB; // Trận nào đá trước xếp lên trước
+            // 1. So sánh theo ngày (Chuỗi YYYY-MM-DD từ openfootball)
+            if (a.date !== b.date) {
+                return a.date.localeCompare(b.date);
+            }
+            
+            // 2. Nếu trùng ngày, bóc tách giờ và phút để so sánh thời gian đá chính xác
+            const timeCleanA = a.time.split(" ")[0] || "00:00";
+            const timeCleanB = b.time.split(" ")[0] || "00:00";
+            
+            const [hourA, minA] = timeCleanA.split(":").map(Number);
+            const [hourB, minB] = timeCleanB.split(":").map(Number);
+            
+            if (hourA !== hourB) return hourA - hourB;
+            if (minA !== minB) return minA - minB;
+            
+            // 3. Nếu trùng cả ngày lẫn giờ, xếp theo ID trận đấu tăng dần
+            return parseInt(a.id) - parseInt(b.id);
         });
 
         currentApiStatus = "success";

@@ -89,21 +89,70 @@ function createGroupCardHTML(groupName, teams) {
  */
 function createMatchCardHTML(match) {
     const lang = translations[currentLang];
-    
     let displayGroup = currentLang === "en" && match.groupEn ? match.groupEn : match.group;
     if (currentLang === "en" && displayGroup.includes("Bảng")) { 
-        displayGroup = displayGroup.replace("Bảng", "Group"); 
+        displayGroup = displayGroup.replace("Bảng", "Group");
     }
     
     let displayDate = getLocalizedDate(match);
     let displayTeamA = currentLang === "en" ? (match.teamAEn || match.teamA) : match.teamA;
     let displayTeamB = currentLang === "en" ? (match.teamBEn || match.teamB) : match.teamB;
-
     let hotBadgeHTML = match.isHot 
-        ? `<div class="absolute top-0 left-0 bg-gradient-to-r from-red-600 to-amber-500 text-white font-extrabold text-[9px] px-3 py-0.5 uppercase tracking-widest shadow-md z-10">
-                🔥 HOT MATCH
-           </div>` 
+        ? `<div class="absolute top-0 left-0 bg-gradient-to-r from-red-600 to-amber-500 text-white font-extrabold text-[9px] px-3 py-0.5 uppercase tracking-widest shadow-md z-10">🔥 HOT MATCH</div>` 
         : '';
+    
+    // Khởi tạo HTML mặc định cho trận đấu chưa đá (có ô nhập điểm)
+    let actionAreaHTML = `
+        <div class="border-t border-gray-800/60 pt-5 mt-4 space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+                <div class="sm:col-span-1">
+                    <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">${lang.labelScore}</label>
+                    <div class="flex items-center gap-2">
+                        <input type="number" id="scoreA-${match.id}" placeholder="0" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-center font-bold text-white focus:outline-none focus:border-walrus-aqua">
+                        <span class="text-gray-600 font-bold">-</span>
+                        <input type="number" id="scoreB-${match.id}" placeholder="0" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-center font-bold text-white focus:outline-none focus:border-walrus-aqua">
+                    </div>
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">${lang.labelAnalysis}</label>
+                    <input type="text" id="analysis-${match.id}" placeholder="${lang.placeholderAnalysis}" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-200 focus:outline-none focus:border-walrus-aqua">
+                </div>
+            </div>
+            <div class="flex justify-end pt-2">
+                <button onclick="handleSubmissionWithEffects('${match.id}', document.getElementById('scoreA-${match.id}').value, document.getElementById('scoreB-${match.id}').value, document.getElementById('analysis-${match.id}').value)" 
+                        class="gradient-btn hover:opacity-90 text-walrus-dark font-extrabold text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-walrus-aqua/20 flex items-center gap-2 transition">
+                    ${lang.btnSubmit}
+                </button>
+            </div>
+        </div>
+    `;
+
+    // Nếu trận đấu ĐÃ CÓ KẾT QUẢ THẬT từ API OpenFootball, render bảng tỷ số chính thức
+    if (match.result && match.result.home !== undefined) {
+        const res = match.result;
+        let goalsHTML = '';
+        if (res.goals && res.goals.length > 0) {
+            goalsHTML = `<div class="mt-5 space-y-2">`;
+            res.goals.forEach(g => {
+                const teamName = g.team === 'home' ? displayTeamA : displayTeamB;
+                goalsHTML += `
+                    <div class="flex justify-between items-center bg-gray-900/70 px-4 py-2.5 rounded-xl text-sm">
+                        <span>${teamName} — <strong>${g.scorer}</strong></span>
+                        <span class="font-mono text-emerald-400 font-bold">${g.minute}'</span>
+                    </div>`;
+            });
+            goalsHTML += `</div>`;
+        }
+
+        actionAreaHTML = `
+            <div class="absolute top-0 right-0 bg-emerald-600 text-white text-xs font-bold px-5 py-1.5 rounded-bl-2xl">${currentLang === "en" ? "FINISHED" : "KẾT THÚC"}</div>
+            <div class="text-center border-t border-gray-800/60 pt-4 mt-4">
+                <div class="text-5xl font-black font-mono tracking-tighter text-emerald-400">${res.home} - ${res.away}</div>
+                <div class="text-[11px] text-gray-500 mt-1 uppercase font-bold tracking-widest">${lang.resultStr || 'Official Result'}</div>
+            </div>
+            ${goalsHTML}
+        `;
+    }
 
     return `
         ${hotBadgeHTML}
@@ -128,31 +177,7 @@ function createMatchCardHTML(match) {
                 <span class="font-bold text-gray-400 text-sm mt-1">${displayTeamB}</span>
             </div>
         </div>
-        <div class="border-t border-gray-800/60 pt-5 mt-4 space-y-4">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-                <div class="sm:col-span-1">
-                    <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">${lang.labelScore}</label>
-                    <div class="flex items-center gap-2">
-                        <input type="number" id="scoreA-${match.id}" placeholder="0" 
-                               class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-center font-bold text-white focus:outline-none focus:border-walrus-aqua">
-                        <span class="text-gray-600 font-bold">-</span>
-                        <input type="number" id="scoreB-${match.id}" placeholder="0" 
-                               class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-center font-bold text-white focus:outline-none focus:border-walrus-aqua">
-                    </div>
-                </div>
-                <div class="sm:col-span-2">
-                    <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">${lang.labelAnalysis}</label>
-                    <input type="text" id="analysis-${match.id}" placeholder="${lang.placeholderAnalysis}" 
-                           class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-200 focus:outline-none focus:border-walrus-aqua">
-                </div>
-            </div>
-            <div class="flex justify-end pt-2">
-                <button onclick="handleSubmissionWithEffects('${match.id}', document.getElementById('scoreA-${match.id}').value, document.getElementById('scoreB-${match.id}').value, document.getElementById('analysis-${match.id}').value)" 
-                        class="gradient-btn hover:opacity-90 text-walrus-dark font-extrabold text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-walrus-aqua/20 flex items-center gap-2 transition">
-                    ${lang.btnSubmit}
-                </button>
-            </div>
-        </div>
+        ${actionAreaHTML}
     `;
 }
 

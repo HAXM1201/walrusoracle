@@ -30,7 +30,7 @@ const translations = {
         labelScore: 'Dự đoán Tỷ số', 
         labelAnalysis: 'Lý do phân tích / Câu gáy hài hước', 
         placeholderAnalysis: 'Nhập nhận định lầy lội của bạn tại đây...', 
-        btnSubmit: '<i class="fa-solid fa-cloud-arrow-up"></i> Nộp Dự Đoán',
+        btnSubmit: '<i class="fa-cloud-arrow-up fa-solid"></i> Nộp Dự Đoán',
         matchUnit: 'trận', 
         resultStr: 'Kết quả'
     },
@@ -69,7 +69,7 @@ const translations = {
     }
 };
 
-// Từ điển ánh xạ Tên tiếng Anh từ GitHub -> [Tên Tiếng Việt, Mã Quốc Gia flagcdn]
+// Bản đồ ánh xạ cờ quốc gia (Bắt buộc phải giữ lại)
 const countryMap = {
     "Mexico": { vi: "Mexico", code: "mx" },
     "South Africa": { vi: "Nam Phi", code: "za" },
@@ -124,7 +124,6 @@ const countryMap = {
     "Panama": { vi: "Panama", code: "pa" }
 };
 
-// Khai báo mảng rỗng để nhận dữ liệu nạp trực tuyến
 let officialMatches = [];
 let worldCupGroups = {};
 

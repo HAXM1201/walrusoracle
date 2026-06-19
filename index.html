@@ -259,9 +259,13 @@
     </footer>
 
     <!-- ==================== SCRIPTS ==================== -->
+    <script src="data.js"></script>
     <script src="ui-components.js"></script>
     <script src="app-logic.js"></script>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", initApp);
+    </script>
     <script>
         // Đảm bảo các hàm global có sẵn trước khi init
         window.filterMatches = filterMatches;

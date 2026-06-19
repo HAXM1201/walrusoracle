@@ -67,6 +67,8 @@ function animateParticles() {
  */
 // ==================== ui-components.js ====================
 
+// ==================== ui-components.js (BẢN CHUẨN HÓA DATA ĐỘNG) ====================
+
 function createGroupCardHTML(groupName, teams) {
     let dynamicGroupName = currentLang === "en" ? groupName.replace("Bảng", "Group") : groupName;
     let teamsHTML = `<h3 class="font-bold text-walrus-aqua border-b border-gray-700/50 pb-1.5 mb-2">${dynamicGroupName}</h3><ul class="space-y-1.5">`;
@@ -95,7 +97,7 @@ function createMatchCardHTML(match) {
         ? `<div class="absolute top-0 left-0 bg-gradient-to-r from-red-600 to-amber-500 text-white font-extrabold text-[9px] px-3 py-0.5 uppercase tracking-widest shadow-md z-10">🔥 HOT MATCH</div>` 
         : '';
 
-    // Nếu trận đấu đã kết thúc (Có tỉ số trả về từ GitHub)
+    // GIAO DIỆN KHI TRẬN ĐẤU ĐÃ KẾT THÚC (ĐÃ ĐÁ XONG & CÓ TỈ SỐ ONLINE)
     if (match.result) {
         return `
             <div class="absolute top-0 right-0 bg-emerald-600 text-white text-xs font-bold px-5 py-1.5 rounded-bl-2xl">${currentLang === "en" ? "FINISHED" : "KẾT THÚC"}</div>
@@ -117,7 +119,7 @@ function createMatchCardHTML(match) {
         `;
     }
 
-    // Luồng hiển thị ô Cược dự đoán (Trận đấu sắp diễn ra)
+    // GIAO DIỆN Ô NHẬP DỰ ĐOÁN (TRẬN ĐẤU SẮP DIỄN RA)
     return `
         ${hotBadgeHTML}
         <div class="absolute top-0 right-0 bg-worldcup-gold text-walrus-dark font-bold text-[10px] px-3 py-1 uppercase tracking-wider rounded-bl-xl z-10">

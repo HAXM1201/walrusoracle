@@ -770,15 +770,7 @@ async function fetchWorldCupData() {
     renderMatches(activeTabGlobal);
 }
 
-// ==================== KHỞI TẠO ĐỘC LẬP TỪ INDEX ====================
-// Đảm bảo hàm định nghĩa startLiveRefresh() nằm độc lập và chính xác
-function startLiveRefresh() {
-    if (refreshInterval) clearInterval(refreshInterval);
-    refreshInterval = setInterval(fetchWorldCupData, 60000); // Tự động làm mới mỗi 60 giây
-}
-
-// ==================== KHỞI TẠO APP VÀ VÒNG LẶP ĐỒNG BỘ ====================
-// ✅ BỔ SUNG KHAI BÁO BIẾN TOÀN CỤC NÀY Ở PHÍA TRÊN HÀM
+// ==================== BỘ ĐẾM THỜI GIAN LÀM MỚI DỮ LIỆU ĐỘNG ====================
 let refreshInterval = null; 
 
 function startLiveRefresh() {
@@ -786,7 +778,7 @@ function startLiveRefresh() {
     refreshInterval = setInterval(fetchWorldCupData, 60000); // Tự động làm mới mỗi 60 giây
 }
 
-// ==================== KHỞI TẠO APP VÀ VÒNG LẶP ĐỒNG BỘ ====================
+// ==================== KHỞI TẠO APP VÀ VÒNG LẶP ĐỒNG BỘ TỔNG THỂ ====================
 function initApp() {
     initStaticTranslations();
     currentApiStatus = "welcome";

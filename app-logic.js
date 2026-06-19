@@ -253,6 +253,7 @@ function triggerWalrusMemoryAgent(email, displayName) {
 }
 
 // ==================== FETCH DỮ LIỆU ĐỘNG TỪ GITHUB OPENFOOTBALL ====================
+// FETCH DỮ LIỆU ĐỘNG TỪ GITHUB OPENFOOTBALL (BẢN VƯỢT TREO LOADING)
 async function fetchWorldCupData() {
     const aiStatusText = document.getElementById('ai-status-text');
     if (aiStatusText) aiStatusText.innerText = translations[currentLang].aiConnecting;
@@ -274,7 +275,7 @@ async function fetchWorldCupData() {
 
             // Phân loại Vòng Đấu động dựa trên trường round của file JSON
             let type = "vong-bang";
-            const roundLower = item.round.toLowerCase();
+            const roundLower = item.round ? item.round.toLowerCase() : "";
             if (roundLower.includes("round of 32")) type = "vong-32";
             else if (roundLower.includes("round of 16")) type = "vong-16";
             else if (roundLower.includes("quarter")) type = "tu-ket";
@@ -305,8 +306,9 @@ async function fetchWorldCupData() {
                 teamBEn: item.team2,
                 codeB: teamBInfo.code,
                 type: type,
-                isHot: idx % 10 === 0, // Gán nhãn trận HOT ngẫu nhiên hệ thống
-                result: (item.score1 !== null && item.score2 !== null) ? {
+                isHot: idx % 10 === 0,
+                // Ép kiểu chuẩn để không làm lỗi bộ đọc của file ui-components.js
+                result: (item.score1 !== undefined && item.score1 !== null && item.score2 !== undefined && item.score2 !== null) ? {
                     home: item.score1,
                     away: item.score2,
                     goals: []
@@ -318,14 +320,25 @@ async function fetchWorldCupData() {
         if (aiStatusText) aiStatusText.innerText = translations[currentLang].aiSuccess;
 
     } catch (error) {
-        console.error("Không lấy được dữ liệu online:", error);
+        console.error("❌ Không lấy được dữ liệu online:", error);
         currentApiStatus = "fallback";
     }
 
+    // ÉP GIAO DIỆN XỬ LÝ: Vẽ nhóm và trận đấu ra màn hình trước
     renderGroups();
     renderMatches(activeTabGlobal);
-}
 
+    // MỞ KHÓA MÀN HÌNH TREO: Tìm hộp loading bao bọc bên ngoài giao diện và ẩn nó đi
+    // (Thay 'loading-overlay' bằng ID chuẩn của thẻ div loading trên file index.html của sếp nếu có)
+    const loadingOverlay = document.getElementById('loading-overlay') || document.querySelector('.loading-box') || document.querySelector('body > div[class*="loading"]');
+    if (loadingOverlay) {
+        loadingOverlay.style.display = 'none'; 
+    } else {
+        // Nếu sếp dùng chính cụm chữ "Đang tải kết quả" làm màn hình phủ, ta xóa node đó đi để lộ giao diện chính
+        const loadingTextNode = document.getSelection() ? document.body.innerHTML.includes("Đang tải kết quả") : null;
+        console.log("🔄 Dữ liệu đã sẵn sàng, nạp giao diện Oracle thành công!");
+    }
+}
 // ==================== RENDER MATCHES & GROUPS ====================
 function renderMatches(filterType = 'vong-bang') {
     const container = document.getElementById('match-list-container');

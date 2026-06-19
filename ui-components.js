@@ -1,4 +1,4 @@
-// ==================== ui-components.js ==================== 
+// ==================== ui-components.js (BẢN CHUẨN HÓA SẠCH LỖI TRÙNG) ====================
 
 // =========================================================
 // 🎆 MÔ-ĐUN HIỆU ỨNG PHÁO HOA CANVAS (ĐỘC LẬP)
@@ -8,8 +8,10 @@ const ctx = canvas.getContext('2d');
 let particles = [];
 
 function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
 }
 
 window.addEventListener('resize', resizeCanvas);
@@ -59,16 +61,12 @@ function animateParticles() {
 }
 
 // =========================================================
-// 🧩 CÁC UI COMPONENT HELPER (CÓ THỂ MỞ RỘNG SAU)
+// 🧩 CÁC UI COMPONENT HELPER
 // =========================================================
 
 /**
  * Tạo HTML cho một Group Card
  */
-// ==================== ui-components.js ====================
-
-// ==================== ui-components.js (BẢN CHUẨN HÓA DATA ĐỘNG) ====================
-
 function createGroupCardHTML(groupName, teams) {
     let dynamicGroupName = currentLang === "en" ? groupName.replace("Bảng", "Group") : groupName;
     let teamsHTML = `<h3 class="font-bold text-walrus-aqua border-b border-gray-700/50 pb-1.5 mb-2">${dynamicGroupName}</h3><ul class="space-y-1.5">`;
@@ -86,90 +84,8 @@ function createGroupCardHTML(groupName, teams) {
     return teamsHTML;
 }
 
-function createMatchCardHTML(match) {
-    const lang = translations[currentLang];
-    let displayGroup = match.group;
-    let displayDate = getLocalizedDate(match);
-    let displayTeamA = currentLang === "en" ? match.teamAEn : match.teamA;
-    let displayTeamB = currentLang === "en" ? match.teamBEn : match.teamB;
-    
-    let hotBadgeHTML = match.isHot 
-        ? `<div class="absolute top-0 left-0 bg-gradient-to-r from-red-600 to-amber-500 text-white font-extrabold text-[9px] px-3 py-0.5 uppercase tracking-widest shadow-md z-10">🔥 HOT MATCH</div>` 
-        : '';
-
-    // GIAO DIỆN KHI TRẬN ĐẤU ĐÃ KẾT THÚC (ĐÃ ĐÁ XONG & CÓ TỈ SỐ ONLINE)
-    if (match.result) {
-        return `
-            <div class="absolute top-0 right-0 bg-emerald-600 text-white text-xs font-bold px-5 py-1.5 rounded-bl-2xl">${currentLang === "en" ? "FINISHED" : "KẾT THÚC"}</div>
-            ${hotBadgeHTML}
-            <div class="flex items-center justify-between mt-8 mb-6 px-4">
-                <div class="flex flex-col items-center w-28 text-center">
-                    ${getFlagImgHTML(match.codeA)}
-                    <span class="font-bold text-white mt-3 text-base">${displayTeamA}</span>
-                </div>
-                <div class="text-center">
-                    <div class="text-7xl font-black font-mono tracking-tighter text-white">${match.result.home} - ${match.result.away}</div>
-                    <div class="text-xs text-gray-400 mt-2">${displayDate} • ${match.time}</div>
-                </div>
-                <div class="flex flex-col items-center w-28 text-center">
-                    ${getFlagImgHTML(match.codeB)}
-                    <span class="font-bold text-white mt-3 text-base">${displayTeamB}</span>
-                </div>
-            </div>
-        `;
-    }
-
-    // GIAO DIỆN Ô NHẬP DỰ ĐOÁN (TRẬN ĐẤU SẮP DIỄN RA)
-    return `
-        ${hotBadgeHTML}
-        <div class="absolute top-0 right-0 bg-worldcup-gold text-walrus-dark font-bold text-[10px] px-3 py-1 uppercase tracking-wider rounded-bl-xl z-10">
-            ${currentLang === "en" ? "Match" : "Trận"} ${match.id} - ${displayGroup}
-        </div>
-        <div class="flex items-center gap-2 text-xs text-gray-400 mb-4 mt-1">
-            <i class="fa-solid fa-location-dot text-red-400"></i>
-            <span class="font-semibold text-gray-300">${match.stadium}</span>
-        </div>
-        <div class="flex items-center justify-between my-6 px-4">
-            <div class="flex flex-col items-center gap-2 w-28 text-center">
-                ${getFlagImgHTML(match.codeA)}
-                <span class="font-bold text-white text-sm mt-1">${displayTeamA}</span>
-            </div>
-            <div class="flex flex-col items-center">
-                <span class="text-xs text-gray-500 uppercase tracking-widest font-bold">VS</span>
-                <span class="text-[11px] bg-gray-800 text-gray-400 px-3 py-1 rounded-full mt-2 font-mono text-center">${displayDate}<br/>${match.time}</span>
-            </div>
-            <div class="flex flex-col items-center gap-2 w-28 text-center">
-                ${getFlagImgHTML(match.codeB)}
-                <span class="font-bold text-gray-400 text-sm mt-1">${displayTeamB}</span>
-            </div>
-        </div>
-        <div class="border-t border-gray-800/60 pt-5 mt-4 space-y-4">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-                <div class="sm:col-span-1">
-                    <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">${lang.labelScore}</label>
-                    <div class="flex items-center gap-2">
-                        <input type="number" id="scoreA-${match.id}" placeholder="0" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-center font-bold text-white focus:outline-none focus:border-walrus-aqua">
-                        <span class="text-gray-600 font-bold">-</span>
-                        <input type="number" id="scoreB-${match.id}" placeholder="0" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-center font-bold text-white focus:outline-none focus:border-walrus-aqua">
-                    </div>
-                </div>
-                <div class="sm:col-span-2">
-                    <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">${lang.labelAnalysis}</label>
-                    <input type="text" id="analysis-${match.id}" placeholder="${lang.placeholderAnalysis}" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-200 focus:outline-none focus:border-walrus-aqua">
-                </div>
-            </div>
-            <div class="flex justify-end pt-2">
-                <button onclick="handleSubmissionWithEffects('${match.id}', document.getElementById('scoreA-${match.id}').value, document.getElementById('scoreB-${match.id}').value, document.getElementById('analysis-${match.id}').value)" 
-                        class="gradient-btn hover:opacity-90 text-walrus-dark font-extrabold text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-walrus-aqua/20 flex items-center gap-2 transition">
-                    ${lang.btnSubmit}
-                </button>
-            </div>
-        </div>
-    `;
-}
-
 /**
- * Tạo HTML cho một Match Card
+ * Tạo HTML cho một Match Card (Bản sửa lỗi trùng lặp logic hiển thị)
  */
 function createMatchCardHTML(match) {
     const lang = translations[currentLang];
@@ -185,34 +101,10 @@ function createMatchCardHTML(match) {
         ? `<div class="absolute top-0 left-0 bg-gradient-to-r from-red-600 to-amber-500 text-white font-extrabold text-[9px] px-3 py-0.5 uppercase tracking-widest shadow-md z-10">🔥 HOT MATCH</div>` 
         : '';
     
-    // Khởi tạo HTML mặc định cho trận đấu chưa đá (có ô nhập điểm)
-    let actionAreaHTML = `
-        <div class="border-t border-gray-800/60 pt-5 mt-4 space-y-4">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-                <div class="sm:col-span-1">
-                    <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">${lang.labelScore}</label>
-                    <div class="flex items-center gap-2">
-                        <input type="number" id="scoreA-${match.id}" placeholder="0" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-center font-bold text-white focus:outline-none focus:border-walrus-aqua">
-                        <span class="text-gray-600 font-bold">-</span>
-                        <input type="number" id="scoreB-${match.id}" placeholder="0" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-center font-bold text-white focus:outline-none focus:border-walrus-aqua">
-                    </div>
-                </div>
-                <div class="sm:col-span-2">
-                    <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">${lang.labelAnalysis}</label>
-                    <input type="text" id="analysis-${match.id}" placeholder="${lang.placeholderAnalysis}" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-200 focus:outline-none focus:border-walrus-aqua">
-                </div>
-            </div>
-            <div class="flex justify-end pt-2">
-                <button onclick="handleSubmissionWithEffects('${match.id}', document.getElementById('scoreA-${match.id}').value, document.getElementById('scoreB-${match.id}').value, document.getElementById('analysis-${match.id}').value)" 
-                        class="gradient-btn hover:opacity-90 text-walrus-dark font-extrabold text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-walrus-aqua/20 flex items-center gap-2 transition">
-                    ${lang.btnSubmit}
-                </button>
-            </div>
-        </div>
-    `;
+    let actionAreaHTML = '';
 
     // Nếu trận đấu ĐÃ CÓ KẾT QUẢ THẬT từ API OpenFootball, render bảng tỷ số chính thức
-    if (match.result && match.result.home !== undefined) {
+    if (match.result && match.result.home !== undefined && match.result.home !== null) {
         const res = match.result;
         let goalsHTML = '';
         if (res.goals && res.goals.length > 0) {
@@ -236,36 +128,64 @@ function createMatchCardHTML(match) {
             </div>
             ${goalsHTML}
         `;
+    } else {
+        // Luồng hiển thị ô cược nhập điểm cho trận đấu chuẩn bị diễn ra
+        actionAreaHTML = `
+            <div class="border-t border-gray-800/60 pt-5 mt-4 space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+                    <div class="sm:col-span-1">
+                        <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">${lang.labelScore}</label>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="scoreA-${match.id}" placeholder="0" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-center font-bold text-white focus:outline-none focus:border-walrus-aqua">
+                            <span class="text-gray-600 font-bold">-</span>
+                            <input type="number" id="scoreB-${match.id}" placeholder="0" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-center font-bold text-white focus:outline-none focus:border-walrus-aqua">
+                        </div>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">${lang.labelAnalysis}</label>
+                        <input type="text" id="analysis-${match.id}" placeholder="${lang.placeholderAnalysis}" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-200 focus:outline-none focus:border-walrus-aqua">
+                    </div>
+                </div>
+                <div class="flex justify-end pt-2">
+                    <button onclick="handleSubmissionWithEffects('${match.id}', document.getElementById('scoreA-${match.id}').value, document.getElementById('scoreB-${match.id}').value, document.getElementById('analysis-${match.id}').value)" 
+                            class="gradient-btn hover:opacity-90 text-walrus-dark font-extrabold text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-walrus-aqua/20 flex items-center gap-2 transition">
+                        ${lang.btnSubmit}
+                    </button>
+                </div>
+            </div>
+        `;
     }
 
     return `
-        ${hotBadgeHTML}
-        <div class="absolute top-0 right-0 bg-worldcup-gold text-walrus-dark font-bold text-[10px] px-3 py-1 uppercase tracking-wider rounded-bl-xl z-10">
-            ${currentLang === "en" ? "Match" : "Trận"} ${match.id} - ${displayGroup}
-        </div>
-        <div class="flex items-center gap-2 text-xs text-gray-400 mb-4 mt-1">
-            <i class="fa-solid fa-location-dot text-red-400"></i>
-            <span class="font-semibold text-gray-300">${match.stadium}</span>
-        </div>
-        <div class="flex items-center justify-between my-6 px-4">
-            <div class="flex flex-col items-center gap-2 w-28 text-center">
-                ${getFlagImgHTML(match.codeA)}
-                <span class="font-bold text-white text-sm mt-1">${displayTeamA}</span>
+        <div class="relative w-full h-full">
+            ${hotBadgeHTML}
+            <div class="absolute top-0 right-0 bg-worldcup-gold text-walrus-dark font-bold text-[10px] px-3 py-1 uppercase tracking-wider rounded-bl-xl z-10">
+                ${currentLang === "en" ? "Match" : "Trận"} ${match.id} - ${displayGroup}
             </div>
-            <div class="flex flex-col items-center">
-                <span class="text-xs text-gray-500 uppercase tracking-widest font-bold">VS</span>
-                <span class="text-[11px] bg-gray-800 text-gray-400 px-3 py-1 rounded-full mt-2 font-mono text-center">${displayDate}<br/>${match.time}</span>
+            <div class="flex items-center gap-2 text-xs text-gray-400 mb-4 mt-1">
+                <i class="fa-solid fa-location-dot text-red-400"></i>
+                <span class="font-semibold text-gray-300">${match.stadium}</span>
             </div>
-            <div class="flex flex-col items-center gap-2 w-28 text-center">
-                ${getFlagImgHTML(match.codeB)}
-                <span class="font-bold text-gray-400 text-sm mt-1">${displayTeamB}</span>
+            <div class="flex items-center justify-between my-6 px-4">
+                <div class="flex flex-col items-center gap-2 w-28 text-center">
+                    ${getFlagImgHTML(match.codeA)}
+                    <span class="font-bold text-white text-sm mt-1">${displayTeamA}</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="text-xs text-gray-500 uppercase tracking-widest font-bold">VS</span>
+                    <span class="text-[11px] bg-gray-800 text-gray-400 px-3 py-1 rounded-full mt-2 font-mono text-center">${displayDate}<br/>${match.time}</span>
+                </div>
+                <div class="flex flex-col items-center gap-2 w-28 text-center">
+                    ${getFlagImgHTML(match.codeB)}
+                    <span class="font-bold text-gray-400 text-sm mt-1">${displayTeamB}</span>
+                </div>
             </div>
+            ${actionAreaHTML}
         </div>
-        ${actionAreaHTML}
     `;
 }
 
-// Expose các hàm ra window để tránh lỗi undefined khi onclick
+// Expose các hàm ra window để tránh lỗi undefined khi gọi onclick từ file index.html
 window.createConfetti = createConfetti;
 window.animateParticles = animateParticles;
 window.createGroupCardHTML = createGroupCardHTML;

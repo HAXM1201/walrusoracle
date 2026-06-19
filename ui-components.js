@@ -1,8 +1,5 @@
 // ==================== ui-components.js ====================
 
-// =========================================================
-// 🎆 MÔ-ĐUN HIỆU ỨNG PHÁO HOA CANVAS (ĐỘC LẬP)
-// =========================================================
 const canvas = document.getElementById('effect-canvas');
 const ctx = canvas ? canvas.getContext('2d') : null;
 let particles = [];
@@ -52,13 +49,6 @@ function animateParticles() {
     if (particles.length > 0) requestAnimationFrame(animateParticles);
 }
 
-// =========================================================
-// 🧩 CÁC UI COMPONENT HELPER
-// =========================================================
-
-/**
- * Tạo HTML cho một Group Card
- */
 function createGroupCardHTML(groupName, teams) {
     let dynamicGroupName = currentLang === "en" ? groupName.replace("Bảng", "Group") : groupName;
     let teamsHTML = `<h3 class="font-bold text-walrus-aqua border-b border-gray-700/50 pb-1.5 mb-2">${dynamicGroupName}</h3><ul class="space-y-1.5">`;
@@ -72,26 +62,14 @@ function createGroupCardHTML(groupName, teams) {
     return teamsHTML + `</ul>`;
 }
 
-/**
- * Tạo HTML cho một Match Card
- */
 function createMatchCardHTML(match) {
     const lang = translations[currentLang];
-    let displayGroup = currentLang === "en" && match.groupEn ? match.groupEn : match.group;
-    if (currentLang === "en" && displayGroup.includes("Bảng")) { 
-        displayGroup = displayGroup.replace("Bảng", "Group");
-    }
-    
+    let displayGroup = match.group;
     let displayDate = getLocalizedDate(match);
-    let displayTeamA = currentLang === "en" ? (match.teamAEn || match.teamA) : match.teamA;
-    let displayTeamB = currentLang === "en" ? (match.teamBEn || match.teamB) : match.teamB;
-    let hotBadgeHTML = match.isHot 
-        ? `<div class="absolute top-0 left-0 bg-gradient-to-r from-red-600 to-amber-500 text-white font-extrabold text-[9px] px-3 py-0.5 uppercase tracking-widest shadow-md z-10 rounded-br-xl">🔥 HOT MATCH</div>` 
-        : '';
-    
-    let actionAreaHTML = '';
+    let displayTeamA = currentLang === "en" ? match.teamAEn : match.teamA;
+    let displayTeamB = currentLang === "en" ? match.teamBEn : match.teamB;
+    let hotBadgeHTML = match.isHot ? `<div class="absolute top-0 left-0 bg-gradient-to-r from-red-600 to-amber-500 text-white font-extrabold text-[9px] px-3 py-0.5 uppercase tracking-widest shadow-md z-10 rounded-br-xl">🔥 HOT MATCH</div>` : '';
 
-    // GIAO DIỆN KHI TRẬN ĐẤU ĐÃ KẾT THÚC (HIỂN THỊ TỶ SỐ + CHIA TÊN CẦU THỦ 2 BÊN)
     if (match.result && match.result.home !== undefined && match.result.home !== null) {
         const res = match.result;
         let goalsHTML = '';
@@ -121,19 +99,65 @@ function createMatchCardHTML(match) {
             goalsHTML += `</div></div>`;
         }
 
-        actionAreaHTML = `
-            <div class="absolute top-0 right-0 bg-emerald-600/90 text-white text-[11px] font-bold px-4 py-1.5 rounded-bl-xl tracking-wider uppercase border-l border-b border-emerald-500/20 shadow-md z-10">
-                ${currentLang === "en" ? "FINISHED" : "KẾT THÚC"}
+        return `
+            <div class="relative w-full h-full pt-4">
+                <div class="absolute top-0 right-0 bg-emerald-600/90 text-white text-[11px] font-bold px-4 py-1.5 rounded-bl-xl tracking-wider uppercase border-l border-b border-emerald-500/20 shadow-md z-10">
+                    ${currentLang === "en" ? "FINISHED" : "KẾT THÚC"}
+                </div>
+                <div class="absolute top-0 left-0 bg-worldcup-gold text-walrus-dark font-extrabold text-[10px] px-4 py-1.5 uppercase tracking-wider rounded-br-xl shadow-md z-10">
+                    ${currentLang === "en" ? "Match" : "Trận"} ${match.id} — ${displayGroup}
+                </div>
+                <div class="flex items-center gap-2 text-xs text-gray-400 mb-4 mt-4 px-1">
+                    <i class="fa-solid fa-location-dot text-red-400/90 text-xs"></i>
+                    <span class="font-semibold text-gray-300">${match.stadium}</span>
+                </div>
+                <div class="flex items-center justify-between my-6 px-4">
+                    <div class="flex flex-col items-center gap-2 w-28 text-center">
+                        ${getFlagImgHTML(match.codeA)}
+                        <span class="font-bold text-white text-sm mt-1 tracking-wide">${displayTeamA}</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <span class="text-[10px] text-gray-500 uppercase tracking-widest font-black bg-gray-900 px-2.5 py-0.5 rounded-md border border-gray-800">VS</span>
+                        <span class="text-[11px] bg-gray-900/80 text-gray-400 px-3 py-1 rounded-full mt-2.5 font-mono text-center border border-gray-800 shadow-sm">${displayDate}<br/><span class="text-walrus-aqua font-bold">${match.time}</span></span>
+                    </div>
+                    <div class="flex flex-col items-center gap-2 w-28 text-center">
+                        ${getFlagImgHTML(match.codeB)}
+                        <span class="font-bold text-gray-300 text-sm mt-1 tracking-wide">${displayTeamB}</span>
+                    </div>
+                </div>
+                <div class="text-center border-t border-gray-800/50 pt-5 mt-4">
+                    <div class="text-6xl font-black font-mono tracking-normal gradient-text mb-1 drop-shadow-md">${res.home} - ${res.away}</div>
+                    <div class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">${lang.resultStr || 'Official Result'}</div>
+                </div>
+                ${goalsHTML}
             </div>
-            <div class="text-center border-t border-gray-800/50 pt-5 mt-4">
-                <div class="text-6xl font-black font-mono tracking-normal gradient-text mb-1 drop-shadow-md">${res.home} - ${res.away}</div>
-                <div class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">${lang.resultStr || 'Official Result'}</div>
-            </div>
-            ${goalsHTML}
         `;
-    } else {
-        // LUỒNG Ô DỰ ĐOÁN CHO TRẬN SẮP ĐÁ
-        actionAreaHTML = `
+    }
+
+    return `
+        <div class="relative w-full h-full pt-4">
+            ${hotBadgeHTML}
+            <div class="absolute top-0 left-0 bg-worldcup-gold text-walrus-dark font-extrabold text-[10px] px-4 py-1.5 uppercase tracking-wider rounded-br-xl shadow-md z-10">
+                ${currentLang === "en" ? "Match" : "Trận"} ${match.id} — ${displayGroup}
+            </div>
+            <div class="flex items-center gap-2 text-xs text-gray-400 mb-4 mt-4 px-1">
+                <i class="fa-solid fa-location-dot text-red-400/90 text-xs"></i>
+                <span class="font-semibold text-gray-300">${match.stadium}</span>
+            </div>
+            <div class="flex items-center justify-between my-6 px-4">
+                <div class="flex flex-col items-center gap-2 w-28 text-center">
+                    ${getFlagImgHTML(match.codeA)}
+                    <span class="font-bold text-white text-sm mt-1 tracking-wide">${displayTeamA}</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="text-[10px] text-gray-500 uppercase tracking-widest font-black bg-gray-900 px-2.5 py-0.5 rounded-md border border-gray-800">VS</span>
+                    <span class="text-[11px] bg-gray-900/80 text-gray-400 px-3 py-1 rounded-full mt-2.5 font-mono text-center border border-gray-800 shadow-sm">${displayDate}<br/><span class="text-walrus-aqua font-bold">${match.time}</span></span>
+                </div>
+                <div class="flex flex-col items-center gap-2 w-28 text-center">
+                    ${getFlagImgHTML(match.codeB)}
+                    <span class="font-bold text-gray-400 text-sm mt-1 tracking-wide">${displayTeamB}</span>
+                </div>
+            </div>
             <div class="border-t border-gray-800/60 pt-5 mt-4 space-y-4">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
                     <div class="sm:col-span-1">
@@ -155,34 +179,6 @@ function createMatchCardHTML(match) {
                     </button>
                 </div>
             </div>
-        `;
-    }
-
-    return `
-        <div class="relative w-full h-full pt-4">
-            ${hotBadgeHTML}
-            <div class="absolute top-0 left-0 bg-worldcup-gold text-walrus-dark font-extrabold text-[10px] px-4 py-1.5 uppercase tracking-wider rounded-br-xl shadow-md z-10">
-                ${currentLang === "en" ? "Match" : "Trận"} ${match.id} — ${displayGroup}
-            </div>
-            <div class="flex items-center gap-2 text-xs text-gray-400 mb-4 mt-4 px-1">
-                <i class="fa-solid fa-location-dot text-red-400/90 text-xs"></i>
-                <span class="font-semibold text-gray-300">${match.stadium}</span>
-            </div>
-            <div class="flex items-center justify-between my-6 px-4">
-                <div class="flex flex-col items-center gap-2 w-28 text-center group">
-                    <div class="transform group-hover:scale-105 transition duration-200">${getFlagImgHTML(match.codeA)}</div>
-                    <span class="font-bold text-white text-sm mt-1 tracking-wide">${displayTeamA}</span>
-                </div>
-                <div class="flex flex-col items-center">
-                    <span class="text-[10px] text-gray-500 uppercase tracking-widest font-black bg-gray-900 px-2.5 py-0.5 rounded-md border border-gray-800">VS</span>
-                    <span class="text-[11px] bg-gray-900/80 text-gray-400 px-3 py-1 rounded-full mt-2.5 font-mono text-center border border-gray-800 shadow-sm">${displayDate}<br/><span class="text-walrus-aqua font-bold">${match.time}</span></span>
-                </div>
-                <div class="flex flex-col items-center gap-2 w-28 text-center group">
-                    <div class="transform group-hover:scale-105 transition duration-200">${getFlagImgHTML(match.codeB)}</div>
-                    <span class="font-bold text-gray-300 text-sm mt-1 tracking-wide">${displayTeamB}</span>
-                </div>
-            </div>
-            ${actionAreaHTML}
         </div>
     `;
 }

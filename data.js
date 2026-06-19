@@ -1,4 +1,4 @@
-// ==================== data.js ====================
+// ==================== data.js (BẢN CHUẨN HÓA THEO GITHUB) ====================
 
 const translations = {
     vi: {
@@ -30,7 +30,7 @@ const translations = {
         labelScore: 'Dự đoán Tỷ số', 
         labelAnalysis: 'Lý do phân tích / Câu gáy hài hước', 
         placeholderAnalysis: 'Nhập nhận định lầy lội của bạn tại đây...', 
-        btnSubmit: '<i class="fa-cloud-arrow-up fa-solid"></i> Nộp Dự Đoán',
+        btnSubmit: '<i class="fa-solid fa-cloud-arrow-up"></i> Nộp Dự Đoán',
         matchUnit: 'trận', 
         resultStr: 'Kết quả'
     },
@@ -69,14 +69,13 @@ const translations = {
     }
 };
 
-// Bản đồ ánh xạ cờ quốc gia (Bắt buộc phải giữ lại)
+// Từ điển Map chuẩn theo chính xác chuỗi kí tự của openfootball JSON (Fix hoàn toàn lỗi lệch tên)
 const countryMap = {
     "Mexico": { vi: "Mexico", code: "mx" },
     "South Africa": { vi: "Nam Phi", code: "za" },
     "South Korea": { vi: "Hàn Quốc", code: "kr" },
-    "Czech Republic": { vi: "CH Séc", code: "cz" },
+    "Czechia": { vi: "CH Séc", code: "cz" },
     "Canada": { vi: "Canada", code: "ca" },
-    "Bosnia & Herzegovina": { vi: "Bosnia/Herzeg.", code: "ba" },
     "Bosnia/Herzeg.": { vi: "Bosnia/Herzeg.", code: "ba" },
     "Qatar": { vi: "Qatar", code: "qa" },
     "Switzerland": { vi: "Thụy Sĩ", code: "ch" },
@@ -84,13 +83,12 @@ const countryMap = {
     "Morocco": { vi: "Ma Rốc", code: "ma" },
     "Haiti": { vi: "Haiti", code: "ht" },
     "Scotland": { vi: "Scotland", code: "gb-sct" },
-    "USA": { vi: "Mỹ", code: "us" },
+    "United States": { vi: "Mỹ", code: "us" },
     "Paraguay": { vi: "Paraguay", code: "py" },
     "Australia": { vi: "Úc", code: "au" },
     "Turkey": { vi: "Thổ Nhĩ Kỳ", code: "tr" },
     "Germany": { vi: "Đức", code: "de" },
     "Curaçao": { vi: "Curacao", code: "cw" },
-    "Curacao": { vi: "Curacao", code: "cw" },
     "Ivory Coast": { vi: "Bờ Biển Ngà", code: "ci" },
     "Ecuador": { vi: "Ecuador", code: "ec" },
     "Netherlands": { vi: "Hà Lan", code: "nl" },
@@ -115,7 +113,6 @@ const countryMap = {
     "Jordan": { vi: "Jordan", code: "jo" },
     "Portugal": { vi: "Bồ Đào Nha", code: "pt" },
     "Congo": { vi: "Congo", code: "cg" },
-    "DR Congo": { vi: "Congo", code: "cg" },
     "Uzbekistan": { vi: "Uzbekistan", code: "uz" },
     "Colombia": { vi: "Colombia", code: "co" },
     "England": { vi: "Anh", code: "gb-eng" },

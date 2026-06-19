@@ -263,14 +263,14 @@
     <script src="app-logic.js"></script>
 
     <script>
-        // Bản vá ép gán hàm global cho sự kiện onclick của file HTML
+        // Khai báo gán hàm global cho sự kiện click độc lập chuẩn chỉnh
         window.filterMatches = filterMatches;
         window.toggleLanguage = toggleLanguage;
         window.toggleWallet = toggleWallet;
         window.showMyPredictions = showMyPredictions;
         window.signInWithGoogle = signInWithGoogle;
         
-        // Chỉ lắng nghe duy nhất 1 luồng DOMContentLoaded kích hoạt ứng dụng
+        // LUỒNG DUY NHẤT: Chỉ lắng nghe 1 sự kiện DOMContentLoaded để khởi chạy app
         document.addEventListener("DOMContentLoaded", function() {
             initApp();
         });

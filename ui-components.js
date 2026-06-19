@@ -79,27 +79,46 @@ function createMatchCardHTML(match) {
     let actionAreaHTML = '';
 
     // 1. GIAO DIỆN KHI TRẬN ĐẤU ĐÃ KẾT THÚC (MÁY CHUẨN XỊN MỊN)
+    // GIAO DIỆN KHI TRẬN ĐẤU ĐÃ KẾT THÚC (XIN MỊN, CHIA 2 BÊN ĐỐI XỨNG)
     if (match.result && match.result.home !== undefined && match.result.home !== null) {
         const res = match.result;
         let goalsHTML = '';
         
         if (res.goals && res.goals.length > 0) {
-            // Định dạng lại danh sách ghi bàn: Khung mờ bo góc nền tối sang trọng, căn giữa nội dung
-            goalsHTML = `<div class="mt-6 bg-gray-950/40 border border-gray-800/40 rounded-xl py-3 px-4 max-w-md mx-auto space-y-2 shadow-inner">`;
+            // Khung ghi bàn kéo dài rộng toàn diện w-full, bo góc mịn màng
+            goalsHTML = `
+                <div class="mt-6 bg-gray-950/30 border border-gray-800/50 rounded-xl p-4 w-full relative overflow-hidden shadow-inner">
+                    <!-- Trục ranh giới mờ ở chính giữa -->
+                    <div class="absolute inset-y-0 left-1/2 w-[1px] bg-gray-800/40 pointer-events-none"></div>
+                    
+                    <div class="space-y-3 relative z-10">
+            `;
+            
             res.goals.forEach(g => {
                 const isHome = g.team === 'home';
-                const iconHTML = `<i class="fa-solid fa-soccer-ball text-emerald-400 text-[11px] mx-1.5 animate-pulse"></i>`;
                 
-                // Hiển thị dạng timeline bóng đá trực quan, hiển thị rõ đội lập công
+                // Sử dụng Grid chia đôi khung: Cột trái cho đội nhà, Cột phải cho đội khách
                 goalsHTML += `
-                    <div class="flex items-center justify-center text-xs text-gray-300 font-medium">
-                        <span class="text-gray-500 w-16 text-right font-mono mr-2">${g.minute}'</span>
-                        <span class="inline-flex items-center">
-                            ${isHome ? `⚽ ${g.scorer}` : `${g.scorer} ⚽`}
-                        </span>
-                    </div>`;
+                    <div class="grid grid-cols-2 gap-8 text-[12px]">
+                        <!-- Cột Đội Nhà (Home) -->
+                        <div class="text-right pr-4 ${isHome ? 'text-gray-200 font-semibold' : 'text-transparent opacity-0 pointer-events-none'}">
+                            <span>${g.scorer}</span>
+                            <span class="text-emerald-400 font-mono text-[11px] ml-1.5">${g.minute}' ⚽</span>
+                        </div>
+                        
+                        <!-- Cột Đội Khách (Away) -->
+                        <div class="text-left pl-4 ${!isHome ? 'text-gray-200 font-semibold' : 'text-transparent opacity-0 pointer-events-none'}">
+                            <span class="text-emerald-400 font-mono text-[11px] mr-1.5">⚽ ${g.minute}'</span>
+                            <span>${g.scorer}</span>
+                        </div>
+                    </div>
+                `;
             });
-            goalsHTML += `</div>`;
+            
+            goalsHTML += `
+                    </div>
+                </div>
+            `;
         }
 
         actionAreaHTML = `
@@ -112,7 +131,7 @@ function createMatchCardHTML(match) {
             </div>
             ${goalsHTML}
         `;
-    } else {
+    }
         // 2. GIAO DIỆN Ô NHẬP ĐIỂM CƯỢC DỰ ĐOÁN (TRẬN SẮP ĐÁ)
         actionAreaHTML = `
             <div class="border-t border-gray-800/60 pt-5 mt-4 space-y-4">

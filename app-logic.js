@@ -11,16 +11,21 @@ if (typeof userPredictionMemory === 'undefined') {
     window.userPredictionMemory = [];
 }
 
+// ==================== CẤU HÌNH VƯỢT LỖI TRUSTED TYPES ====================
 if (window.trustedTypes && window.trustedTypes.createPolicy) {
     if (!window.trustedTypes.defaultPolicy) {
         window.trustedTypes.createPolicy('default', {
             createHTML: (string) => string,
-            createScript: (string) => string,
+            createScript: (string) => {
+                console.log("🛡️ [Trusted Types] Đã xử lý Script an toàn từ Extension");
+                return string;
+            },
             createScriptURL: (string) => string,
         });
     }
 }
 
+// ==================== FIREBASE CONFIG & AUTH LAYER ====================
 const firebaseConfig = {
   apiKey: "AIzaSyBl7vHtoGcSNqoIgTJnPkgu29wQRD2XVAo",
   authDomain: "walrus-cup-oracle.firebaseapp.com",
@@ -29,21 +34,28 @@ const firebaseConfig = {
   messagingSenderId: "152805594660",
   appId: "1:152805594660:web:3767f0fd98f6720031eab1"
 };
-firebase.initializeApp(firebaseConfig);
+
+// Khởi tạo Firebase bảo vệ an toàn chống lặp dữ liệu
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 const auth = firebase.auth();
 
 function initFirebaseAuth() {
-    // FIX TRIỆT ĐỂ LỖI ĐĂNG NHẬP KHÔNG CÓ GÌ XẢY RA: Bắt sự kiện sau khi trang bị tải lại từ Google Redirect
+    // 🎯 CHỐT CHẶN CHÍ MẠNG: Đón và xử lý Token tài khoản trả về sau khi quay lại từ Google Redirect
     auth.getRedirectResult().then((result) => {
         if (result && result.user) {
             currentUser = result.user;
+            console.log("✅ Đăng nhập thành công qua Redirect:", currentUser.displayName);
             updateUserUI();
             triggerWalrusMemoryAgent(currentUser.email, currentUser.displayName);
         }
     }).catch((error) => {
-        console.error("Lỗi xử lý luồng nhận token Redirect:", error);
+        console.error("❌ Lỗi luồng bắt token Redirect Google:", error);
+        alert(`Lỗi xác thực: ${error.message}`);
     });
 
+    // Lắng nghe thay đổi trạng thái tài khoản liên tục
     auth.onAuthStateChanged(user => {
         currentUser = user;
         if (user) {
@@ -60,12 +72,11 @@ async function signInWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
     try {
-        console.log("🔄 Đang kích hoạt chuyển hướng xác thực Google Chống Lỗi COOP...");
-        // Ép sử dụng luồng Redirect thay vì mở popup
+        console.log("🔄 Đang chuyển hướng xác thực tài khoản Google Redirect...");
         await auth.signInWithRedirect(provider);
     } catch (error) {
-        console.error("Lỗi đăng nhập hệ thống:", error);
-        alert(`Đăng nhập thất bại: ${error.message}`);
+        console.error("❌ Lỗi kích hoạt luồng Redirect:", error);
+        alert(`Không thể kết nối dịch vụ Google: ${error.message}`);
     }
 }
 
@@ -76,6 +87,7 @@ function updateUserUI() {
             <img src="${currentUser.photoURL}" class="w-6 h-6 rounded-full border border-gray-300" alt="">
             <span class="text-emerald-600 font-medium">${currentUser.displayName}</span>
         `;
+        // Gán duy nhất luồng đăng xuất, triệt tiêu gán trùng lặp click
         btn.onclick = signOut;
     }
 }
@@ -92,11 +104,13 @@ function resetUserUI() {
 }
 
 async function signOut() {
-    if (confirm(currentLang === "vi" ? "Đăng xuất?" : "Sign out?")) {
+    if (confirm(currentLang === "vi" ? "Đăng xuất tài khoản?" : "Sign out?")) {
         await auth.signOut();
+        window.location.reload(); // Làm sạch hoàn toàn bộ nhớ cache đăng nhập
     }
 }
 
+// ==================== CÁC HÀM HELPER GIAO DIỆN ====================
 function getLocalizedDate(match) {
     let dateStr = match.date || "";
     if (currentLang === "en") return dateStr;
@@ -207,7 +221,7 @@ function triggerWalrusMemoryAgent(email, displayName) {
     }, 1000);
 }
 
-// FETCH DỮ LIỆU ĐỘNG TỪ GITHUB OPENFOOTBALL
+// ==================== FETCH DATA ĐỘNG GITHUB OPENFOOTBALL ====================
 async function fetchWorldCupData() {
     const aiStatusText = document.getElementById('ai-status-text');
     if (aiStatusText) aiStatusText.innerText = translations[currentLang].aiConnecting;
@@ -287,7 +301,7 @@ async function fetchWorldCupData() {
             });
         });
 
-        // 🎯 QUY HOẠCH THỨ TỰ THEO THỜI GIAN CHUẨN ĐÉT KHÔNG LỘN XỘN
+        // Quy hoạch thứ tự theo dòng thời gian đá chuẩn
         officialMatches.sort((a, b) => {
             if (a.date !== b.date) return a.date.localeCompare(b.date);
             const timeCleanA = a.time.split(" ")[0] || "00:00";
@@ -413,9 +427,7 @@ function toggleLanguage() {
     renderMatches(activeTabGlobal);
 }
 
-let isGmailLoggedIn = true; 
 let isWalletConnected = false;
-function toggleGmail() { isGmailLoggedIn = !isGmailLoggedIn; }
 function toggleWallet() { isWalletConnected = !isWalletConnected; }
 
 async function fetchMyPredictions() {

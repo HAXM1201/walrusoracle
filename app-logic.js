@@ -33,15 +33,15 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
 function initFirebaseAuth() {
-    // Ép Firebase kiểm tra dữ liệu trả về sau khi quay lại từ luồng Redirect Google
+    // FIX TRIỆT ĐỂ LỖI ĐĂNG NHẬP KHÔNG CÓ GÌ XẢY RA: Bắt sự kiện sau khi trang bị tải lại từ Google Redirect
     auth.getRedirectResult().then((result) => {
-        if (result.user) {
+        if (result && result.user) {
             currentUser = result.user;
             updateUserUI();
             triggerWalrusMemoryAgent(currentUser.email, currentUser.displayName);
         }
     }).catch((error) => {
-        console.error("Lỗi xử lý kết quả redirect:", error);
+        console.error("Lỗi xử lý luồng nhận token Redirect:", error);
     });
 
     auth.onAuthStateChanged(user => {
@@ -59,10 +59,9 @@ function initFirebaseAuth() {
 async function signInWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
-
     try {
-        console.log("🔄 Đang chuyển hướng xác thực Google (Redirect)...");
-        // Thay signInWithPopup bằng signInWithRedirect để diệt lỗi COOP
+        console.log("🔄 Đang kích hoạt chuyển hướng xác thực Google Chống Lỗi COOP...");
+        // Ép sử dụng luồng Redirect thay vì mở popup
         await auth.signInWithRedirect(provider);
     } catch (error) {
         console.error("Lỗi đăng nhập hệ thống:", error);
@@ -288,7 +287,7 @@ async function fetchWorldCupData() {
             });
         });
 
-        // QUY HOẠCH THỨ TỰ THEO THỜI GIAN
+        // 🎯 QUY HOẠCH THỨ TỰ THEO THỜI GIAN CHUẨN ĐÉT KHÔNG LỘN XỘN
         officialMatches.sort((a, b) => {
             if (a.date !== b.date) return a.date.localeCompare(b.date);
             const timeCleanA = a.time.split(" ")[0] || "00:00";

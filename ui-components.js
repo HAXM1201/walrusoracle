@@ -1,5 +1,8 @@
 // ==================== ui-components.js ====================
 
+// =========================================================
+// 🎆 MÔ-ĐUN HIỆU ỨNG PHÁO HOA CANVAS (ĐỘC LẬP)
+// =========================================================
 const canvas = document.getElementById('effect-canvas');
 const ctx = canvas ? canvas.getContext('2d') : null;
 let particles = [];
@@ -49,6 +52,13 @@ function animateParticles() {
     if (particles.length > 0) requestAnimationFrame(animateParticles);
 }
 
+// =========================================================
+// 🧩 CÁC UI COMPONENT HELPER
+// =========================================================
+
+/**
+ * Tạo HTML cho một Group Card
+ */
 function createGroupCardHTML(groupName, teams) {
     let dynamicGroupName = currentLang === "en" ? groupName.replace("Bảng", "Group") : groupName;
     let teamsHTML = `<h3 class="font-bold text-walrus-aqua border-b border-gray-700/50 pb-1.5 mb-2">${dynamicGroupName}</h3><ul class="space-y-1.5">`;
@@ -62,6 +72,9 @@ function createGroupCardHTML(groupName, teams) {
     return teamsHTML + `</ul>`;
 }
 
+/**
+ * Tạo HTML cho một Match Card
+ */
 function createMatchCardHTML(match) {
     const lang = translations[currentLang];
     let displayGroup = currentLang === "en" && match.groupEn ? match.groupEn : match.group;
@@ -78,35 +91,26 @@ function createMatchCardHTML(match) {
     
     let actionAreaHTML = '';
 
-    // 1. GIAO DIỆN KHI TRẬN ĐẤU ĐÃ KẾT THÚC (MÁY CHUẨN XỊN MỊN)
-    // GIAO DIỆN KHI TRẬN ĐẤU ĐÃ KẾT THÚC (XIN MỊN, CHIA 2 BÊN ĐỐI XỨNG)
+    // GIAO DIỆN KHI TRẬN ĐẤU ĐÃ KẾT THÚC (HIỂN THỊ TỶ SỐ + CHIA TÊN CẦU THỦ 2 BÊN)
     if (match.result && match.result.home !== undefined && match.result.home !== null) {
         const res = match.result;
         let goalsHTML = '';
         
         if (res.goals && res.goals.length > 0) {
-            // Khung ghi bàn kéo dài rộng toàn diện w-full, bo góc mịn màng
             goalsHTML = `
                 <div class="mt-6 bg-gray-950/30 border border-gray-800/50 rounded-xl p-4 w-full relative overflow-hidden shadow-inner">
-                    <!-- Trục ranh giới mờ ở chính giữa -->
                     <div class="absolute inset-y-0 left-1/2 w-[1px] bg-gray-800/40 pointer-events-none"></div>
-                    
                     <div class="space-y-3 relative z-10">
             `;
             
             res.goals.forEach(g => {
                 const isHome = g.team === 'home';
-                
-                // Sử dụng Grid chia đôi khung: Cột trái cho đội nhà, Cột phải cho đội khách
                 goalsHTML += `
                     <div class="grid grid-cols-2 gap-8 text-[12px]">
-                        <!-- Cột Đội Nhà (Home) -->
                         <div class="text-right pr-4 ${isHome ? 'text-gray-200 font-semibold' : 'text-transparent opacity-0 pointer-events-none'}">
                             <span>${g.scorer}</span>
                             <span class="text-emerald-400 font-mono text-[11px] ml-1.5">${g.minute}' ⚽</span>
                         </div>
-                        
-                        <!-- Cột Đội Khách (Away) -->
                         <div class="text-left pl-4 ${!isHome ? 'text-gray-200 font-semibold' : 'text-transparent opacity-0 pointer-events-none'}">
                             <span class="text-emerald-400 font-mono text-[11px] mr-1.5">⚽ ${g.minute}'</span>
                             <span>${g.scorer}</span>
@@ -114,11 +118,7 @@ function createMatchCardHTML(match) {
                     </div>
                 `;
             });
-            
-            goalsHTML += `
-                    </div>
-                </div>
-            `;
+            goalsHTML += `</div></div>`;
         }
 
         actionAreaHTML = `
@@ -131,8 +131,8 @@ function createMatchCardHTML(match) {
             </div>
             ${goalsHTML}
         `;
-    }
-        // 2. GIAO DIỆN Ô NHẬP ĐIỂM CƯỢC DỰ ĐOÁN (TRẬN SẮP ĐÁ)
+    } else {
+        // LUỒNG Ô DỰ ĐOÁN CHO TRẬN SẮP ĐÁ
         actionAreaHTML = `
             <div class="border-t border-gray-800/60 pt-5 mt-4 space-y-4">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
@@ -158,19 +158,16 @@ function createMatchCardHTML(match) {
         `;
     }
 
-    // CHIA HAI BÊN CÂN XỨNG: Match/Group đẩy sang bên trái (Top-Left), Kết thúc giữ bên phải (Top-Right)
     return `
         <div class="relative w-full h-full pt-4">
             ${hotBadgeHTML}
             <div class="absolute top-0 left-0 bg-worldcup-gold text-walrus-dark font-extrabold text-[10px] px-4 py-1.5 uppercase tracking-wider rounded-br-xl shadow-md z-10">
                 ${currentLang === "en" ? "Match" : "Trận"} ${match.id} — ${displayGroup}
             </div>
-            
             <div class="flex items-center gap-2 text-xs text-gray-400 mb-4 mt-4 px-1">
                 <i class="fa-solid fa-location-dot text-red-400/90 text-xs"></i>
                 <span class="font-semibold text-gray-300">${match.stadium}</span>
             </div>
-            
             <div class="flex items-center justify-between my-6 px-4">
                 <div class="flex flex-col items-center gap-2 w-28 text-center group">
                     <div class="transform group-hover:scale-105 transition duration-200">${getFlagImgHTML(match.codeA)}</div>

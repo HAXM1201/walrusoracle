@@ -1,4 +1,4 @@
-// ==================== data.js (BẢN CHUẨN HÓA THEO GITHUB) ====================
+// ==================== data.js ====================
 
 const translations = {
     vi: {
@@ -17,7 +17,7 @@ const translations = {
         tabChungKet: 'Chung Kết',
         aiReading: 'Đang đọc bộ nhớ Walrus Mainnet...',
         aiWelcome: '"Chào sếp! Hãy kết nối ví Slush hoặc đăng nhập Gmail để tôi quét lịch sử gáy trận đấu của sếp trên mạng lưới Walrus nhé."',
-        aiConnecting: '"Đang kết nối GitHub openfootball để tải dữ liệu lịch trình World Cup 2026 thời gian thực..."',
+        aiConnecting: '"Đang kết nối dữ liệu GitHub openfootball thời gian thực..."',
         aiSuccess: '"Đã đồng bộ thành công dữ liệu từ GitHub! Kết quả các trận đấu đã được cập nhật chính xác theo thời gian thực. Vào gáy tiếp đi sếp!"',
         aiFallback: '"Không kết nối được dữ liệu trực tuyến, hệ thống đang dùng dữ liệu lưu trữ dự phòng!"',
         btnGmail: 'Đăng nhập Gmail', 
@@ -69,14 +69,16 @@ const translations = {
     }
 };
 
-// Từ điển Map chuẩn theo chính xác chuỗi kí tự của openfootball JSON (Fix hoàn toàn lỗi lệch tên)
+// Từ điển Map chuẩn theo chính xác tên kí tự của openfootball JSON
 const countryMap = {
     "Mexico": { vi: "Mexico", code: "mx" },
     "South Africa": { vi: "Nam Phi", code: "za" },
     "South Korea": { vi: "Hàn Quốc", code: "kr" },
     "Czechia": { vi: "CH Séc", code: "cz" },
+    "Czech Republic": { vi: "CH Séc", code: "cz" },
     "Canada": { vi: "Canada", code: "ca" },
     "Bosnia/Herzeg.": { vi: "Bosnia/Herzeg.", code: "ba" },
+    "Bosnia & Herzegovina": { vi: "Bosnia/Herzeg.", code: "ba" },
     "Qatar": { vi: "Qatar", code: "qa" },
     "Switzerland": { vi: "Thụy Sĩ", code: "ch" },
     "Brazil": { vi: "Brazil", code: "br" },
@@ -84,11 +86,13 @@ const countryMap = {
     "Haiti": { vi: "Haiti", code: "ht" },
     "Scotland": { vi: "Scotland", code: "gb-sct" },
     "United States": { vi: "Mỹ", code: "us" },
+    "USA": { vi: "Mỹ", code: "us" },
     "Paraguay": { vi: "Paraguay", code: "py" },
     "Australia": { vi: "Úc", code: "au" },
     "Turkey": { vi: "Thổ Nhĩ Kỳ", code: "tr" },
     "Germany": { vi: "Đức", code: "de" },
     "Curaçao": { vi: "Curacao", code: "cw" },
+    "Curacao": { vi: "Curacao", code: "cw" },
     "Ivory Coast": { vi: "Bờ Biển Ngà", code: "ci" },
     "Ecuador": { vi: "Ecuador", code: "ec" },
     "Netherlands": { vi: "Hà Lan", code: "nl" },
@@ -110,6 +114,7 @@ const countryMap = {
     "Argentina": { vi: "Argentina", code: "ar" },
     "Algeria": { vi: "Algeria", code: "dz" },
     "Austria": { vi: "Áo", code: "at" },
+    "Áo": { vi: "Áo", code: "at" },
     "Jordan": { vi: "Jordan", code: "jo" },
     "Portugal": { vi: "Bồ Đào Nha", code: "pt" },
     "Congo": { vi: "Congo", code: "cg" },

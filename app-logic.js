@@ -56,11 +56,6 @@ async function signInWithGoogle() {
         alert(currentLang === "vi" ? `Chào ${currentUser.displayName}!` : `Welcome ${currentUser.displayName}!`);
     } catch (error) {
         console.error("Lỗi đăng nhập hệ thống:", error);
-        if (error.code === 'auth/popup-blocked') {
-            alert("❌ Trình duyệt của sếp đã chặn cửa sổ Popup!");
-        } else {
-            alert(`Đăng nhập thất bại: ${error.message}`);
-        }
     }
 }
 
@@ -189,7 +184,6 @@ function triggerWalrusMemoryAgent(email, displayName) {
         if (aiAvatarBox) aiAvatarBox.innerText = "🦫";
         aiStatusText.innerText = currentLang === "vi" ? "✅ Bộ nhớ Walrus: Đã đồng bộ" : "✅ Walrus Memory: Synced";
 
-        // Ghi chú: KỊCH BẢN THAY ĐỔI HÀNH VI THEO THỜI GIAN/DỮ LIỆU CŨ (AUTHENTIC PERSISTENT MEMORY)
         if (totalPredictions === 0) {
             aiAgentText.innerHTML = currentLang === "vi"
                 ? `"Chào sếp <strong>${displayName}</strong>! Bộ nhớ ghi nhận tài khoản này chưa cược trận nào. Thử gáy một trận xem tài tiên tri đến đâu sếp!"`
@@ -204,18 +198,14 @@ function triggerWalrusMemoryAgent(email, displayName) {
 }
 
 // FETCH DỮ LIỆU ĐỘNG TỪ GITHUB OPENFOOTBALL
-// FETCH DỮ LIỆU ĐỘNG TỪ GITHUB OPENFOOTBALL (BẢN UPDATE SẮP XẾP THỜI GIAN)
 async function fetchWorldCupData() {
     const aiStatusText = document.getElementById('ai-status-text');
     if (aiStatusText) aiStatusText.innerText = translations[currentLang].aiConnecting;
 
     try {
-        console.log("🔄 Đang tải dữ liệu chuẩn từ GitHub openfootball...");
         const response = await fetch('https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json');
         if (!response.ok) throw new Error("GitHub Network error");
         const data = await response.json();
-
-        if (!data || !data.matches) throw new Error("Cấu trúc JSON GitHub không hợp lệ");
 
         officialMatches = [];
         worldCupGroups = {};
@@ -246,28 +236,18 @@ async function fetchWorldCupData() {
                 }
             }
 
-            // XỬ LÝ TỶ SỐ & DIỄN BIẾN GHI BÀN CHUẨN ĐỊNH DẠNG GITHUB
             let matchResult = null;
             if (item.score && item.score.ft && Array.isArray(item.score.ft)) {
                 let goalsList = [];
 
                 if (item.goals1 && Array.isArray(item.goals1)) {
                     item.goals1.forEach(g => {
-                        goalsList.push({
-                            team: 'home',
-                            scorer: g.name,
-                            minute: g.minute
-                        });
+                        goalsList.push({ team: 'home', scorer: g.name, minute: g.minute });
                     });
                 }
-
                 if (item.goals2 && Array.isArray(item.goals2)) {
                     item.goals2.forEach(g => {
-                        goalsList.push({
-                            team: 'away',
-                            scorer: g.name,
-                            minute: g.minute
-                        });
+                        goalsList.push({ team: 'away', scorer: g.name, minute: g.minute });
                     });
                 }
 
@@ -297,25 +277,15 @@ async function fetchWorldCupData() {
             });
         });
 
-        // 🎯 THUẬT TOÁN SẮP XẾP TRẬN ĐẤU THEO THỜI GIAN TĂNG DẦN
-        // 🎯 THUẬT TOÁN QUY HOẠCH THỨ TỰ TRẬN ĐẤU CHUẨN THEO THỜI GIAN ĐÁ
+        // QUY HOẠCH THỨ TỰ THEO THỜI GIAN
         officialMatches.sort((a, b) => {
-            // 1. So sánh theo ngày (Chuỗi YYYY-MM-DD từ openfootball)
-            if (a.date !== b.date) {
-                return a.date.localeCompare(b.date);
-            }
-            
-            // 2. Nếu trùng ngày, bóc tách giờ và phút để so sánh thời gian đá chính xác
+            if (a.date !== b.date) return a.date.localeCompare(b.date);
             const timeCleanA = a.time.split(" ")[0] || "00:00";
             const timeCleanB = b.time.split(" ")[0] || "00:00";
-            
             const [hourA, minA] = timeCleanA.split(":").map(Number);
             const [hourB, minB] = timeCleanB.split(":").map(Number);
-            
             if (hourA !== hourB) return hourA - hourB;
             if (minA !== minB) return minA - minB;
-            
-            // 3. Nếu trùng cả ngày lẫn giờ, xếp theo ID trận đấu tăng dần
             return parseInt(a.id) - parseInt(b.id);
         });
 
@@ -323,7 +293,7 @@ async function fetchWorldCupData() {
         if (aiStatusText) aiStatusText.innerText = translations[currentLang].aiSuccess;
 
     } catch (error) {
-        console.error("❌ Lỗi luồng fetch dữ liệu GitHub:", error);
+        console.error("Lỗi dòng nạp GitHub:", error);
         currentApiStatus = "fallback";
     } finally {
         renderGroups();
@@ -433,7 +403,6 @@ function toggleLanguage() {
     renderMatches(activeTabGlobal);
 }
 
-// MOCK ACTION FOR UI
 let isGmailLoggedIn = true; 
 let isWalletConnected = false;
 function toggleGmail() { isGmailLoggedIn = !isGmailLoggedIn; }

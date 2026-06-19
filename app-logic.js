@@ -204,7 +204,7 @@ function triggerWalrusMemoryAgent(email, displayName) {
 }
 
 // FETCH DỮ LIỆU ĐỘNG TỪ GITHUB OPENFOOTBALL
-// ==================== FETCH DỮ LIỆU ĐỘNG THEO CHUẨN CẤU TRÚC MỚI CỦA GITHUB ====================
+// FETCH DỮ LIỆU ĐỘNG TỪ GITHUB OPENFOOTBALL (BẢN UPDATE SẮP XẾP THỜI GIAN)
 async function fetchWorldCupData() {
     const aiStatusText = document.getElementById('ai-status-text');
     if (aiStatusText) aiStatusText.innerText = translations[currentLang].aiConnecting;
@@ -226,11 +226,9 @@ async function fetchWorldCupData() {
             let rawTeam1 = item.team1 || "TBD";
             let rawTeam2 = item.team2 || "TBD";
 
-            // Đối chiếu tìm thông tin map quốc gia (Cơ chế Safe Fallback tránh crash)
             const teamAInfo = countryMap[rawTeam1] || { vi: rawTeam1, code: "placeholder" };
             const teamBInfo = countryMap[rawTeam2] || { vi: rawTeam2, code: "placeholder" };
 
-            // Phân loại Vòng Đấu động dựa trên trường round
             let type = "vong-bang";
             const roundLower = item.round ? item.round.toLowerCase() : "";
             
@@ -240,7 +238,6 @@ async function fetchWorldCupData() {
             else if (roundLower.includes("semi")) type = "ban-ket";
             else if (roundLower.includes("final") || roundLower.includes("third place")) type = "chung-ket";
 
-            // Gom và phân loại cấu trúc bảng đấu vòng bảng động
             if (item.group && type === "vong-bang") {
                 const groupName = item.group;
                 if (!worldCupGroups[groupName]) worldCupGroups[groupName] = [];
@@ -249,12 +246,11 @@ async function fetchWorldCupData() {
                 }
             }
 
-            // XỬ LÝ TỶ SỐ & DIỄN BIẾN THEO ĐÚNG CHUẨN ĐỊNH DẠNG MỚI CỦA NGƯỜI TA
+            // XỬ LÝ TỶ SỐ & DIỄN BIẾN GHI BÀN CHUẨN ĐỊNH DẠNG GITHUB
             let matchResult = null;
             if (item.score && item.score.ft && Array.isArray(item.score.ft)) {
                 let goalsList = [];
 
-                // Đọc danh sách ghi bàn đội 1 (Home)
                 if (item.goals1 && Array.isArray(item.goals1)) {
                     item.goals1.forEach(g => {
                         goalsList.push({
@@ -265,7 +261,6 @@ async function fetchWorldCupData() {
                     });
                 }
 
-                // Đọc danh sách ghi bàn đội 2 (Away)
                 if (item.goals2 && Array.isArray(item.goals2)) {
                     item.goals2.forEach(g => {
                         goalsList.push({
@@ -277,13 +272,12 @@ async function fetchWorldCupData() {
                 }
 
                 matchResult = {
-                    home: item.score.ft[0], // Tỷ số đội nhà
-                    away: item.score.ft[1], // Tỷ số đội khách
-                    goals: goalsList        // Mảng diễn biến bàn thắng
+                    home: item.score.ft[0],
+                    away: item.score.ft[1],
+                    goals: goalsList
                 };
             }
 
-            // Đẩy vào mảng chuẩn để phục vụ render giao diện
             officialMatches.push({
                 id: matchId,
                 group: item.group || item.round,
@@ -298,9 +292,19 @@ async function fetchWorldCupData() {
                 teamBEn: rawTeam2,
                 codeB: teamBInfo.code,
                 type: type,
-                isHot: idx % 10 === 0, // Gán nhãn HOT ngẫu nhiên hệ thống
+                isHot: idx % 10 === 0,
                 result: matchResult
             });
+        });
+
+        // 🎯 THUẬT TOÁN SẮP XẾP TRẬN ĐẤU THEO THỜI GIAN TĂNG DẦN
+        officialMatches.sort((a, b) => {
+            // Tách chuỗi thời gian sạch (Bỏ bớt UTC offset để tạo Object Date chuẩn)
+            const timeA = a.time.split(" ")[0] || "00:00";
+            const timeB = b.time.split(" ")[0] || "00:00";
+            const dateA = new Date(`${a.date}T${timeA}`);
+            const dateB = new Date(`${b.date}T${timeB}`);
+            return dateA - dateB; // Trận nào đá trước xếp lên trước
         });
 
         currentApiStatus = "success";
@@ -313,7 +317,6 @@ async function fetchWorldCupData() {
         renderGroups();
         renderMatches(activeTabGlobal);
 
-        // Khối giải phóng màn hình loading overlay
         const loadingBox = document.getElementById('loading-overlay') || document.querySelector('.loading-box') || document.getElementById('loading') || document.querySelector('[class*="loading"]');
         if (loadingBox) {
             loadingBox.style.setProperty('display', 'none', 'important');

@@ -6,10 +6,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Walrus Cup Oracle - World Cup 2026 Predictions</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
     <script>
         tailwind.config = {
             theme: {
@@ -46,7 +48,7 @@
             background: linear-gradient(to bottom, rgba(11, 21, 40, 0.65), rgba(11, 21, 40, 0.9)), url('2006wc.jpg');
             background-size: cover;
             background-position: center;
-            opacity: 0.7;
+            opacity: 0.7; 
             filter: blur(1px);
             z-index: -1;
             pointer-events: none;
@@ -82,33 +84,33 @@
             border-width: 2px !important;
         }
         #loading-overlay {
-    backdrop-filter: blur(8px);
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-.animate-spin {
-    animation: spin 1s linear infinite;
-}
+            backdrop-filter: blur(8px);
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
     </style>
 </head>
 <body class="bg-walrus-dark text-gray-100 min-h-screen font-sans antialiased relative overflow-x-hidden">
 
     <canvas id="effect-canvas" class="absolute top-0 left-0 w-full h-full pointer-events-none z-50"></canvas>
-     <!-- LOADING OVERLAY -->
-<div id="loading-overlay" class="fixed inset-0 bg-black/90 flex items-center justify-center z-[9999] transition-opacity duration-500">
-    <div class="text-center">
-        <div class="w-16 h-16 border-4 border-walrus-aqua border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-        <h3 class="text-2xl font-bold text-white mb-2">Đang tải kết quả World Cup...</h3>
-        <p id="loading-text" class="text-gray-400 text-sm">Đang đồng bộ dữ liệu từ Walrus & FIFA</p>
-        
-        <div class="mt-8 text-xs text-gray-500 flex items-center justify-center gap-2">
-            <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-            LIVE UPDATE
+
+    <div id="loading-overlay" class="fixed inset-0 bg-black/90 flex items-center justify-center z-[9999] transition-opacity duration-500">
+        <div class="text-center">
+            <div class="w-16 h-16 border-4 border-walrus-aqua border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+            <h3 class="text-2xl font-bold text-white mb-2">Đang tải kết quả World Cup...</h3>
+            <p id="loading-text" class="text-gray-400 text-sm">Đang đồng bộ dữ liệu từ Walrus & GitHub Online</p>
+            
+            <div class="mt-8 text-xs text-gray-500 flex items-center justify-center gap-2">
+                <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                LIVE UPDATE
+            </div>
         </div>
     </div>
-</div>
+
     <header class="border-b border-gray-800 bg-walrus-dark/80 backdrop-blur sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -128,10 +130,9 @@
                     <img id="langFlag" src="https://flagcdn.com/w20/gb.png" class="w-5 h-3.5 object-cover rounded-sm" alt="English">
                     <span id="langText">EN</span>
                 </button>
-                <button id="googleBtn" 
+                <button id="googleBtn" onclick="signInWithGoogle()" 
                       class="flex items-center gap-3 px-5 py-2.5 bg-white hover:bg-gray-100 text-gray-900 font-semibold rounded-2xl border border-gray-300 transition-all duration-200 shadow-sm">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" 
-                      class="w-5 h-5" alt="Google">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" class="w-5 h-5" alt="Google">
                     <span id="gmailText">Đăng nhập bằng Google</span>
                 </button>
                 <button id="walletBtn" onclick="toggleWallet()" class="flex items-center gap-2 px-4 py-2 bg-walrus-card hover:bg-opacity-80 text-walrus-aqua text-sm font-semibold rounded-xl border border-walrus-aqua/30 transition duration-200">
@@ -175,7 +176,6 @@
     </section>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
-        
         <section class="space-y-6">
             <h2 id="section-groups-title" class="text-2xl font-bold text-white flex items-center gap-2">
                 <i class="fa-solid fa-users-rectangle text-walrus-aqua"></i> Cục Diện 48 Đội - Đường Đến World Cup 2026
@@ -258,21 +258,19 @@
         <p>&copy; 2026 Walrus Cup Oracle. Powered by Walrus Memory Layer.</p>
     </footer>
 
-    <!-- ==================== SCRIPTS ==================== -->
     <script src="data.js"></script>
     <script src="ui-components.js"></script>
     <script src="app-logic.js"></script>
 
     <script>
-        document.addEventListener("DOMContentLoaded", initApp);
-    </script>
-    <script>
-        // Đảm bảo các hàm global có sẵn trước khi init
+        // Bản vá ép gán hàm global cho sự kiện onclick của file HTML
         window.filterMatches = filterMatches;
         window.toggleLanguage = toggleLanguage;
         window.toggleWallet = toggleWallet;
-        window.showMyPredictions = showMyPredictions || fetchMyPredictions;
+        window.showMyPredictions = showMyPredictions;
+        window.signInWithGoogle = signInWithGoogle;
         
+        // Chỉ lắng nghe duy nhất 1 luồng DOMContentLoaded kích hoạt ứng dụng
         document.addEventListener("DOMContentLoaded", function() {
             initApp();
         });

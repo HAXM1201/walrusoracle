@@ -429,7 +429,40 @@ function toggleLanguage() {
     renderGroups();
     renderMatches(activeTabGlobal);
 }
+// ==================== QUẢN LÝ VÍ & TÀI KHOẢN MOCK CODES ====================
+let isGmailLoggedIn = true; 
+let isWalletConnected = false;
 
+function toggleGmail() {
+    isGmailLoggedIn = !isGmailLoggedIn;
+    const btn = document.getElementById('gmailBtn');
+    const txt = document.getElementById('gmailText');
+    if(isGmailLoggedIn) {
+        if (btn) btn.className = "flex items-center gap-3 px-5 py-2.5 bg-red-950 text-gray-200 font-semibold rounded-2xl border border-red-900/50 transition duration-200 shadow-sm";
+        if (txt) txt.innerHTML = `<span class="text-red-400 font-bold">huyenanh***@gmail.com</span>`;
+    } else {
+        if (btn) btn.className = "flex items-center gap-3 px-5 py-2.5 bg-white hover:bg-gray-100 text-gray-900 font-semibold rounded-2xl border border-gray-300 transition duration-200 shadow-sm";
+        if (txt) txt.innerText = translations[currentLang].btnGmail;
+    }
+}
+
+function toggleWallet() {
+    isWalletConnected = !isWalletConnected;
+    const btn = document.getElementById('walletBtn');
+    const txt = document.getElementById('walletText');
+    if(isWalletConnected) {
+        if (btn) {
+            btn.classList.replace('bg-walrus-card', 'bg-teal-950');
+            btn.classList.add('border-teal-900/50');
+        }
+        if (txt) txt.innerHTML = `<span class="text-emerald-400 font-mono">0xSlush...40a2</span>`;
+    } else {
+        if (btn) {
+            btn.className = "flex items-center gap-2 px-4 py-2 bg-walrus-card hover:bg-opacity-80 text-walrus-aqua text-sm font-semibold rounded-xl border border-walrus-aqua/30 transition duration-200";
+        }
+        if (txt) txt.innerText = translations[currentLang].btnWallet;
+    }
+}
 // ==================== TRUY XUẤT LỊCH SỬ DỰ ĐOÁN ====================
 async function fetchMyPredictions() {
     if (!currentUser) {

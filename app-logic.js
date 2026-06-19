@@ -33,6 +33,17 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
 function initFirebaseAuth() {
+    // Ép Firebase kiểm tra dữ liệu trả về sau khi quay lại từ luồng Redirect Google
+    auth.getRedirectResult().then((result) => {
+        if (result.user) {
+            currentUser = result.user;
+            updateUserUI();
+            triggerWalrusMemoryAgent(currentUser.email, currentUser.displayName);
+        }
+    }).catch((error) => {
+        console.error("Lỗi xử lý kết quả redirect:", error);
+    });
+
     auth.onAuthStateChanged(user => {
         currentUser = user;
         if (user) {
@@ -48,14 +59,14 @@ function initFirebaseAuth() {
 async function signInWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
+
     try {
-        console.log("🔄 Đang khởi chạy cửa sổ xác thực Google...");
-        const result = await auth.signInWithPopup(provider);
-        currentUser = result.user;
-        updateUserUI();
-        alert(currentLang === "vi" ? `Chào ${currentUser.displayName}!` : `Welcome ${currentUser.displayName}!`);
+        console.log("🔄 Đang chuyển hướng xác thực Google (Redirect)...");
+        // Thay signInWithPopup bằng signInWithRedirect để diệt lỗi COOP
+        await auth.signInWithRedirect(provider);
     } catch (error) {
         console.error("Lỗi đăng nhập hệ thống:", error);
+        alert(`Đăng nhập thất bại: ${error.message}`);
     }
 }
 

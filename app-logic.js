@@ -633,6 +633,7 @@ window.showMyPredictions = fetchMyPredictions;
 async function fetchWorldCupData() {
     const aiAgentText = document.getElementById('ai-roast-text');
     const aiAvatarBox = document.getElementById('ai-avatar-box');
+    const loadingText = document.getElementById('loading-text');
     
     const now = Date.now();
     if (matchCache && (now - lastFetchTime < 45000)) {
@@ -643,10 +644,10 @@ async function fetchWorldCupData() {
 
     currentApiStatus = "connecting";
     if (aiAgentText && translations[currentLang]) aiAgentText.innerHTML = translations[currentLang].aiConnecting;
+    if (loadingText) loadingText.innerText = currentLang === "vi" ? "Đang đồng bộ dữ liệu từ OpenFootball..." : "Syncing OpenFootball data...";
 
     try {
         console.log("🔄 Đang tải song song dữ liệu từ GitHub OpenFootball 2026...");
-        // Tải dữ liệu thô
         const [teamsRes, stadiumsRes, groupsRes, matchesRes] = await Promise.all([
             fetch(RAW_TEAM_URL).then(r => r.json()),
             fetch(RAW_STADIUM_URL).then(r => r.json()),
@@ -654,7 +655,7 @@ async function fetchWorldCupData() {
             fetch(RAW_MATCH_URL).then(r => r.json())
         ]);
 
-        // 1. Chuẩn hóa Đội tuyển (Hỗ trợ cả mảng thuần và object chứa thuộc tính teams)
+        // 1. Chuẩn hóa Đội tuyển
         let teamMap = {};
         const actualTeams = Array.isArray(teamsRes) ? teamsRes : (teamsRes.teams || []);
         actualTeams.forEach(t => {
@@ -674,20 +675,19 @@ async function fetchWorldCupData() {
             if (s && s.key) stadiumMap[s.key] = s.name; 
         });
 
-        // 3. Chuẩn hóa Cục diện Bảng đấu (Hỗ trợ cả mảng thuần và object chứa thuộc tính groups)
+        // 3. Chuẩn hóa Cục diện Bảng đấu
         worldCupGroups = {};
         const actualGroups = Array.isArray(groupsRes) ? groupsRes : (groupsRes.groups || []);
         actualGroups.forEach(g => {
             if (g && g.name && g.teams) {
                 worldCupGroups[g.name] = g.teams.map(teamName => {
-                    // Nếu teamName là object hoặc chuỗi văn bản thuần
                     const nameKey = (typeof teamName === 'object') ? teamName.name : teamName;
                     return teamMap[nameKey] || { name: nameKey, nameEn: nameKey, code: "placeholder" };
                 });
             }
         });
 
-        // 4. Chuẩn hóa Lịch thi đấu 104 trận (Hỗ trợ an toàn tuyệt đối các cấp vòng lặp)
+        // 4. Chuẩn hóa Lịch thi đấu 104 trận
         officialMatches = [];
         let matchCounter = 1;
         const actualRounds = matchesRes && (Array.isArray(matchesRes.rounds) ? matchesRes.rounds : (Array.isArray(matchesRes) ? matchesRes : []));
@@ -723,14 +723,8 @@ async function fetchWorldCupData() {
                     isHot: matchCounter % 6 === 0
                 };
 
-                // Nhận diện tỉ số kết quả thật nếu có
                 if (m.score1 !== undefined && m.score2 !== undefined && m.score1 !== null) {
-                    localMatch.result = {
-                        home: m.score1,
-                        away: m.score2,
-                        goals: []
-                    };
-                    
+                    localMatch.result = { home: m.score1, away: m.score2, goals: [] };
                     if (Array.isArray(m.goals1)) {
                         m.goals1.forEach(g => {
                             if (g) localMatch.result.goals.push({ team: 'home', scorer: g.name || "Player", minute: g.minute || "" });
@@ -742,7 +736,6 @@ async function fetchWorldCupData() {
                         });
                     }
                 }
-
                 officialMatches.push(localMatch);
             });
         });
@@ -757,11 +750,14 @@ async function fetchWorldCupData() {
         currentApiStatus = "fallback";
     }
 
-    // 🔥 GỠ BỎ MÀN HÌNH CHỜ (LOADING SCREEN) NGAY KHI NẠP XONG DATA
-    const loadingScreen = document.getElementById('loading-screen') || document.getElementById('loading');
-    if (loadingScreen) {
-        loadingScreen.classList.add('hidden'); // Cách ẩn nhanh bằng class ẩn của Tailwind
-        loadingScreen.style.display = 'none';  // Phòng hờ nếu sếp dùng style inline thuần
+    // 🔥 ĐÁNH SẬP CHÍNH XÁC MÀN HÌNH CHỜ THEO ID THỰC TẾ TRÊN INDEX.HTML
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+        overlay.style.opacity = '0'; // Kích hoạt hiệu ứng transition mượt mà
+        setTimeout(() => {
+            overlay.classList.add('hidden');
+            overlay.style.display = 'none';
+        }, 500); // Đợi 500ms cho mờ hẳn rồi gỡ khỏi layout
     }
 
     // Làm mới giao diện chữ và cập nhật các bảng đấu

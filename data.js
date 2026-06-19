@@ -17,7 +17,7 @@ const translations = {
         tabChungKet: 'Chung Kết',
         aiReading: 'Đang đọc bộ nhớ Walrus Mainnet...',
         aiWelcome: '"Chào sếp! Hãy kết nối ví Slush hoặc đăng nhập Gmail để tôi quét lịch sử gáy trận đấu của sếp trên mạng lưới Walrus nhé."',
-        aiConnecting: '"Đang kết nối dữ liệu GitHub openfootball thời gian thực..."',
+        aiConnecting: '"Đang kết nối dữ liệu trực tuyến GitHub openfootball..."',
         aiSuccess: '"Đã đồng bộ thành công dữ liệu từ GitHub! Kết quả các trận đấu đã được cập nhật chính xác theo thời gian thực. Vào gáy tiếp đi sếp!"',
         aiFallback: '"Không kết nối được dữ liệu trực tuyến, hệ thống đang dùng dữ liệu lưu trữ dự phòng!"',
         btnGmail: 'Đăng nhập Gmail', 
@@ -69,7 +69,6 @@ const translations = {
     }
 };
 
-// Từ điển Map chuẩn theo chính xác tên kí tự của openfootball JSON
 const countryMap = {
     "Mexico": { vi: "Mexico", code: "mx" },
     "South Africa": { vi: "Nam Phi", code: "za" },
@@ -114,10 +113,10 @@ const countryMap = {
     "Argentina": { vi: "Argentina", code: "ar" },
     "Algeria": { vi: "Algeria", code: "dz" },
     "Austria": { vi: "Áo", code: "at" },
-    "Áo": { vi: "Áo", code: "at" },
     "Jordan": { vi: "Jordan", code: "jo" },
     "Portugal": { vi: "Bồ Đào Nha", code: "pt" },
     "Congo": { vi: "Congo", code: "cg" },
+    "DR Congo": { vi: "Congo", code: "cg" },
     "Uzbekistan": { vi: "Uzbekistan", code: "uz" },
     "Colombia": { vi: "Colombia", code: "co" },
     "England": { vi: "Anh", code: "gb-eng" },

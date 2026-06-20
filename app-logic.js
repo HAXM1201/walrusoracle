@@ -690,87 +690,41 @@ async function fetchMyPredictions() {
         return;
     }
 
-    // --- BỘ QUY HOẠCH REGEX "LÌ ĐÒN" ĐỂ QUÉT DỮ LIỆU BẤT CHẤP AI ĐỊNH DẠNG ---
     let records = [];
-    
-    // Tách các khối trận đấu bằng từ khóa nhận diện chung
     const tranMatches = cauGayCuaHaiLy.split(/\[TRẬN\]|\[MATCH\]/gi);
 
     tranMatches.forEach((block, index) => {
-        if (index === 0) return; // Bỏ qua phần header của AI
-
-        // Tìm ID trận đấu: "Trận số 1" hoặc "Match 1"
+        if (index === 0) return;
         const idMatch = block.match(/(\d+)/);
-        // Tìm tỷ số: "2-1" hoặc "2 - 1"
         const scoreMatch = block.match(/(\d+)\s*-\s*(\d+)/);
-        
         if (idMatch && scoreMatch) {
             const mId = idMatch[1];
-            const predHome = scoreMatch[1];
-            const predAway = scoreMatch[2];
-            
-            // Lấy nhận xét của Hải Ly (tìm đoạn sau [HẢI LY] hoặc [COMMENT])
             const haiLyMatch = block.split(/\[HẢI LY\]|\[COMMENT\]|\[🦫 HẢI LY\]/i);
             const haiLy = haiLyMatch.length > 1 ? haiLyMatch[1].trim() : "Đang chờ phân tích...";
-            
             const matchInfo = officialMatches.find(m => String(m.id) === String(mId));
-            
             records.push({
                 title: matchInfo ? `Trận ${mId}: ${matchInfo.teamA} vs ${matchInfo.teamB}` : `Trận ${mId}`,
-                cauGay: `${predHome} - ${predAway}`,
+                cauGay: `${scoreMatch[1]} - ${scoreMatch[2]}`,
                 haiLy: haiLy,
                 verification: matchInfo && matchInfo.result ? `<div class="mt-2 text-xs text-emerald-400">✅ Đã đối chiếu kết quả thực tế.</div>` : `<div class="mt-2 text-xs text-amber-400">⏳ Đang chờ kết quả...</div>`
             });
         }
     });
 
-    // 3. DỰNG GIAO DIỆN HTML CARD UI
     let htmlContent = `<div class="space-y-4 font-sans text-gray-300">`;
-
     if (records.length > 0) {
         records.forEach((item, index) => {
-            const labelNhanDinh = currentLang === "vi" ? "🗣️ Dự đoán của sếp:" : "🗣️ Your Prediction:";
-            const labelHaiLyPhan = currentLang === "vi" ? "HẢI LY BÌNH LUẬN GIẢI THÍCH:" : "WALRUS AGENT COMMENT:";
-            const fallbackComment = currentLang === "vi" ? "Hải Ly đang đồng bộ dữ liệu..." : "Walrus is recalling transaction memory...";
-
-            htmlContent += `
-                <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 shadow-sm hover:border-emerald-500/30 transition-all">
-                    <div class="text-emerald-400 font-bold text-sm mb-3 flex items-center gap-2">
-                        <span class="bg-emerald-500/10 text-emerald-400 w-5 h-5 rounded-md flex items-center justify-center text-xs border border-emerald-500/20">${index + 1}</span>
-                        ⚽ ${item.title}
-                    </div>
-                    
-                    <div class="space-y-2.5 pl-3 border-l-2 border-slate-700">
-                        <div class="text-xs text-gray-400 leading-relaxed">
-                            <span class="text-amber-500 font-semibold">${labelNhanDinh}</span> 
-                            <span class="bg-slate-900/30 px-2 py-0.5 rounded text-gray-200 font-mono font-bold">${item.cauGay}</span>
-                        </div>
-                        
-                        <div class="text-sm text-gray-200 bg-slate-900/50 p-2.5 rounded-lg border border-slate-800 flex gap-2 items-start">
-                            <span class="text-base leading-none mt-0.5">🦫</span>
-                            <div>
-                                <span class="text-emerald-300 font-medium text-xs block mb-0.5">${labelHaiLyPhan}</span>
-                                <span class="italic text-emerald-100/90">${item.haiLy || fallbackComment}</span>
-                            </div>
-                        </div>
-                        ${item.verification}
-                    </div>
-                </div>
-            `;
+            htmlContent += `<div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4">
+                <div class="text-emerald-400 font-bold text-sm mb-3">⚽ ${item.title}</div>
+                <div class="text-xs text-gray-400">🗣️ Dự đoán: ${item.cauGay}</div>
+                <div class="text-sm text-emerald-100 italic mt-2">🦫 Hải Ly: ${item.haiLy}</div>
+                ${item.verification}
+            </div>`;
         });
     } else {
-        // ... (Giữ nguyên phần render mặc định của sếp)
-        let chuoiGiaMaForm = cauGayCuaHaiLy
-            .replace(/\[TRẬN\]/gi, `<br><br><span class="text-emerald-400 font-bold">⚽ [TRẬN]</span>`)
-            .replace(/\[MATCH\]/gi, `<br><br><span class="text-emerald-400 font-bold">⚽ [MATCH]</span>`);
-        htmlContent += `<div class="bg-slate-800/50 p-4 text-xs text-gray-300">${chuoiGiaMaForm}</div>`;
+        htmlContent += `<div class="text-gray-400">Không tìm thấy dữ liệu.</div>`;
     }
-
     htmlContent += `</div>`;
-    // ... (Giữ nguyên đoạn tạo Modal phía dưới)
-    let modal = document.getElementById('walrus-history-modal');
-    // ...
-}
 
     let modal = document.getElementById('walrus-history-modal');
     if (!modal) {
@@ -779,35 +733,17 @@ async function fetchMyPredictions() {
         modal.className = "fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-[9999] p-4 hidden";
         document.body.appendChild(modal);
     }
-
-    const modalHeaderTitle = currentLang === "vi" ? "📜 BẢNG ĐỐI CHIẾU DỰ ĐOÁN & KẾT QUẢ THỰC TẾ" : "📜 PREDICTION VS REAL RESULT VERIFICATION";
-    const modalCloseBtnText = currentLang === "vi" ? "Đóng cửa sổ" : "Close Window";
-
     modal.innerHTML = `
-        <div class="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative text-gray-200 font-sans animate-fade-in">
-            <div class="flex items-center justify-between border-b border-gray-800 pb-3 mb-4">
-                <h3 class="text-emerald-400 font-bold text-base flex items-center gap-2 tracking-wide">
-                    ${modalHeaderTitle}
-                </h3>
-                <span class="text-[10px] bg-slate-800 text-gray-400 px-2 py-0.5 rounded font-mono border border-gray-700">WALRUS AGENT ONSCHAIN</span>
-            </div>
-            
-            <div class="max-h-[65vh] overflow-y-auto pr-2 space-y-4">
-                ${htmlContent}
-            </div>
-            
-            <div class="mt-5 flex justify-end border-t border-gray-800/60 pt-3">
-                <button onclick="document.getElementById('walrus-history-modal').classList.add('hidden')" 
-                        class="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium text-xs transition-all shadow-md shadow-emerald-900/40 tracking-wider">
-                    ${modalCloseBtnText}
-                </button>
-            </div>
+        <div class="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative">
+            <h3 class="text-emerald-400 font-bold mb-4">📜 BẢNG ĐỐI CHIẾU</h3>
+            <div class="max-h-[65vh] overflow-y-auto">${htmlContent}</div>
+            <button onclick="document.getElementById('walrus-history-modal').classList.add('hidden')" class="mt-5 w-full py-2 bg-emerald-600 text-white rounded-xl font-bold">Đóng</button>
         </div>
     `;
-
     modal.classList.remove('hidden');
 }
 window.showMyPredictions = fetchMyPredictions;
+
 
 // ==================== HỆ THỐNG CUSTOM TOAST NOTIFICATION CYBERPUNK THAY THẾ ALERT() ====================
 function showCyberToast(message, type = 'success') {

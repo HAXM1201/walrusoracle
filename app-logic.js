@@ -42,20 +42,19 @@ if (!firebase.apps.length) {
 const auth = firebase.auth();
 
 function initFirebaseAuth() {
-    // 🎯 CHỐT CHẶN CHÍ MẠNG: Đón và xử lý Token tài khoản trả về sau khi quay lại từ Google Redirect
+    // 🎯 CHỐT CHẶN CHÍ MẠNG: Đón và giải mã Token tài khoản trả về sau khi quay lại từ Google Redirect
     auth.getRedirectResult().then((result) => {
         if (result && result.user) {
             currentUser = result.user;
-            console.log("✅ Đăng nhập thành công qua Redirect:", currentUser.displayName);
+            console.log("✅ [Vercel] Đăng nhập thành công qua Redirect:", currentUser.displayName);
             updateUserUI();
             triggerWalrusMemoryAgent(currentUser.email, currentUser.displayName);
         }
     }).catch((error) => {
         console.error("❌ Lỗi luồng bắt token Redirect Google:", error);
-        alert(`Lỗi xác thực: ${error.message}`);
     });
 
-    // Lắng nghe thay đổi trạng thái tài khoản liên tục
+    // Lắng nghe thay đổi trạng thái tài khoản liên tục hệ thống
     auth.onAuthStateChanged(user => {
         currentUser = user;
         if (user) {
@@ -72,7 +71,8 @@ async function signInWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
     try {
-        console.log("🔄 Đang chuyển hướng xác thực tài khoản Google Redirect...");
+        console.log("🔄 [Vercel] Đang chuyển hướng xác thực tài khoản Google Redirect chống lỗi COOP...");
+        // Ép sử dụng luồng Chuyển hướng (Redirect) thay vì mở cửa sổ Popup
         await auth.signInWithRedirect(provider);
     } catch (error) {
         console.error("❌ Lỗi kích hoạt luồng Redirect:", error);

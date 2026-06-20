@@ -68,7 +68,7 @@ async function signInWithGoogle() {
         triggerWalrusMemoryAgent(currentUser.email, currentUser.displayName);
     } catch (error) {
         console.error("❌ Lỗi đăng nhập hệ thống Popup:", error);
-        alert(`Đăng nhập thất bại: ${error.message}`);
+        showCyberToast(currentLang === "vi" ? `Đăng nhập thất bại: ${error.message}` : `Login failed: ${error.message}`, "error");
     }
 }
 
@@ -128,7 +128,7 @@ function launchConfetti() {
 
 async function handleSubmissionWithEffects(matchId, homeScore, awayScore, analysis = "") {
     if (!currentUser) {
-        alert(currentLang === "vi" ? "Vui lòng đăng nhập Gmail trước khi nộp dự đoán!" : "Please login first!");
+        showCyberToast(currentLang === "vi" ? "Vui lòng đăng nhập Gmail trước khi nộp dự đoán!" : "Please login first!", "error");
         return;
     }
     launchConfetti();
@@ -154,12 +154,14 @@ async function handleSubmissionWithEffects(matchId, homeScore, awayScore, analys
         const aiAgentText = document.getElementById('ai-roast-text');
         if (aiAgentText) {
             // Hiển thị hiệu ứng loading giả lập Hải Ly đang suy nghĩ trong 1 giây
-            aiAgentText.innerHTML = `<em>🦫 Hải Ly Tiên Tri đang đọc Blobs bộ nhớ và soạn văn gáy...</em>`;
+            aiAgentText.innerHTML = currentLang === "vi" 
+                ? `<em>🦫 Hải Ly Tiên Tri đang đọc Blobs bộ nhớ và soạn văn gáy...</em>`
+                : `<em>🦫 Walrus Oracle is reading memory blobs and preparing a response...</em>`;
         }
         
-        alert(currentLang === "vi" ? `🎉 Dự đoán trận ${matchId} đã được ghi vào Walrus thành công!` : `🎉 Prediction saved on Walrus!`);
+        showCyberToast(currentLang === "vi" ? `Dự đoán trận ${matchId} đã được ghi vào Walrus thành công!` : `Prediction saved on Walrus!`, "success");
     } else {
-        alert(currentLang === "vi" ? "❌ Có lỗi xảy ra khi truyền dữ liệu!" : "❌ Connection error!");
+        showCyberToast(currentLang === "vi" ? "Có lỗi xảy ra khi truyền dữ liệu!" : "Connection error!", "error");
     }
 }
 
@@ -227,7 +229,6 @@ async function triggerWalrusMemoryAgent(email, displayName) {
 
             // 2. [THẦN TỐC & ĐA NGÔN NGỮ] Quét sạch dữ liệu thô để nạp mảng so sánh đối chiếu toán học
             if (data.botReply && window.userPredictionMemory.length === 0) {
-                // Chuẩn hóa chuỗi text dính liền bằng cách chèn dấu xuống dòng trước các thẻ tag hệ thống
                 let textChuanHoa = data.botReply
                     .replace(/\[TRẬN\]/gi, "\n[TRẬN]")
                     .replace(/\[MATCH\]/gi, "\n[TRẬN]");
@@ -237,10 +238,7 @@ async function triggerWalrusMemoryAgent(email, displayName) {
                 blocks.forEach(block => {
                     if (!block.trim()) return;
 
-                    // Dò tìm số ID trận đấu bất kể AI viết "Trận số X", "Trận X" hay "Match X"
                     const idMatch = block.match(/(?:Trận\s+số\s+|Trận\s+|Match\s+)(\d+)/i);
-                    
-                    // Dò tìm tỷ số cược: Chấp nhận mọi dạng X-Y, [X]-[Y], hoặc X - Y bất kỳ
                     const scoreMatch = block.match(/(?:dự\s+đoán|tỷ\s+số|:\s*|predict)\[?(\d+)\]?\s*-\s*\[?(\d+)\]?/i) || block.match(/\[?(\d+)\]?\s*-\s*\[?(\d+)\]?/);
 
                     if (idMatch && scoreMatch) {
@@ -248,7 +246,6 @@ async function triggerWalrusMemoryAgent(email, displayName) {
                         const hScore = parseInt(scoreMatch[1]);
                         const aScore = parseInt(scoreMatch[2]);
 
-                        // Kiểm tra trùng lặp để không push trùng trận đấu vào bộ nhớ RAM
                         const isExisted = window.userPredictionMemory.some(p => String(p.matchId) === String(mId) && p.ownerEmail === email);
                         
                         if (!isExisted) {
@@ -570,13 +567,10 @@ function renderMatches(filterType = 'vong-bang') {
 
             card.innerHTML = `
                 <div>
-                    <!-- Vòng đấu & Địa điểm -->
                     <div class="flex justify-between items-center text-[10px] text-gray-400 font-mono mb-3">
                         <span class="truncate max-w-[170px]">📍 ${match.stadium}</span>
                         <span class="${match.isHot ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold'}">${labelTran} ${match.id} — ${match.group}</span>
                     </div>
-                    
-                    <!-- Kèo đấu -->
                     <div class="flex items-center justify-between my-2 px-1">
                         <div class="flex flex-col items-center text-center w-4/12 gap-1.5">
                             ${getFlagImgHTML(match.codeA)}
@@ -595,6 +589,7 @@ function renderMatches(filterType = 'vong-bang') {
         });
     });
 }
+
 function renderGroups() {
     const container = document.getElementById('groups-container');
     if (!container) return;
@@ -677,20 +672,20 @@ function toggleWallet() { isWalletConnected = !isWalletConnected; }
 
 async function fetchMyPredictions() {
     if (!currentUser) {
-        alert(currentLang === "en" ? "Please sign in with Gmail first!" : "Sếp vui lòng đăng nhập Gmail trước!");
+        showCyberToast(currentLang === "en" ? "Please sign in with Gmail first!" : "Sếp vui lòng đăng nhập Gmail trước!", "warning");
         return;
     }
 
     const aiAgentText = document.getElementById('ai-roast-text');
     let cauGayCuaHaiLy = "";
     if (aiAgentText) {
-        cauGayCuaHaiLy = aiAgentText.innerText.replace("Hải Ly Tiên Tri:", "").trim();
+        cauGayCuaHaiLy = aiAgentText.innerText.replace("Hải Ly Tiên Tri:", "").replace("Walrus Oracle:", "").trim();
     }
 
     if (!cauGayCuaHaiLy || cauGayCuaHaiLy.includes("Chào sếp") || cauGayCuaHaiLy.includes("Đang chờ") || cauGayCuaHaiLy.includes("Welcome")) {
-        alert(currentLang === "vi" 
+        showCyberToast(currentLang === "vi" 
             ? "🦫 Hải Ly báo: Bộ nhớ trống hoặc đang đồng bộ. Sếp thử cược 1 trận để kích hoạt lịch sử nhé!" 
-            : "No prediction history found on Walrus yet!");
+            : "No prediction history found on Walrus yet!", "warning");
         return;
     }
 
@@ -884,6 +879,48 @@ async function fetchMyPredictions() {
     modal.classList.remove('hidden');
 }
 window.showMyPredictions = fetchMyPredictions;
+
+// ==================== HỆ THỐNG CUSTOM TOAST NOTIFICATION CYBERPUNK THAY THẾ ALERT() ====================
+function showCyberToast(message, type = 'success') {
+    let container = document.getElementById('cyber-toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'cyber-toast-container';
+        container.className = "fixed bottom-5 right-5 z-[10000] flex flex-col gap-3 max-w-md w-full pointer-events-none p-4";
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = "pointer-events-auto transform translate-y-5 opacity-0 transition-all duration-300 font-sans p-4 rounded-xl shadow-2xl flex items-center gap-3 border text-xs font-bold tracking-wide";
+    
+    if (type === 'success') {
+        toast.className += " bg-slate-900/95 border-emerald-500/40 text-emerald-400 shadow-emerald-950/40";
+    } else if (type === 'error') {
+        toast.className += " bg-slate-900/95 border-rose-500/40 text-rose-400 shadow-rose-950/40";
+    } else {
+        toast.className += " bg-slate-900/95 border-amber-500/40 text-amber-400 shadow-amber-950/40";
+    }
+
+    toast.innerHTML = `
+        <div class="flex-1 flex items-center gap-2">
+            <span>${type === 'success' ? '🎉' : type === 'error' ? '❌' : '⚠️'}</span>
+            <span>${message}</span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-gray-500 hover:text-gray-300 transition-all ml-2 font-black">×</button>
+    `;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.classList.remove('translate-y-5', 'opacity-0');
+    }, 10);
+
+    setTimeout(() => {
+        toast.classList.add('translate-y-[-20px]', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
+}
+window.showCyberToast = showCyberToast;
 
 function initApp() {
     updateUINonDynamicText();

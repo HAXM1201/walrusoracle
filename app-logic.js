@@ -208,7 +208,6 @@ async function triggerWalrusMemoryAgent(email, displayName) {
     if (aiAvatarBox) aiAvatarBox.innerText = "⏳";
 
     try {
-        // [XỊN] Gọi ngầm sang Backend để lấy dữ liệu thực tế đã lưu
         const response = await fetch(`${CUSTOM_PUBLISHER_URL}/api/ai-agent`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -224,8 +223,26 @@ async function triggerWalrusMemoryAgent(email, displayName) {
             if (aiAvatarBox) aiAvatarBox.innerText = "🦫";
             aiStatusText.innerText = currentLang === "vi" ? "✅ Bộ nhớ Walrus: Đã đồng bộ" : "✅ Walrus Memory: Synced";
             
-            // Hiển thị câu trả lời hoặc lời gáy kèm lịch sử của con Hải Ly trả về từ Backend
+            // 1. Hiển thị lời gáy của Hải Ly lên khung chat
             aiAgentText.innerHTML = `<strong>Hải Ly Tiên Tri:</strong> ${data.botReply}`;
+
+            // 2. [THẦN TỐC] Tự động trích xuất lịch sử từ lời gáy của Hải Ly để nạp vào nút "Lịch sử dự đoán"
+            if (data.botReply && window.userPredictionMemory.length === 0) {
+                // Regex thông minh tìm kiếm các đoạn "Trận X: Tỷ số dự đoán Y-Z" trong văn bản của AI
+                const regex = /Trận\s+(\d+):\s+Tỷ\s+số\s+dự\s+đoán\s+(\d+)-(\d+)/gi;
+                let match;
+                while ((match = regex.exec(data.botReply)) !== null) {
+                    window.userPredictionMemory.push({
+                        ownerEmail: email,
+                        matchId: match[1],
+                        homeScore: parseInt(match[2]),
+                        awayScore: parseInt(match[3]),
+                        analysis: "Đồng bộ từ Walrus Agent",
+                        timestamp: new Date().toISOString()
+                    });
+                }
+                console.log("🔄 Đã đồng bộ ngược vào giao diện nút bấm:", window.userPredictionMemory);
+            }
         } else {
             throw new Error("Backend error");
         }
@@ -233,9 +250,6 @@ async function triggerWalrusMemoryAgent(email, displayName) {
         console.error("Lỗi đồng bộ lịch sử:", error);
         if (aiAvatarBox) aiAvatarBox.innerText = "🦫";
         aiStatusText.innerText = currentLang === "vi" ? "⚠️ Lỗi đồng bộ" : "⚠️ Sync failed";
-        aiAgentText.innerHTML = currentLang === "vi" 
-            ? `"Chào sếp <strong>${displayName}</strong>! Luồng đồng bộ đang bận, sếp cứ nộp cược mới bình thường để tôi ghi đè Blobs nhé!"`
-            : `"Welcome <strong>${displayName}</strong>! Local sync temporary busy, feel free to place new predictions!"`;
     }
 }
 

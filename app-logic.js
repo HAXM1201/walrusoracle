@@ -387,7 +387,8 @@ function renderMatches(filterType = 'vong-bang') {
 
         const dateObj = new Date(rawDateTimeStr);
 
-        const localDateStr = !isNaN(dateObj.getTime()) ? dateObj.toLocaleDateString('vi-VN', {
+        // Định dạng hiển thị ngày tùy biến theo ngôn ngữ (VN: DD/MM/YYYY, EN: MM/DD/YYYY)
+        const localDateStr = !isNaN(dateObj.getTime()) ? dateObj.toLocaleDateString(currentLang === "vi" ? 'vi-VN' : 'en-US', {
             timeZone: 'Asia/Ho_Chi_Minh',
             year: 'numeric',
             month: '2-digit',
@@ -437,12 +438,16 @@ function renderMatches(filterType = 'vong-bang') {
         
         const safeId = `group-${dateKey}`;
         
+        // ĐỒNG BỘ NGÔN NGỮ KHUNG NGÀY CHUNG
+        const labelLichThiDau = currentLang === "vi" ? `📅 LỊCH THI ĐẤU: ${dateGroup.displayDate}` : `📅 MATCH SCHEDULE: ${dateGroup.displayDate}`;
+        const labelMuiGio = currentLang === "vi" ? "MÚI GIỜ GMT +7" : "TIMEZONE GMT +7";
+
         dateGroupContainer.innerHTML = `
             <div class="flex items-center justify-between border-b border-slate-800/80 pb-2.5 mb-2">
                 <div class="flex items-center gap-2">
-                    <span class="text-sm font-bold text-amber-400 tracking-wide flex items-center gap-1.5">📅 LỊCH THI ĐẤU: ${dateGroup.displayDate}</span>
+                    <span class="text-sm font-bold text-amber-400 tracking-wide flex items-center gap-1.5">${labelLichThiDau}</span>
                 </div>
-                <span class="text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-md">MÚI GIỜ GMT +7</span>
+                <span class="text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-md">${labelMuiGio}</span>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-1" id="${safeId}"></div>
         `;
@@ -462,27 +467,28 @@ function renderMatches(filterType = 'vong-bang') {
                     ? "bg-slate-950/90 border-2 border-amber-500 rounded-2xl p-5 shadow-2xl relative overflow-hidden flex flex-col justify-between"
                     : "bg-slate-950/70 border border-slate-800/80 rounded-2xl p-5 shadow-xl relative overflow-hidden flex flex-col justify-between hover:border-slate-700/60 transition-all");
 
+            // ĐỒNG BỘ TÊN QUỐC GIA CHUẨN THEO TAB NGÔN NGỮ
+            const displayTeamA = currentLang === "vi" ? match.teamA : match.teamAEn;
+            const displayTeamB = currentLang === "vi" ? match.teamB : match.teamBEn;
+            const labelTran = currentLang === "vi" ? "TRẬN" : "MATCH";
+
             let matchStatusHTML = "";
             let bottomActionHTML = "";
 
             if (isFinished) {
-                // --- QUY HOẠCH CĂN LỀ DANH SÁCH CẦU THỦ GHI BÀN THEO ĐỘI ---
                 let scorersHTML = "";
                 if (match.result.goals && match.result.goals.length > 0) {
-                    // Chia lưới 2 cột trái phải tương ứng với hai đội bóng
                     scorersHTML = `<div class="w-full mt-3 grid grid-cols-2 gap-x-4 text-[10px] text-gray-500 bg-slate-900/30 p-2 rounded-xl border border-slate-900/80">`;
                     
                     let homeScorers = match.result.goals.filter(g => g.team === 'home');
                     let awayScorers = match.result.goals.filter(g => g.team === 'away');
                     
-                    // Tạo cột trái cho Đội nhà (Cầu thủ đứng sau quả bóng, căn lề trái)
                     scorersHTML += `<div class="space-y-1 text-left border-r border-slate-800/60 pr-1">`;
                     homeScorers.forEach(g => {
                         scorersHTML += `<div class="truncate text-gray-400">⚽ ${g.scorer} (${g.minute}')</div>`;
                     });
                     scorersHTML += `</div>`;
                     
-                    // Tạo cột phải cho Đội khách (Tên cầu thủ đứng trước quả bóng, căn lề phải)
                     scorersHTML += `<div class="space-y-1 text-right pl-1">`;
                     awayScorers.forEach(g => {
                         scorersHTML += `<div class="truncate text-gray-400">${g.scorer} (${g.minute}') ⚽</div>`;
@@ -503,11 +509,14 @@ function renderMatches(filterType = 'vong-bang') {
                     </div>
                 `;
                 
-                // Đổ danh sách cầu thủ ghi bàn trải phẳng xuống dưới cùng của kèo đấu cho rộng rãi
+                const labelFinishedDesc = currentLang === "vi" 
+                    ? "🏁 Trận đấu đã kết thúc trực tuyến. Bộ nhớ cược đã đóng." 
+                    : "🏁 Live match has finished. Prediction pool closed.";
+
                 bottomActionHTML = `
                     ${scorersHTML}
                     <div class="mt-2.5 pt-2 border-t border-slate-900/40 text-center text-[10px] text-gray-500 italic font-medium">
-                        🏁 Trận đấu đã kết thúc trực tuyến. Bộ nhớ cược đã đóng.
+                        ${labelFinishedDesc}
                     </div>
                 `;
             } else {
@@ -517,6 +526,10 @@ function renderMatches(filterType = 'vong-bang') {
                         <span class="text-[10px] text-gray-600 font-bold">VS</span>
                     </div>
                 `;
+
+                const placeholderRoast = currentLang === 'vi' ? 'Lý do phân tích / Câu gáy hài hước...' : 'Your logic / fun roast...';
+                const btnSubmitText = currentLang === 'vi' ? 'Nộp Dự Đoán' : 'Submit';
+
                 bottomActionHTML = `
                     <div class="mt-2 pt-3 border-t border-slate-800/80 space-y-2">
                         <div class="flex gap-2 justify-center items-center">
@@ -524,10 +537,10 @@ function renderMatches(filterType = 'vong-bang') {
                             <span class="text-xs text-gray-600 font-bold">-</span>
                             <input type="number" id="scoreB-${match.id}" placeholder="0" class="w-12 h-8 bg-slate-950 border border-slate-800 rounded-lg text-center text-sm font-bold text-gray-200 focus:border-emerald-500 outline-none transition-all">
                         </div>
-                        <input type="text" id="analysis-${match.id}" placeholder="${currentLang === 'vi' ? 'Lý do phân tích / Câu gáy hài hước...' : 'Your logic / fun roast...'}" class="w-full h-8 bg-slate-950/50 border border-slate-800/80 rounded-lg px-2.5 text-xs text-gray-300 focus:border-emerald-500 outline-none transition-all">
+                        <input type="text" id="analysis-${match.id}" placeholder="${placeholderRoast}" class="w-full h-8 bg-slate-950/50 border border-slate-800/80 rounded-lg px-2.5 text-xs text-gray-300 focus:border-emerald-500 outline-none transition-all">
                         <button onclick="handleSubmissionWithEffects('${match.id}', document.getElementById('scoreA-${match.id}').value, document.getElementById('scoreB-${match.id}').value, document.getElementById('analysis-${match.id}').value)" 
                                 class="w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs tracking-wider transition-all shadow-md shadow-emerald-950/40">
-                            ${currentLang === 'vi' ? 'Nộp Dự Đoán' : 'Submit'}
+                            ${btnSubmitText}
                         </button>
                     </div>
                 `;
@@ -538,19 +551,19 @@ function renderMatches(filterType = 'vong-bang') {
                     <!-- Vòng đấu & Địa điểm -->
                     <div class="flex justify-between items-center text-[10px] text-gray-400 font-mono mb-3">
                         <span class="truncate max-w-[170px]">📍 ${match.stadium}</span>
-                        <span class="${match.isHot ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold'}">TRẬN ${match.id} — ${match.group}</span>
+                        <span class="${match.isHot ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold'}">${labelTran} ${match.id} — ${match.group}</span>
                     </div>
                     
                     <!-- Kèo đấu -->
                     <div class="flex items-center justify-between my-2 px-1">
                         <div class="flex flex-col items-center text-center w-4/12 gap-1.5">
                             ${getFlagImgHTML(match.codeA)}
-                            <div class="text-xs font-bold text-gray-200 truncate max-w-[110px]">${match.teamA}</div>
+                            <div class="text-xs font-bold text-gray-200 truncate max-w-[110px]">${displayTeamA}</div>
                         </div>
                         ${matchStatusHTML}
                         <div class="flex flex-col items-center text-center w-4/12 gap-1.5">
                             ${getFlagImgHTML(match.codeB)}
-                            <div class="text-xs font-bold text-gray-200 truncate max-w-[110px]">${match.teamB}</div>
+                            <div class="text-xs font-bold text-gray-200 truncate max-w-[110px]">${displayTeamB}</div>
                         </div>
                     </div>
                 </div>

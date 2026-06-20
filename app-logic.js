@@ -371,27 +371,21 @@ function renderMatches(filterType = 'vong-bang') {
     const countBadge = document.getElementById('match-count');
     if (countBadge) countBadge.innerText = `${filtered.length} ${translations[currentLang].matchUnit}`;
 
-    // === QUY HOẠCH MÚI GIỜ GMT+7 VÀ PHÂN TÍCH CHUYỂN ĐỔI NGÀY THÁNG ===
+    // === CHUYỂN ĐỔI MÚI GIỜ GMT+7 VÀ PHÂN TÍCH TRẬN ĐẤU ===
     const processedMatches = filtered.map(match => {
-        // Tự động gộp ngày + giờ bản xứ từ API để ép về đối tượng Date chuẩn quốc tế
-        // Nếu chuỗi time chứa thông tin UTC, JS sẽ tự động tính toán chính xác
         let rawDateTimeStr = `${match.date}T${match.time.split(" ")[0]}`;
-        
-        // Dò tìm thông tin múi giờ bản xứ gốc (Ví dụ: UTC-5, UTC-4...)
         const utcMatch = match.time.match(/UTC([-+]\d+)/i);
         if (utcMatch) {
             const offset = parseInt(utcMatch[1]);
-            // Định dạng chuỗi ISO hoàn chỉnh: YYYY-MM-DDTHH:mm:ss-05:00
             const prefix = offset >= 0 ? "+" : "-";
             const absOffset = Math.abs(offset).toString().padStart(2, '0');
             rawDateTimeStr += `${prefix}${absOffset}:00`;
         } else {
-            rawDateTimeStr += "Z"; // Mặc định nếu không tìm thấy múi giờ
+            rawDateTimeStr += "Z";
         }
 
         const dateObj = new Date(rawDateTimeStr);
 
-        // Chuyển sang chuỗi ngày Việt Nam chuẩn (Ví dụ: "21/06/2026")
         const localDateStr = !isNaN(dateObj.getTime()) ? dateObj.toLocaleDateString('vi-VN', {
             timeZone: 'Asia/Ho_Chi_Minh',
             year: 'numeric',
@@ -399,7 +393,6 @@ function renderMatches(filterType = 'vong-bang') {
             day: '2-digit'
         }) : match.date;
 
-        // Chuyển sang chuỗi giờ Việt Nam chuẩn (Ví dụ: "19:00")
         const localTimeStr = !isNaN(dateObj.getTime()) ? dateObj.toLocaleTimeString('vi-VN', {
             timeZone: 'Asia/Ho_Chi_Minh',
             hour: '2-digit',
@@ -415,7 +408,6 @@ function renderMatches(filterType = 'vong-bang') {
         };
     });
 
-    // Sắp xếp thứ tự dòng thời gian tăng dần (Trận nào đá trước lên đầu)
     processedMatches.sort((a, b) => a.sortTimestamp - b.sortTimestamp);
 
     // GOM NHÓM CÁC TRẬN ĐẤU CÓ CÙNG NGÀY VIỆT NAM (GMT+7)
@@ -429,11 +421,9 @@ function renderMatches(filterType = 'vong-bang') {
 
     // VẼ GIA DIỆN HTML THEO ĐÚNG CẤU TRÚC QUY HOẠCH MỚI
     Object.keys(groupedByDate).forEach(date => {
-        // Tạo KHUNG MỜ CHUNG CHO CẢ NGÀY (Day Group Card)
         const dateGroupContainer = document.createElement('div');
         dateGroupContainer.className = "col-span-full bg-slate-900/40 backdrop-blur-md border border-slate-800/80 rounded-3xl p-5 shadow-2xl mb-6 space-y-4";
         
-        // Header tiêu đề của nhóm ngày
         dateGroupContainer.innerHTML = `
             <div class="flex items-center justify-between border-b border-slate-800/80 pb-2.5 mb-2">
                 <div class="flex items-center gap-2">
@@ -447,14 +437,59 @@ function renderMatches(filterType = 'vong-bang') {
         container.appendChild(dateGroupContainer);
         const subGrid = document.getElementById(`group-${date.replace(/\//g, '-')}`);
 
-        // Duyệt từng trận đấu đơn lẻ nằm bên trong ngày đó để vẽ Khung riêng biệt
         groupedByDate[date].forEach(match => {
             const card = document.createElement('div');
-            card.className = match.isHot 
-                ? "bg-slate-950/90 border-2 border-amber-500 rounded-2xl p-5 shadow-2xl relative overflow-hidden flex flex-col justify-between"
-                : "bg-slate-950/70 border border-slate-800/80 rounded-2xl p-5 shadow-xl relative overflow-hidden flex flex-col justify-between hover:border-slate-700/60 transition-all";
+            
+            // Nếu trận đấu đã có kết quả online, đổi màu viền tối nhẹ nhàng hơn
+            const isFinished = match.result && match.result.home !== null && match.result.away !== null;
+            
+            card.className = isFinished
+                ? "bg-slate-950/40 border border-slate-900 rounded-2xl p-5 shadow-inner opacity-85 flex flex-col justify-between"
+                : (match.isHot 
+                    ? "bg-slate-950/90 border-2 border-amber-500 rounded-2xl p-5 shadow-2xl relative overflow-hidden flex flex-col justify-between"
+                    : "bg-slate-950/70 border border-slate-800/80 rounded-2xl p-5 shadow-xl relative overflow-hidden flex flex-col justify-between hover:border-slate-700/60 transition-all");
 
-            // Tận dụng hàm bốc cờ và HTML có sẵn của hệ thống sếp
+            // Phần hiển thị nội dung chi tiết trận đấu
+            let matchStatusHTML = "";
+            let bottomActionHTML = "";
+
+            if (isFinished) {
+                // LÚC ĐÃ ĐÁ XONG: Hiện tỷ số đậm, rõ ràng, ẩn nút cược
+                matchStatusHTML = `
+                    <div class="text-center w-2/12 flex flex-col items-center justify-center">
+                        <div class="text-lg font-black text-emerald-400 tracking-wider font-mono">${match.result.home} - ${match.result.away}</div>
+                        <span class="text-[8px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/20 font-sans mt-1 font-bold">FT</span>
+                    </div>
+                `;
+                bottomActionHTML = `
+                    <div class="mt-2 pt-2.5 border-t border-slate-900 text-center text-[11px] text-gray-500 italic font-medium">
+                        🏁 Trận đấu đã kết thúc trực tuyến. Bộ nhớ cược đã đóng.
+                    </div>
+                `;
+            } else {
+                // LÚC CHƯA ĐÁ: Hiện chữ VS và ô nhập cược như cũ
+                matchStatusHTML = `
+                    <div class="text-center w-2/12 flex flex-col items-center gap-1">
+                        <span class="text-[11px] font-mono font-black bg-slate-900 border border-slate-800 text-amber-400 px-2 py-0.5 rounded shadow-sm">${match.vietnamTime}</span>
+                        <span class="text-[10px] text-gray-600 font-bold">VS</span>
+                    </div>
+                `;
+                bottomActionHTML = `
+                    <div class="mt-2 pt-3 border-t border-slate-900/80 space-y-2">
+                        <div class="flex gap-2 justify-center items-center">
+                            <input type="number" id="scoreA-${match.id}" placeholder="0" class="w-12 h-8 bg-slate-950 border border-slate-800 rounded-lg text-center text-sm font-bold text-gray-200 focus:border-emerald-500 outline-none transition-all">
+                            <span class="text-xs text-gray-600 font-bold">-</span>
+                            <input type="number" id="scoreB-${match.id}" placeholder="0" class="w-12 h-8 bg-slate-950 border border-slate-800 rounded-lg text-center text-sm font-bold text-gray-200 focus:border-emerald-500 outline-none transition-all">
+                        </div>
+                        <input type="text" id="analysis-${match.id}" placeholder="${currentLang === 'vi' ? 'Lý do phân tích / Câu gáy hài hước...' : 'Your logic / fun roast...'}" class="w-full h-8 bg-slate-950/50 border border-slate-800/80 rounded-lg px-2.5 text-xs text-gray-300 focus:border-emerald-500 outline-none transition-all">
+                        <button onclick="handleSubmissionWithEffects('${match.id}', document.getElementById('scoreA-${match.id}').value, document.getElementById('scoreB-${match.id}').value, document.getElementById('analysis-${match.id}').value)" 
+                                class="w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs tracking-wider transition-all shadow-md shadow-emerald-950/40">
+                            ${currentLang === 'vi' ? 'Nộp Dự Đoán' : 'Submit'}
+                        </button>
+                    </div>
+                `;
+            }
+
             card.innerHTML = `
                 <div>
                     <div class="flex justify-between items-center text-[10px] text-gray-400 font-mono mb-3">
@@ -467,29 +502,14 @@ function renderMatches(filterType = 'vong-bang') {
                             ${getFlagImgHTML(match.codeA)}
                             <div class="text-xs font-bold text-gray-200">${match.teamA}</div>
                         </div>
-                        <div class="text-center w-2/12 flex flex-col items-center gap-1">
-                            <span class="text-[11px] font-mono font-black bg-slate-900 border border-slate-800 text-amber-400 px-2 py-0.5 rounded shadow-sm">${match.vietnamTime}</span>
-                            <span class="text-[10px] text-gray-600 font-bold">VS</span>
-                        </div>
+                        ${matchStatusHTML}
                         <div class="flex flex-col items-center text-center w-5/12 gap-1.5">
                             ${getFlagImgHTML(match.codeB)}
                             <div class="text-xs font-bold text-gray-200">${match.teamB}</div>
                         </div>
                     </div>
                 </div>
-
-                <div class="mt-2 pt-3 border-t border-slate-900/80 space-y-2">
-                    <div class="flex gap-2 justify-center items-center">
-                        <input type="number" id="scoreA-${match.id}" placeholder="0" class="w-12 h-8 bg-slate-950 border border-slate-800 rounded-lg text-center text-sm font-bold text-gray-200 focus:border-emerald-500 outline-none transition-all">
-                        <span class="text-xs text-gray-600 font-bold">-</span>
-                        <input type="number" id="scoreB-${match.id}" placeholder="0" class="w-12 h-8 bg-slate-950 border border-slate-800 rounded-lg text-center text-sm font-bold text-gray-200 focus:border-emerald-500 outline-none transition-all">
-                    </div>
-                    <input type="text" id="analysis-${match.id}" placeholder="${currentLang === 'vi' ? 'Lý do phân tích / Câu gáy hài hước...' : 'Your logic / fun roast...'}" class="w-full h-8 bg-slate-950/50 border border-slate-800/80 rounded-lg px-2.5 text-xs text-gray-300 focus:border-emerald-500 outline-none transition-all">
-                    <button onclick="handleSubmissionWithEffects('${match.id}', document.getElementById('scoreA-${match.id}').value, document.getElementById('scoreB-${match.id}').value, document.getElementById('analysis-${match.id}').value)" 
-                            class="w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs tracking-wider transition-all shadow-md shadow-emerald-950/40">
-                        ${currentLang === 'vi' ? 'Nộp Dự Đoán' : 'Submit'}
-                    </button>
-                </div>
+                ${bottomActionHTML}
             `;
             subGrid.appendChild(card);
         });

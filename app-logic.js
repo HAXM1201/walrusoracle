@@ -148,7 +148,7 @@ async function handleSubmissionWithEffects(matchId, homeScore, awayScore, analys
     }
 }
 
-const CUSTOM_PUBLISHER_URL = "https://walrus-publisher-production-b5d6.up.railway.app";
+const CUSTOM_PUBLISHER_URL = "walrus-backend-production.up.railway.app";
 async function storePredictionOnWalrus(matchId, scoreA, scoreB, analysis) {
     if (!currentUser) return false;
     const predictionData = {

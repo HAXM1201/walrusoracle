@@ -362,7 +362,183 @@ async function fetchWorldCupData() {
     }
 }
 
-function renderMatches
+// ==================== HÀM RENDER TRẬN ĐẤU QUY HOẠCH THEO THỜI GIAN VÀ MÚI GIỜ ====================
+function renderMatches(filterType = 'vong-bang') {
+    const container = document.getElementById('match-list-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const filtered = officialMatches.filter(m => m.type === filterType);
+    const countBadge = document.getElementById('match-count');
+    if (countBadge) countBadge.innerText = `${filtered.length} ${translations[currentLang].matchUnit}`;
+
+    // === 1. CHUYỂN ĐỔI MÚI GIỜ GMT+7 VÀ TRÍCH XUẤT THỜI GIAN CHUẨN XÁC ===
+    const processedMatches = filtered.map(match => {
+        let rawDateTimeStr = `${match.date}T${match.time.split(" ")[0]}`;
+        const utcMatch = match.time.match(/UTC([-+]\d+)/i);
+        if (utcMatch) {
+            const offset = parseInt(utcMatch[1]);
+            const prefix = offset >= 0 ? "+" : "-";
+            const absOffset = Math.abs(offset).toString().padStart(2, '0');
+            rawDateTimeStr += `${prefix}${absOffset}:00`;
+        } else {
+            rawDateTimeStr += "Z";
+        }
+
+        const dateObj = new Date(rawDateTimeStr);
+
+        const localDateStr = !isNaN(dateObj.getTime()) ? dateObj.toLocaleDateString('vi-VN', {
+            timeZone: 'Asia/Ho_Chi_Minh',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }) : match.date;
+
+        const sortableDateKey = !isNaN(dateObj.getTime()) ? dateObj.toLocaleDateString('en-CA', {
+            timeZone: 'Asia/Ho_Chi_Minh'
+        }) : match.date;
+
+        const localTimeStr = !isNaN(dateObj.getTime()) ? dateObj.toLocaleTimeString('vi-VN', {
+            timeZone: 'Asia/Ho_Chi_Minh',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        }) : match.time;
+
+        return {
+            ...match,
+            sortTimestamp: dateObj.getTime() || 0,
+            sortId: parseInt(match.id) || 0,
+            vietnamDate: localDateStr,
+            dateKey: sortableDateKey,
+            vietnamTime: localTimeStr
+        };
+    });
+
+    // === 2. GOM NHÓM THEO DÒNG THỜI GIAN VÀ SẮP XẾP ===
+    const groupedData = {};
+    processedMatches.forEach(match => {
+        if (!groupedData[match.dateKey]) {
+            groupedData[match.dateKey] = {
+                displayDate: match.vietnamDate,
+                matches: []
+            };
+        }
+        groupedData[match.dateKey].matches.push(match);
+    });
+
+    const sortedDateKeys = Object.keys(groupedData).sort();
+
+    // === 3. DUYỆT QUA TỪNG NGÀY ĐỂ DỰNG HTML CARD UI ===
+    sortedDateKeys.forEach(dateKey => {
+        const dateGroup = groupedData[dateKey];
+        const dateGroupContainer = document.createElement('div');
+        dateGroupContainer.className = "col-span-full bg-slate-900/40 backdrop-blur-md border border-slate-800/80 rounded-3xl p-5 shadow-2xl mb-6 space-y-4";
+        
+        const safeId = `group-${dateKey}`;
+        
+        dateGroupContainer.innerHTML = `
+            <div class="flex items-center justify-between border-b border-slate-800/80 pb-2.5 mb-2">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-bold text-amber-400 tracking-wide flex items-center gap-1.5">📅 LỊCH THI ĐẤU: ${dateGroup.displayDate}</span>
+                </div>
+                <span class="text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-md">MÚI GIỜ GMT +7</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-1" id="${safeId}"></div>
+        `;
+        
+        container.appendChild(dateGroupContainer);
+        const subGrid = document.getElementById(safeId);
+
+        dateGroup.matches.sort((a, b) => a.sortId - b.sortId);
+
+        dateGroup.matches.forEach(match => {
+            const card = document.createElement('div');
+            const isFinished = match.result && match.result.home !== null && match.result.away !== null;
+            
+            card.className = isFinished
+                ? "bg-slate-950/40 border border-slate-900 rounded-2xl p-5 shadow-inner flex flex-col justify-between"
+                : (match.isHot 
+                    ? "bg-slate-950/90 border-2 border-amber-500 rounded-2xl p-5 shadow-2xl relative overflow-hidden flex flex-col justify-between"
+                    : "bg-slate-950/70 border border-slate-800/80 rounded-2xl p-5 shadow-xl relative overflow-hidden flex flex-col justify-between hover:border-slate-700/60 transition-all");
+
+            let matchStatusHTML = "";
+            let bottomActionHTML = "";
+
+            if (isFinished) {
+                let scorersHTML = "";
+                if (match.result.goals && match.result.goals.length > 0) {
+                    scorersHTML = `<div class="mt-2 text-[10px] text-gray-500 space-y-0.5 text-center bg-slate-900/30 p-1.5 rounded-lg border border-slate-900">`;
+                    match.result.goals.forEach(g => {
+                        scorersHTML += `<div>⚽ ${g.scorer} (${g.minute}')</div>`;
+                    });
+                    scorersHTML += `</div>`;
+                }
+
+                matchStatusHTML = `
+                    <div class="flex flex-col items-center justify-center w-4/12">
+                        <div class="flex items-center gap-3 bg-slate-900/80 px-4 py-1.5 rounded-xl border border-slate-800 font-mono">
+                            <span class="text-xl font-black text-emerald-400">${match.result.home}</span>
+                            <span class="text-xs text-gray-600 font-bold">-</span>
+                            <span class="text-xl font-black text-emerald-400">${match.result.away}</span>
+                        </div>
+                        <span class="text-[8px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/20 font-sans mt-1.5 font-bold tracking-wider">FT</span>
+                        ${scorersHTML}
+                    </div>
+                `;
+                bottomActionHTML = `
+                    <div class="mt-2 pt-2.5 border-t border-slate-900/60 text-center text-[10px] text-gray-500 italic font-medium">
+                        🏁 Trận đấu đã kết thúc trực tuyến. Bộ nhớ cược đã đóng.
+                    </div>
+                `;
+            } else {
+                matchStatusHTML = `
+                    <div class="text-center w-4/12 flex flex-col items-center justify-center gap-1">
+                        <span class="text-[11px] font-mono font-black bg-slate-900 border border-slate-800 text-amber-400 px-2 py-0.5 rounded shadow-sm">${match.vietnamTime}</span>
+                        <span class="text-[10px] text-gray-600 font-bold">VS</span>
+                    </div>
+                `;
+                bottomActionHTML = `
+                    <div class="mt-2 pt-3 border-t border-slate-800/80 space-y-2">
+                        <div class="flex gap-2 justify-center items-center">
+                            <input type="number" id="scoreA-${match.id}" placeholder="0" class="w-12 h-8 bg-slate-950 border border-slate-800 rounded-lg text-center text-sm font-bold text-gray-200 focus:border-emerald-500 outline-none transition-all">
+                            <span class="text-xs text-gray-600 font-bold">-</span>
+                            <input type="number" id="scoreB-${match.id}" placeholder="0" class="w-12 h-8 bg-slate-950 border border-slate-800 rounded-lg text-center text-sm font-bold text-gray-200 focus:border-emerald-500 outline-none transition-all">
+                        </div>
+                        <input type="text" id="analysis-${match.id}" placeholder="${currentLang === 'vi' ? 'Lý do phân tích / Câu gáy hài hước...' : 'Your logic / fun roast...'}" class="w-full h-8 bg-slate-950/50 border border-slate-800/80 rounded-lg px-2.5 text-xs text-gray-300 focus:border-emerald-500 outline-none transition-all">
+                        <button onclick="handleSubmissionWithEffects('${match.id}', document.getElementById('scoreA-${match.id}').value, document.getElementById('scoreB-${match.id}').value, document.getElementById('analysis-${match.id}').value)" 
+                                class="w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs tracking-wider transition-all shadow-md shadow-emerald-950/40">
+                            ${currentLang === 'vi' ? 'Nộp Dự Đoán' : 'Submit'}
+                        </button>
+                    </div>
+                `;
+            }
+
+            card.innerHTML = `
+                <div>
+                    <div class="flex justify-between items-center text-[10px] text-gray-400 font-mono mb-3">
+                        <span class="truncate max-w-[170px]">📍 ${match.stadium}</span>
+                        <span class="${match.isHot ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold'}">TRẬN ${match.id} — ${match.group}</span>
+                    </div>
+                    <div class="flex items-center justify-between my-2 px-1">
+                        <div class="flex flex-col items-center text-center w-4/12 gap-1.5">
+                            ${getFlagImgHTML(match.codeA)}
+                            <div class="text-xs font-bold text-gray-200 truncate max-w-[110px]">${match.teamA}</div>
+                        </div>
+                        ${matchStatusHTML}
+                        <div class="flex flex-col items-center text-center w-4/12 gap-1.5">
+                            ${getFlagImgHTML(match.codeB)}
+                            <div class="text-xs font-bold text-gray-200 truncate max-w-[110px]">${match.teamB}</div>
+                        </div>
+                    </div>
+                </div>
+                ${bottomActionHTML}
+            `;
+            subGrid.appendChild(card);
+        });
+    });
+}
+
 function renderGroups() {
     const container = document.getElementById('groups-container');
     if (!container) return;

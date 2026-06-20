@@ -481,105 +481,114 @@ async function fetchMyPredictions() {
         return;
     }
 
-    let htmlContent = `<div class="space-y-4">`;
+    // --- QUY HOẠCH REGEX THÔNG MINH: TỰ ĐỘNG PHÂN TÁCH KHÔNG PHỤ THUỘC AI ---
+    let records = [];
+    let tongQuanText = "";
 
-    // KIỂM TRA: Nếu AI trả về văn bản tự do không có các tag cấu trúc hệ thống [TRẬN]
-    if (!cauGayCuaHaiLy.includes("[TRẬN]") && !cauGayCuaHaiLy.includes("• Trận")) {
-        // Tự động bọc toàn bộ câu trả lời của AI vào một chiếc Card thông báo lớn đồng bộ giao diện
-        htmlContent += `
-            <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 shadow-sm text-gray-300 leading-relaxed">
-                <div class="text-amber-400 font-bold text-sm mb-2 flex items-center gap-1.5">
-                    🦫 PHẢN HỒI TỪ HẢI LY TIÊN TRI:
-                </div>
-                <div class="text-sm bg-slate-900/40 p-3 rounded-lg border-l-2 border-emerald-500 font-sans text-emerald-300/90 whitespace-pre-line">
-                    ${cauGayCuaHaiLy}
-                </div>
-            </div>
-        `;
-    } else {
-        // NẾU CÓ CẤU TRÚC: Tiến hành bóc tách Card UI rành mạch
-        const lines = cauGayCuaHaiLy.split('\n');
-        let inCard = false;
+    // 1. Cắt phần [TỔNG QUAN] ra trước nếu có
+    const tongQuanMatch = cauGayCuaHaiLy.match(/\[TỔNG QUAN\]([\s\S]*)$/i);
+    if (tongQuanMatch) {
+        tongQuanText = tongQuanMatch[1].trim();
+        cauGayCuaHaiLy = cauGayCuaHaiLy.replace(/\[TỔNG QUAN\]([\s\S]*)$/i, "");
+    }
 
-        lines.forEach(line => {
-            let trimmed = line.trim();
-            if (!trimmed) return;
+    // 2. Tìm tất cả các cụm bắt đầu bằng [TRẬN] cho đến [TRẬN] tiếp theo
+    const tranMatches = cauGayCuaHaiLy.match(/\[TRẬN\][\s\S]*?(?=\[TRẬN\]|$)/gi);
 
-            // Xử lý cả 2 trường hợp AI dùng dấu chấm tròn "• Trận" hoặc thẻ "[TRẬN]"
-            if (trimmed.startsWith("[TRẬN]") || trimmed.startsWith("• Trận") || trimmed.startsWith("Trận")) {
-                if (inCard) htmlContent += `</div></div>`;
-                let cleanTitle = trimmed.replace("[TRẬN]", "").replace("•", "").trim();
-                htmlContent += `
-                    <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 shadow-sm">
-                        <div class="text-emerald-400 font-bold text-sm mb-2 flex items-center gap-1">
-                            ⚽ ${cleanTitle}
-                        </div>
-                        <div class="space-y-2 pl-2 border-l-2 border-slate-700">
-                `;
-                inCard = true;
-            } else if (trimmed.startsWith("[CÂU GÁY]") || trimmed.toLowerCase().includes("câu gáy")) {
-                let cleanRoast = trimmed.replace("[CÂU GÁY]", "").trim();
-                htmlContent += `
-                    <div class="text-xs text-gray-400">
-                        <span class="text-amber-500 font-medium">🗣️ Câu gáy:</span> ${cleanRoast}
-                    </div>
-                `;
-            } else if (trimmed.startsWith("[HẢI LY]") || trimmed.toLowerCase().includes("hải ly")) {
-                let cleanComment = trimmed.replace("[HẢI LY]", "").trim();
-                htmlContent += `
-                    <div class="text-sm text-gray-300 italic mt-1 bg-slate-900/40 p-2 rounded-lg text-emerald-300/90">
-                        <span class="not-italic">🦫</span> ${cleanComment}
-                    </div>
-                `;
-            } else if (trimmed.startsWith("[TỔNG QUAN]") || trimmed.toLowerCase().includes("tổng quan")) {
-                if (inCard) { htmlContent += `</div></div>`; inCard = false; }
-                let cleanTotal = trimmed.replace("[TỔNG QUAN]", "").trim();
-                htmlContent += `
-                    <div class="mt-6 bg-emerald-950/30 border border-emerald-500/20 rounded-xl p-4">
-                        <div class="text-amber-400 font-bold text-sm mb-1">💬 NHẬN XÉT TỔNG QUAN:</div>
-                        <div class="text-sm text-gray-300 leading-relaxed whitespace-pre-line">${cleanTotal}</div>
-                    </div>
-                `;
-            } else {
-                if (!inCard) {
-                    htmlContent += `<p class="text-sm text-gray-300 leading-relaxed mb-1 whitespace-pre-line">${trimmed}</p>`;
-                } else {
-                    htmlContent += `<div class="text-sm text-gray-300 mt-1">${trimmed}</div>`;
-                }
+    if (tranMatches && tranMatches.length > 0) {
+        tranMatches.forEach(block => {
+            // Trích xuất thông tin từng ô bằng biểu thức chính quy
+            const title = (block.match(/\[TRẬN\]([\s\S]*?)(?=\[CÂU GÁY\]|\[HẢI LY\]|$)/i)?.[1] || "").trim();
+            const cauGay = (block.match(/\[CÂU GÁY\]([\s\S]*?)(?=\[HẢI LY\]|$)/i)?.[1] || "Không có").trim();
+            const haiLy = (block.match(/\[HẢI LY\]([\s\S]*?)$/i)?.[1] || "").trim();
+
+            if (title) {
+                records.push({ title, cauGay, haiLy });
             }
         });
-        if (inCard) htmlContent += `</div></div>`;
     }
+
+    // 3. Dựng cấu trúc HTML Card UI bóng bẩy, rành mạch
+    let htmlContent = `<div class="space-y-4 font-sans text-gray-300">`;
+
+    if (records.length > 0) {
+        records.forEach((item, index) => {
+            htmlContent += `
+                <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 shadow-sm hover:border-emerald-500/30 transition-all">
+                    <!-- Tiêu đề trận -->
+                    <div class="text-emerald-400 font-bold text-sm mb-3 flex items-center gap-2">
+                        <span class="bg-emerald-500/10 text-emerald-400 w-5 h-5 rounded-md flex items-center justify-center text-xs border border-emerald-500/20">${index + 1}</span>
+                        ⚽ ${item.title}
+                    </div>
+                    
+                    <!-- Chi tiết thông tin -->
+                    <div class="space-y-2.5 pl-3 border-l-2 border-slate-700">
+                        <div class="text-xs text-gray-400 leading-relaxed">
+                            <span class="text-amber-500 font-semibold">🗣️ Nhận định của sếp:</span> 
+                            <span class="bg-slate-900/30 px-1.5 py-0.5 rounded text-gray-300">${item.cauGay}</span>
+                        </div>
+                        <div class="text-sm text-gray-200 bg-slate-900/50 p-2.5 rounded-lg border border-slate-800 flex gap-2 items-start">
+                            <span class="text-base leading-none mt-0.5">🦫</span>
+                            <div>
+                                <span class="text-emerald-300 font-medium text-xs block mb-0.5">HẢI LY PHÁN:</span>
+                                <span class="italic text-emerald-100/90">${item.haiLy || "Hải Ly đang ngủ quên chưa bình luận trận này..."}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    } else {
+        // Nếu AI trả về chuỗi văn bản tự do hoàn toàn không bóc tách được tag
+        htmlContent += `
+            <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 border-l-4 border-emerald-500 whitespace-pre-line text-sm leading-relaxed text-gray-300">
+                ${cauGayCuaHaiLy}
+            </div>
+        `;
+    }
+
+    // Nếu có phần tổng quan thì nạp vào dưới cùng
+    if (tongQuanText) {
+        htmlContent += `
+            <div class="mt-6 bg-gradient-to-r from-emerald-950/40 to-slate-900/40 border border-emerald-500/30 rounded-xl p-4 shadow-md">
+                <div class="text-amber-400 font-bold text-xs tracking-wider mb-1.5 flex items-center gap-1.5">
+                    📊 ĐÁNH GIÁ TỔNG QUAN PHONG ĐỘ
+                </div>
+                <div class="text-sm text-gray-300 leading-relaxed font-sans">${tongQuanText}</div>
+            </div>
+        `;
+    }
+
     htmlContent += `</div>`;
 
-    // Khởi tạo/Cập nhật cấu trúc Modal cửa sổ lớn max-w-2xl
+    // 4. Tạo/Cập nhật cấu trúc Modal cửa sổ rộng lớn max-w-2xl
     let modal = document.getElementById('walrus-history-modal');
     if (!modal) {
         modal = document.createElement('div');
         modal.id = 'walrus-history-modal';
-        modal.className = "fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 hidden";
+        modal.className = "fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-[9999] p-4 hidden";
         document.body.appendChild(modal);
     }
 
     modal.innerHTML = `
-        <div class="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative text-gray-200 font-sans">
+        <div class="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative text-gray-200 font-sans animate-fade-in">
             <!-- Header -->
             <div class="flex items-center justify-between border-b border-gray-800 pb-3 mb-4">
-                <h3 class="text-emerald-400 font-bold text-base flex items-center gap-2">
-                    📜 LỊCH SỬ DỰ ĐOÁN & LỜI TIÊN TRI
+                <h3 class="text-emerald-400 font-bold text-base flex items-center gap-2 tracking-wide">
+                    📜 LỊCH SỬ DỰ ĐOÁN & TIÊN TRI
                 </h3>
-                <span class="text-xs text-gray-500 font-mono">WALRUS MEMORY SYNCED</span>
+                <span class="text-[10px] bg-slate-800 text-gray-400 px-2 py-0.5 rounded font-mono border border-gray-700">WALRUS AGENT ONSCHAIN</span>
             </div>
             
-            <!-- Nội dung -->
-            <div class="max-h-[65vh] overflow-y-auto pr-2 custom-scrollbar">
+            <!-- Danh sách các ô Card đã được quy hoạch rõ ràng -->
+            <div class="max-h-[65vh] overflow-y-auto pr-2 space-y-4">
                 ${htmlContent}
             </div>
             
-            <!-- Nút Đóng -->
-            <div class="mt-5 flex justify-end">
+            <!-- Footer Close Button -->
+            <div class="mt-5 flex justify-end border-t border-gray-800/60 pt-3">
                 <button onclick="document.getElementById('walrus-history-modal').classList.add('hidden')" 
-                        class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium text-xs transition-all shadow-md shadow-emerald-900/40">
+                        class="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium text-xs transition-all shadow-md shadow-emerald-900/40 tracking-wider">
                     Đóng cửa sổ
                 </button>
             </div>

@@ -467,9 +467,32 @@ async function fetchMyPredictions() {
         alert(currentLang === "en" ? "Please sign in with Gmail first!" : "Sếp vui lòng đăng nhập Gmail trước!");
         return;
     }
-    const myHistory = window.userPredictionMemory.filter(item => item.ownerEmail === currentUser.email);
-    alert(`Sếp đã có ${myHistory.length} dự đoán. Kiểm tra console để xem chi tiết!`);
+
+    const aiAgentText = document.getElementById('ai-roast-text');
+    let cauGayCuaHaiLy = "";
+    
+    if (aiAgentText) {
+        // Lấy lại câu khịa đầy đủ của Hải Ly đang hiển thị trên khung chat
+        cauGayCuaHaiLy = aiAgentText.innerText.replace("Hải Ly Tiên Tri:", "").trim();
+    }
+
+    // Nếu Hải Ly chưa kịp load hoặc chưa có dữ liệu
+    if (!cauGayCuaHaiLy || cauGayCuaHaiLy.includes("Chào sếp") || cauGayCuaHaiLy.includes("Đang chờ")) {
+        alert(currentLang === "vi" 
+            ? "🦫 Hải Ly báo: Bộ nhớ trống hoặc đang đồng bộ. Sếp thử cược 1 trận để kích hoạt lịch sử nhé!" 
+            : "No prediction history found on Walrus yet!");
+        return;
+    }
+
+    // Tự động định dạng câu gáy thành danh sách xuống dòng cho dễ đọc
+    const lichSuDinhDang = cauGayCuaHaiLy
+        .replace(/-/g, "\n• Trận") // Xuống dòng ở mỗi trận
+        .replace(/Nhìn vào/g, "\n\n💬 Nhận xét tổng quan từ Hải Ly:\nNhìn vào"); // Tách biệt phần nhận xét
+
+    // Hiển thị hộp thoại lịch sử hoành tráng cho sếp
+    alert(`📜 LỊCH SỬ DỰ ĐOÁN & LỜI TIÊN TRI CỦA SẾP (ĐỒNG BỘ TỪ WALRUS)\n\n${lichSuDinhDang}`);
 }
+window.showMyPredictions = fetchMyPredictions;
 window.showMyPredictions = fetchMyPredictions;
 
 function initApp() {

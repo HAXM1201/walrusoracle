@@ -161,7 +161,7 @@ async function storePredictionOnWalrus(matchId, scoreA, scoreB, analysis) {
         lang: currentLang
     };
     try {
-        const response = await fetch(`https://${CUSTOM_PUBLISHER_URL}/publish`, {
+        const response = await fetch(`${CUSTOM_PUBLISHER_URL}/publish`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(predictionData)

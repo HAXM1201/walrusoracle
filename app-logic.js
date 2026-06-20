@@ -198,33 +198,45 @@ function resetAiAgentUI() {
     }
 }
 
-function triggerWalrusMemoryAgent(email, displayName) {
+async function triggerWalrusMemoryAgent(email, displayName) {
     const aiStatusText = document.getElementById('ai-status-text');
     const aiAgentText = document.getElementById('ai-roast-text');
     const aiAvatarBox = document.getElementById('ai-avatar-box');
     if (!aiStatusText || !aiAgentText) return;
 
-    aiStatusText.innerText = currentLang === "vi" ? "🧠 Đang giải mã Blobs bộ nhớ..." : "🧠 Decoding memory Blobs...";
+    aiStatusText.innerText = currentLang === "vi" ? "🧠 Đang đồng bộ bộ nhớ Walrus..." : "🧠 Syncing Walrus memory...";
     if (aiAvatarBox) aiAvatarBox.innerText = "⏳";
 
-    setTimeout(() => {
-        const userHistory = window.userPredictionMemory.filter(item => item.ownerEmail === email);
-        const totalPredictions = userHistory.length;
+    try {
+        // [XỊN] Gọi ngầm sang Backend để lấy dữ liệu thực tế đã lưu
+        const response = await fetch(`${CUSTOM_PUBLISHER_URL}/api/ai-agent`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                userIdentifier: email,
+                userText: "Tôi muốn kiểm tra lịch sử cược của mình",
+                displayName: displayName
+            })
+        });
 
-        if (aiAvatarBox) aiAvatarBox.innerText = "🦫";
-        aiStatusText.innerText = currentLang === "vi" ? "✅ Bộ nhớ Walrus: Đã đồng bộ" : "✅ Walrus Memory: Synced";
-
-        if (totalPredictions === 0) {
-            aiAgentText.innerHTML = currentLang === "vi"
-                ? `"Chào sếp <strong>${displayName}</strong>! Bộ nhớ ghi nhận tài khoản này chưa cược trận nào. Thử gáy một trận xem tài tiên tri đến đâu sếp!"`
-                : `"Hello sếp <strong>${displayName}</strong>! Walrus storage shows a new account. Try your luck with a match now!"`;
+        if (response.ok) {
+            const data = await response.json();
+            if (aiAvatarBox) aiAvatarBox.innerText = "🦫";
+            aiStatusText.innerText = currentLang === "vi" ? "✅ Bộ nhớ Walrus: Đã đồng bộ" : "✅ Walrus Memory: Synced";
+            
+            // Hiển thị câu trả lời hoặc lời gáy kèm lịch sử của con Hải Ly trả về từ Backend
+            aiAgentText.innerHTML = `<strong>Hải Ly Tiên Tri:</strong> ${data.botReply}`;
         } else {
-            const lastPred = userHistory[userHistory.length - 1];
-            aiAgentText.innerHTML = currentLang === "vi"
-                ? `"Tôi đã nạp dữ liệu của sếp <strong>${displayName}</strong>! Ghi nhận sếp đã cược <strong>${totalPredictions} trận</strong>. Gần đây nhất là trận <strong>${lastPred.matchId}</strong> (${lastPred.homeScore}-${lastPred.awayScore})."`
-                : `"Data blocks loaded! Persistent state holds <strong>${totalPredictions} prediction(s)</strong>. Latest on Match <strong>${lastPred.matchId}</strong>."`;
+            throw new Error("Backend error");
         }
-    }, 1000);
+    } catch (error) {
+        console.error("Lỗi đồng bộ lịch sử:", error);
+        if (aiAvatarBox) aiAvatarBox.innerText = "🦫";
+        aiStatusText.innerText = currentLang === "vi" ? "⚠️ Lỗi đồng bộ" : "⚠️ Sync failed";
+        aiAgentText.innerHTML = currentLang === "vi" 
+            ? `"Chào sếp <strong>${displayName}</strong>! Luồng đồng bộ đang bận, sếp cứ nộp cược mới bình thường để tôi ghi đè Blobs nhé!"`
+            : `"Welcome <strong>${displayName}</strong>! Local sync temporary busy, feel free to place new predictions!"`;
+    }
 }
 
 // ==================== FETCH DATA ĐỘNG GITHUB OPENFOOTBALL ====================

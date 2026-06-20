@@ -665,132 +665,111 @@ async function fetchMyPredictions() {
         cauGayCuaHaiLy = aiAgentText.innerText.replace("Hải Ly Tiên Tri:", "").trim();
     }
 
-    if (!cauGayCuaHaiLy || cauGayCuaHaiLy.includes("Chào sếp") || cauGayCuaHaiLy.includes("Đang chờ")) {
-        alert(currentLang === "vi" 
-            ? "🦫 Hải Ly báo: Bộ nhớ trống hoặc đang đồng bộ. Sếp thử cược 1 trận để kích hoạt lịch sử nhé!" 
-            : "No prediction history found on Walrus yet!");
-        return;
-    }
-
-    // --- QUY HOẠCH REGEX THÔNG MINH: TỰ ĐỘNG PHÂN TÁCH KHÔNG PHỤ THUỘC AI ---
+    // --- QUY HOẠCH HỆ THỐNG ĐỐI CHIẾU SỐ LIỆU TOÁN HỌC CHUẨN XÁC 100% ---
     let records = [];
-    let tongQuanText = "";
-
-    // 1. Cắt phần [TỔNG QUAN] ra trước nếu có
-    const tongQuanMatch = cauGayCuaHaiLy.match(/\[TỔNG QUAN\]([\s\S]*)$/i);
-    if (tongQuanMatch) {
-        tongQuanText = tongQuanMatch[1].trim();
-        cauGayCuaHaiLy = cauGayCuaHaiLy.replace(/\[TỔNG QUAN\]([\s\S]*)$/i, "");
-    }
-
-    // 2. Tìm tất cả các cụm bắt đầu bằng [TRẬN] cho đến [TRẬN] tiếp theo
-    const tranMatches = cauGayCuaHaiLy.match(/\[TRẬN\][\s\S]*?(?=\[TRẬN\]|$)/gi);
-
-    if (tranMatches && tranMatches.length > 0) {
-        tranMatches.forEach(block => {
-            const title = (block.match(/\[TRẬN\]([\s\S]*?)(?=\[CÂU GÁY\]|\[HẢI LY\]|$)/i)?.[1] || "").trim();
-            const cauGay = (block.match(/\[CÂU GÁY\]([\s\S]*?)(?=\[HẢI LY\]|$)/i)?.[1] || "Không có").trim();
-            const haiLy = (block.match(/\[HẢI LY\]([\s\S]*?)$/i)?.[1] || "").trim();
-
-            if (title) {
-                let cleanTitle = title;
-                let actualResultText = ""; 
+    
+    // Quét trực tiếp qua danh sách các trận đấu sếp từng nộp dự đoán
+    if (window.userPredictionMemory && window.userPredictionMemory.length > 0) {
+        // Lọc lấy các lượt cược của chính tài khoản Gmail đang đăng nhập
+        const myFilteredPredictions = window.userPredictionMemory.filter(p => p.ownerEmail === currentUser.email);
+        
+        myFilteredPredictions.forEach(pred => {
+            const targetId = String(pred.matchId);
+            // Tìm thông tin trận đấu online tương ứng trong hệ thống
+            const foundMatchInfo = officialMatches.find(m => String(m.id) === targetId);
+            
+            if (foundMatchInfo) {
+                const isFinished = foundMatchInfo.result && foundMatchInfo.result.home !== null && foundMatchInfo.result.away !== null;
+                const teamAName = currentLang === "vi" ? foundMatchInfo.teamA : foundMatchInfo.teamAEn;
+                const teamBName = currentLang === "vi" ? foundMatchInfo.teamB : foundMatchInfo.teamBEn;
+                
+                let cleanTitle = "";
                 let predictionVerificationHTML = "";
 
-                // Tìm số ID Trận đấu xuất hiện trong tiêu đề
-                const idMatch = title.match(/(?:Trận\s+số\s+|Trận\s+)(\d+)/i);
-                if (idMatch && idMatch[1]) {
-                    const targetId = idMatch[1].trim();
-                    const foundMatchInfo = officialMatches.find(m => String(m.id) === targetId);
-                    
-                    if (foundMatchInfo) {
-                        const isFinished = foundMatchInfo.result && foundMatchInfo.result.home !== null && foundMatchInfo.result.away !== null;
-                        
-                        // ĐỔI TÊN ĐỘI BÓNG THẬT THEO NGÔN NGỮ CHỌN
-                        const teamAName = currentLang === "vi" ? foundMatchInfo.teamA : foundMatchInfo.teamAEn;
-                        const teamBName = currentLang === "vi" ? foundMatchInfo.teamB : foundMatchInfo.teamBEn;
+                // Chuẩn hóa điểm số từ bộ nhớ gốc (Đảm bảo định dạng số nguyên chuẩn)
+                const predHome = parseInt(pred.homeScore) || 0;
+                const predAway = parseInt(pred.awayScore) || 0;
 
-                        if (isFinished) {
-                            // 2. NẾU TRẬN ĐẤU ĐÃ CÓ KẾT QUẢ: Kèm tỷ số thật online vào Header luôn sếp ơi
-                            actualResultText = ` (${foundMatchInfo.result.home} - ${foundMatchInfo.result.away})`;
-                            cleanTitle = currentLang === "vi"
-                                ? `Trận số ${targetId} - Kết quả: 🏠 ${teamAName} ${foundMatchInfo.result.home} - ${foundMatchInfo.result.away} ✈️ ${teamBName}`
-                                : `Match ${targetId} - Result: 🏠 ${teamAName} ${foundMatchInfo.result.home} - ${foundMatchInfo.result.away} ✈️ ${teamBName}`;
+                if (isFinished) {
+                    const realHome = parseInt(foundMatchInfo.result.home);
+                    const realAway = parseInt(foundMatchInfo.result.away);
 
-                            // THUẬT TOÁN TỰ ĐỘNG CHECK DỰ ĐOÁN ĐÚNG / SAI ĐỂ ÉP HẢI LY GÁY
-                            // Trích xuất tỷ số sếp đã đoán từ text của AI: "Tỷ số dự đoán: X-Y" hoặc tìm cụm [X]-[Y]
-                            const predictScores = title.match(/\[?(\d+)\]?\s*-\s*\[?(\d+)\]?/);
-                            if (predictScores) {
-                                const predHome = parseInt(predictScores[1]);
-                                const predAway = parseInt(predictScores[2]);
-                                const realHome = parseInt(foundMatchInfo.result.home);
-                                const realAway = parseInt(foundMatchInfo.result.away);
+                    // Vẽ tiêu đề Header bao gồm cả Tỷ số cược và Kết quả chính thức trực quan
+                    cleanTitle = currentLang === "vi"
+                        ? `Trận số ${targetId} — 🏠 ${teamAName} vs ${teamBName} ✈️ (Kết quả: ${realHome}-${realAway})`
+                        : `Match ${targetId} — 🏠 ${teamAName} vs ${teamBName} ✈️ (Result: ${realHome}-${realAway})`;
 
-                                // Tính toán kết quả thực tế và kết quả dự đoán
-                                const realSign = realHome > realAway ? 1 : (realHome < realAway ? -1 : 0);
-                                const predSign = predHome > predAway ? 1 : (predHome < predAway ? -1 : 0);
+                    // Thuật toán đối chiếu số liệu so sánh logic bóng đá chuẩn
+                    const realResultSign = realHome > realAway ? 1 : (realHome < realAway ? -1 : 0);
+                    const predResultSign = predHome > predAway ? 1 : (predHome < predAway ? -1 : 0);
 
-                                if (realHome === predHome && realAway === predAway) {
-                                    // Đúng hoàn toàn tỷ số
-                                    predictionVerificationHTML = currentLang === "vi"
-                                        ? `<div class="mt-2 text-xs font-bold text-emerald-400 bg-emerald-950/40 p-2 rounded-lg border border-emerald-800/50">🎯 Thần sầu sếp ơi! Đoán trúng khít khịt tỷ số rồi, Hải Ly xin ngả mũ thán phục!</div>`
-                                        : `<div class="mt-2 text-xs font-bold text-emerald-400 bg-emerald-950/40 p-2 rounded-lg border border-emerald-800/50">🎯 Masterclass! You predicted the exact scoreline!</div>`;
-                                } else if (realSign === predSign) {
-                                    // Đúng hướng kết quả thắng/hòa/thua
-                                    predictionVerificationHTML = currentLang === "vi"
-                                        ? `<div class="mt-2 text-xs font-bold text-teal-400 bg-teal-950/30 p-2 rounded-lg border border-teal-900/50">👍 Đoán trúng hướng trận đấu (Thắng/Thua/Hòa). Suýt soát nổ hũ tỷ số sếp ơi!</div>`
-                                        : `<div class="mt-2 text-xs font-bold text-teal-400 bg-teal-950/30 p-2 rounded-lg border border-teal-900/50">👍 Correct match outcome! So close to the exact scoreline!</div>`;
-                                } else {
-                                    // Đoán trật lất
-                                    predictionVerificationHTML = currentLang === "vi"
-                                        ? `<div class="mt-2 text-xs font-bold text-rose-400 bg-rose-950/40 p-2 rounded-lg border border-rose-900/50">❌ 🚨 Ôi xời ơi! Trận này sếp đoán trật lất rồi nha! Đề nghị sếp đóng thêm học phí học một khóa tiên tri cấp tốc nhé! 😄🎲</div>`
-                                        : `<div class="mt-2 text-xs font-bold text-rose-400 bg-rose-950/40 p-2 rounded-lg border border-rose-900/50">❌ 🚨 Completely wrong! You should take a crash course in oracle fortune-telling! 😄🎲</div>`;
-                                }
-                            }
-                        } else {
-                            // Trận chưa đá: Giữ nguyên tên đội thật
-                            cleanTitle = currentLang === "vi"
-                                ? `Trận số ${targetId} - Tỷ số dự đoán: 🏠 ${teamAName} - ✈️ ${teamBName}`
-                                : `Match ${targetId} - Predicted: 🏠 ${teamAName} - ✈️ ${teamBName}`;
-                        }
+                    if (realHome === predHome && realAway === predAway) {
+                        // 1. Đúng khít tỷ số
+                        predictionVerificationHTML = currentLang === "vi"
+                            ? `<div class="mt-2 text-xs font-bold text-emerald-400 bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-500/30 flex items-center gap-2">🎯 <span>Thần sầu sếp ơi! Sếp dự đoán TRÚNG KHÍT TỶ SỐ <span class="underline">${predHome}-${predAway}</span> rồi. Tiên tri vũ trụ gọi tên sếp!</span></div>`
+                            : `<div class="mt-2 text-xs font-bold text-emerald-400 bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-500/30 flex items-center gap-2">🎯 <span>Masterclass! You predicted the exact scoreline <span class="underline">${predHome}-${predAway}</span>!</span></div>`;
+                    } else if (realResultSign === predResultSign) {
+                        // 2. Đúng kết quả thắng/thua/hòa (Ví dụ sếp đoán 1-0 mà kết quả là 2-0)
+                        predictionVerificationHTML = currentLang === "vi"
+                            ? `<div class="mt-2 text-xs font-bold text-teal-400 bg-teal-950/40 p-2.5 rounded-xl border border-teal-500/20 flex items-center gap-2">👍 <span>Đẳng cấp sếp ơi! Sếp đoán ĐÚNG KẾT QUẢ trận đấu (Dự đoán: ${predHome}-${predAway} | Thực tế: ${realHome}-${realAway}). Suýt soát nổ hũ tỷ số!</span></div>`
+                            : `<div class="mt-2 text-xs font-bold text-teal-400 bg-teal-950/40 p-2.5 rounded-xl border border-teal-500/20 flex items-center gap-2">👍 <span>Great reading! You got the CORRECT OUTCOME (Predicted: ${predHome}-${predAway} | Real: ${realHome}-${realAway})!</span></div>`;
+                    } else {
+                        // 3. Dự đoán sai lệch hoàn toàn
+                        predictionVerificationHTML = currentLang === "vi"
+                            ? `<div class="mt-2 text-xs font-bold text-rose-400 bg-rose-950/40 p-2.5 rounded-xl border border-rose-500/20 flex items-center gap-2">❌ <span>Lần này trật lất rồi sếp ơi (Dự đoán: ${predHome}-${predAway} | Kết quả: ${realHome}-${realAway}). Đề nghị sếp học thêm một khóa tiên tri cấp tốc nhé! 😄</span></div>`
+                            : `<div class="mt-2 text-xs font-bold text-rose-400 bg-rose-950/40 p-2.5 rounded-xl border border-rose-500/20 flex items-center gap-2">❌ <span>Completely wrong (Predicted: ${predHome}-${predAway} | Real: ${realHome}-${realAway}). You need more oracle training! 😄</span></div>`;
                     }
+                } else {
+                    // Trận đấu chưa đá: Hiện thông số cược chờ so tài
+                    cleanTitle = currentLang === "vi"
+                        ? `Trận số ${targetId} — 🏠 ${teamAName} vs ${teamBName} ✈️`
+                        : `Match ${targetId} — 🏠 ${teamAName} vs ${teamBName} ✈️`;
+                    
+                    predictionVerificationHTML = currentLang === "vi"
+                        ? `<div class="mt-2 text-xs text-amber-400 bg-amber-950/20 p-2 rounded-xl border border-amber-500/20 italic">⏳ Trận đấu chưa diễn ra. Đang chờ kết quả trực tuyến để đối chiếu...</div>`
+                        : `<div class="mt-2 text-xs text-amber-400 bg-amber-950/20 p-2 rounded-xl border border-amber-500/20 italic">⏳ Match pending. Waiting for live result verification...</div>`;
                 }
 
-                // Nếu không bóc tách được ID, chuyển đổi text thô tránh lỗi dính chữ lộn xộn
-                if (cleanTitle === title) {
-                    cleanTitle = title
-                        .replace(/Đội\s+A/gi, currentLang === "vi" ? "🏠 Đội nhà" : "🏠 Home Team")
-                        .replace(/Đội\s+B/gi, currentLang === "vi" ? "✈️ Đội khách" : "✈️ Away Team");
+                // Dò tìm lời khịa tương ứng của Hải Ly từ chuỗi text lưu trữ
+                let extractedComment = "";
+                const regexComment = new RegExp(`Trận\\s*số?\\s*${targetId}[\\s\\S]*?\\[HẢI LY\\]([\\s\\S]*?)(?=\\[TRẬN\\]|\\[TỔNG QUAN\\]|$)`, "i");
+                const commentMatch = cauGayCuaHaiLy.match(regexComment);
+                if (commentMatch) {
+                    extractedComment = commentMatch[1].trim();
                 }
-                
-                records.push({ title: cleanTitle, cauGay, haiLy, verification: predictionVerificationHTML });
+
+                records.push({
+                    title: cleanTitle,
+                    cauGay: `${predHome} - ${predAway} (${pred.analysis || "Không có"})`,
+                    haiLy: extractedComment,
+                    verification: predictionVerificationHTML
+                });
             }
         });
     }
 
-    // 3. DỰNG HTML ĐỒNG BỘ 100% THEO NGÔN NGỮ CHỌN (Đã triệt tiêu lỗi lẫn lộn câu chữ)
+    // 3. DỰNG GIAO DIỆN KHUNG CARD UI ĐÃ ĐƯỢC QUY HOẠCH PHÂN TÁCH TOÁN HỌC KHÉP KÍN
     let htmlContent = `<div class="space-y-4 font-sans text-gray-300">`;
 
     if (records.length > 0) {
         records.forEach((item, index) => {
-            const labelNhanDinh = currentLang === "vi" ? "🗣️ Nhận định của sếp:" : "🗣️ Your Prediction:";
-            const labelHaiLyPhan = currentLang === "vi" ? "HẢI LY PHÁN:" : "WALRUS AGENT COMMENT:";
-            const fallbackComment = currentLang === "vi" ? "Hải Ly đang ngủ quên chưa bình luận..." : "Walrus is taking a nap...";
+            const labelNhanDinh = currentLang === "vi" ? "🗣️ Dự đoán của sếp:" : "🗣️ Your Prediction:";
+            const labelHaiLyPhan = currentLang === "vi" ? "HẢI LY BÌNH LUẬN GIẢI THÍCH:" : "WALRUS AGENT COMMENT:";
+            const fallbackComment = currentLang === "vi" ? "Hải Ly đang đồng bộ dữ liệu blobs..." : "Walrus is recalling transaction memory...";
 
             htmlContent += `
                 <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 shadow-sm hover:border-emerald-500/30 transition-all">
-                    <!-- Tiêu đề trận có kèm tỷ số thật nếu đã đá xong -->
                     <div class="text-emerald-400 font-bold text-sm mb-3 flex items-center gap-2">
                         <span class="bg-emerald-500/10 text-emerald-400 w-5 h-5 rounded-md flex items-center justify-center text-xs border border-emerald-500/20">${index + 1}</span>
                         ⚽ ${item.title}
                     </div>
                     
-                    <!-- Nội dung chi tiết cược -->
                     <div class="space-y-2.5 pl-3 border-l-2 border-slate-700">
                         <div class="text-xs text-gray-400 leading-relaxed">
                             <span class="text-amber-500 font-semibold">${labelNhanDinh}</span> 
-                            <span class="bg-slate-900/30 px-1.5 py-0.5 rounded text-gray-300">${item.cauGay}</span>
+                            <span class="bg-slate-900/30 px-2 py-0.5 rounded text-gray-200 font-mono font-bold">${item.cauGay}</span>
                         </div>
+                        
                         <div class="text-sm text-gray-200 bg-slate-900/50 p-2.5 rounded-lg border border-slate-800 flex gap-2 items-start">
                             <span class="text-base leading-none mt-0.5">🦫</span>
                             <div>
@@ -798,35 +777,24 @@ async function fetchMyPredictions() {
                                 <span class="italic text-emerald-100/90">${item.haiLy || fallbackComment}</span>
                             </div>
                         </div>
-                        <!-- Bơm khung gáy kết quả đúng/sai tự động ngay tại đây -->
+                        
                         ${item.verification}
                     </div>
                 </div>
             `;
         });
     } else {
+        // Fallback hiển thị chuỗi tự do nếu chưa kích hoạt mảng local
         htmlContent += `
             <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 border-l-4 border-emerald-500 whitespace-pre-line text-sm leading-relaxed text-gray-300">
-                ${cauGayCuaHaiLy}
-            </div>
-        `;
-    }
-
-    if (tongQuanText) {
-        const labelTongQuan = currentLang === "vi" ? "📊 ĐÁNH GIÁ TỔNG QUAN PHONG ĐỘ" : "📊 GLOBAL PERFORMANCE ANALYSIS";
-        htmlContent += `
-            <div class="mt-6 bg-gradient-to-r from-emerald-950/40 to-slate-900/40 border border-emerald-500/30 rounded-xl p-4 shadow-md">
-                <div class="text-amber-400 font-bold text-xs tracking-wider mb-1.5 flex items-center gap-1.5">
-                    ${labelTongQuan}
-                </div>
-                <div class="text-sm text-gray-300 leading-relaxed font-sans">${tongQuanText}</div>
+                ${cauGayCuaHaiLy || (currentLang === "vi" ? "Chưa ghi nhận lịch sử dự đoán online." : "No live memory sync recorded.")}
             </div>
         `;
     }
 
     htmlContent += `</div>`;
 
-    // 4. Tạo/Cập nhật cấu trúc Modal cửa sổ rộng lớn max-w-2xl
+    // 4. Tạo hoặc mở rộng kích thước Popup Modal max-w-2xl
     let modal = document.getElementById('walrus-history-modal');
     if (!modal) {
         modal = document.createElement('div');
@@ -835,13 +803,11 @@ async function fetchMyPredictions() {
         document.body.appendChild(modal);
     }
 
-    // CHUẨN HÓA TIÊU ĐỀ HEADER MODAL THEO NGÔN NGỮ CHỌN
-    const modalHeaderTitle = currentLang === "vi" ? "📜 LỊCH SỬ DỰ ĐOÁN & TIÊN TRI" : "📜 PREDICTION HISTORY & ORACLE";
+    const modalHeaderTitle = currentLang === "vi" ? "📜 BẢNG ĐỐI CHIẾU DỰ ĐOÁN & KẾT QUẢ THỰC TẾ" : "📜 PREDICTION VS REAL RESULT VERIFICATION";
     const modalCloseBtnText = currentLang === "vi" ? "Đóng cửa sổ" : "Close Window";
 
     modal.innerHTML = `
         <div class="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative text-gray-200 font-sans animate-fade-in">
-            <!-- Header -->
             <div class="flex items-center justify-between border-b border-gray-800 pb-3 mb-4">
                 <h3 class="text-emerald-400 font-bold text-base flex items-center gap-2 tracking-wide">
                     ${modalHeaderTitle}
@@ -849,12 +815,10 @@ async function fetchMyPredictions() {
                 <span class="text-[10px] bg-slate-800 text-gray-400 px-2 py-0.5 rounded font-mono border border-gray-700">WALRUS AGENT ONSCHAIN</span>
             </div>
             
-            <!-- Nội dung danh sách cược kèm xác minh tỷ số thật -->
             <div class="max-h-[65vh] overflow-y-auto pr-2 space-y-4">
                 ${htmlContent}
             </div>
             
-            <!-- Nút Đóng -->
             <div class="mt-5 flex justify-end border-t border-gray-800/60 pt-3">
                 <button onclick="document.getElementById('walrus-history-modal').classList.add('hidden')" 
                         class="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium text-xs transition-all shadow-md shadow-emerald-900/40 tracking-wider">
@@ -867,7 +831,7 @@ async function fetchMyPredictions() {
     modal.classList.remove('hidden');
 }
 window.showMyPredictions = fetchMyPredictions;
-window.showMyPredictions = fetchMyPredictions;
+
 
 function initApp() {
     updateUINonDynamicText();

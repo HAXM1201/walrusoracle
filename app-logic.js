@@ -860,7 +860,7 @@ async function fetchMyPredictions() {
 
     modal.classList.remove('hidden');
 }
-
+window.showMyPredictions = fetchMyPredictions;
 
 function initApp() {
     updateUINonDynamicText();

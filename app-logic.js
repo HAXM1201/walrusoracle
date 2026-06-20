@@ -148,23 +148,22 @@ async function handleSubmissionWithEffects(matchId, homeScore, awayScore, analys
     }
 }
 
-const CUSTOM_PUBLISHER_URL = "https://lovely-spontaneity-production.up.railway.app";
+const CUSTOM_PUBLISHER_URL = "https://walrus-backend-production.up.railway.app";
 async function storePredictionOnWalrus(matchId, scoreA, scoreB, analysis) {
     if (!currentUser) return false;
-    const predictionData = {
-        userEmail: currentUser.email,
-        matchId: matchId,
-        homeScore: parseInt(scoreA) || 0,
-        awayScore: parseInt(scoreB) || 0,
-        analysis: analysis || "",
-        timestamp: new Date().toISOString(),
-        lang: currentLang
-    };
+    
+    // Gom tất cả thông tin cược trận đấu thành chuỗi văn bản để AI Backend đọc hiểu
+    const userText = `Trận ${matchId} (Tỷ số dự đoán: ${scoreA}-${scoreB}). Nhận định: ${analysis || "Không có"}`;
+
     try {
-        const response = await fetch(`${CUSTOM_PUBLISHER_URL}/publish`, {
+        const response = await fetch(`${CUSTOM_PUBLISHER_URL}/api/ai-agent`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(predictionData)
+            body: JSON.stringify({
+                userIdentifier: currentUser.email,
+                userText: userText,
+                displayName: currentUser.displayName
+            })
         });
         return response.ok;
     } catch (error) {

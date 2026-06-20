@@ -481,24 +481,69 @@ async function fetchMyPredictions() {
         return;
     }
 
-    // 1. Định dạng chuỗi văn bản thành danh sách thẻ HTML có icon đẹp mắt
-    const lichSuDinhDang = cauGayCuaHaiLy
-        .replace(/-/g, `<br>• Trận`)
-        .replace(/Nhìn vào/g, `<br><br><span class="text-amber-400 font-bold">💬 Nhận xét tổng quan từ Hải Ly:</span><br>Nhìn vào`);
+    // Bộ xử lý bóc tách text của AI thành HTML Card chuyên nghiệp
+    const lines = cauGayCuaHaiLy.split('\n');
+    let htmlContent = `<div class="space-y-4">`;
+    let inCard = false;
 
-    // 2. Tạo hoặc tái sử dụng cấu trúc Khung Modal đồng bộ giao diện Web tối (Walrus Theme)
+    lines.forEach(line => {
+        let trimmed = line.trim();
+        if (!trimmed) return;
+
+        if (trimmed.startsWith("[TRẬN]")) {
+            if (inCard) htmlContent += `</div></div>`; // Đóng card trước nếu có
+            htmlContent += `
+                <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 shadow-sm">
+                    <div class="text-emerald-400 font-bold text-sm mb-2 flex items-center gap-1">
+                        ⚽ ${trimmed.replace("[TRẬN]", "").trim()}
+                    </div>
+                    <div class="space-y-1.5 pl-2 border-l-2 border-slate-700">
+            `;
+            inCard = true;
+        } else if (trimmed.startsWith("[CÂU GÁY]")) {
+            htmlContent += `
+                <div class="text-xs text-gray-400">
+                    <span class="text-amber-500 font-medium">🗣️ Câu gáy:</span> ${trimmed.replace("[CÂU GÁY]", "").trim()}
+                </div>
+            `;
+        } else if (trimmed.startsWith("[HẢI LY]")) {
+            htmlContent += `
+                <div class="text-sm text-gray-300 italic mt-1 bg-slate-900/40 p-2 rounded-lg text-emerald-300/90">
+                    <span class="not-italic">🦫</span> ${trimmed.replace("[HẢI LY]", "").trim()}
+                </div>
+            `;
+        } else if (trimmed.startsWith("[TỔNG QUAN]")) {
+            if (inCard) { htmlContent += `</div></div>`; inCard = false; }
+            htmlContent += `
+                <div class="mt-6 bg-emerald-950/30 border border-emerald-500/20 rounded-xl p-4">
+                    <div class="text-amber-400 font-bold text-sm mb-1">💬 NHẬN XÉT TỔNG QUAN:</div>
+                    <div class="text-sm text-gray-300 leading-relaxed">${trimmed.replace("[TỔNG QUAN]", "").trim()}</div>
+                </div>
+            `;
+        } else {
+            // Xử lý các dòng text tự do không gắn tag
+            if (!inCard) {
+                htmlContent += `<p class="text-sm text-gray-300 leading-relaxed mb-2">${trimmed}</p>`;
+            } else {
+                htmlContent += `<div class="text-sm text-gray-300 mt-1">${trimmed}</div>`;
+            }
+        }
+    });
+    if (inCard) htmlContent += `</div></div>`;
+    htmlContent += `</div>`;
+
+    // Cập nhật cấu trúc Modal (Nới rộng ra với max-w-2xl)
     let modal = document.getElementById('walrus-history-modal');
     if (!modal) {
         modal = document.createElement('div');
         modal.id = 'walrus-history-modal';
-        // Ép CSS bao phủ mờ toàn màn hình chuẩn UI chuyên nghiệp
         modal.className = "fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 hidden";
         document.body.appendChild(modal);
     }
 
-    // 3. Bơm ruột HTML cấu trúc bo góc, viền neon, màu tối sâu thẳm khớp với app của sếp
     modal.innerHTML = `
-        <div class="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative animate-fade-in text-gray-200 font-sans">
+        <div class="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative text-gray-200 font-sans">
+            <!-- Header -->
             <div class="flex items-center justify-between border-b border-gray-800 pb-3 mb-4">
                 <h3 class="text-emerald-400 font-bold text-base flex items-center gap-2">
                     📜 LỊCH SỬ DỰ ĐOÁN & LỜI TIÊN TRI
@@ -506,20 +551,21 @@ async function fetchMyPredictions() {
                 <span class="text-xs text-gray-500 font-mono">WALRUS MEMORY SYNCED</span>
             </div>
             
-            <div class="text-sm leading-relaxed max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar text-gray-300">
-                ${lichSuDinhDang}
+            <!-- Nội dung danh sách đã tách biệt -->
+            <div class="max-h-[65vh] overflow-y-auto pr-2 custom-scrollbar">
+                ${htmlContent}
             </div>
             
-            <div class="mt-6 flex justify-end">
+            <!-- Footer Close Button -->
+            <div class="mt-5 flex justify-end">
                 <button onclick="document.getElementById('walrus-history-modal').classList.add('hidden')" 
-                        class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium text-xs transition-all shadow-md shadow-emerald-900/40">
+                        class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium text-xs transition-all shadow-md shadow-emerald-900/40">
                     Đóng cửa sổ
                 </button>
             </div>
         </div>
     `;
 
-    // 4. Kích hoạt mở Popup bung lụa lên màn hình
     modal.classList.remove('hidden');
 }
 window.showMyPredictions = fetchMyPredictions;

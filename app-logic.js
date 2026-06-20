@@ -466,12 +466,29 @@ function renderMatches(filterType = 'vong-bang') {
             let bottomActionHTML = "";
 
             if (isFinished) {
+                // --- QUY HOẠCH CĂN LỀ DANH SÁCH CẦU THỦ GHI BÀN THEO ĐỘI ---
                 let scorersHTML = "";
                 if (match.result.goals && match.result.goals.length > 0) {
-                    scorersHTML = `<div class="mt-2 text-[10px] text-gray-500 space-y-0.5 text-center bg-slate-900/30 p-1.5 rounded-lg border border-slate-900">`;
-                    match.result.goals.forEach(g => {
-                        scorersHTML += `<div>⚽ ${g.scorer} (${g.minute}')</div>`;
+                    // Chia lưới 2 cột trái phải tương ứng với hai đội bóng
+                    scorersHTML = `<div class="w-full mt-3 grid grid-cols-2 gap-x-4 text-[10px] text-gray-500 bg-slate-900/30 p-2 rounded-xl border border-slate-900/80">`;
+                    
+                    let homeScorers = match.result.goals.filter(g => g.team === 'home');
+                    let awayScorers = match.result.goals.filter(g => g.team === 'away');
+                    
+                    // Tạo cột trái cho Đội nhà (Cầu thủ đứng sau quả bóng, căn lề trái)
+                    scorersHTML += `<div class="space-y-1 text-left border-r border-slate-800/60 pr-1">`;
+                    homeScorers.forEach(g => {
+                        scorersHTML += `<div class="truncate text-gray-400">⚽ ${g.scorer} (${g.minute}')</div>`;
                     });
+                    scorersHTML += `</div>`;
+                    
+                    // Tạo cột phải cho Đội khách (Tên cầu thủ đứng trước quả bóng, căn lề phải)
+                    scorersHTML += `<div class="space-y-1 text-right pl-1">`;
+                    awayScorers.forEach(g => {
+                        scorersHTML += `<div class="truncate text-gray-400">${g.scorer} (${g.minute}') ⚽</div>`;
+                    });
+                    scorersHTML += `</div>`;
+                    
                     scorersHTML += `</div>`;
                 }
 
@@ -483,11 +500,13 @@ function renderMatches(filterType = 'vong-bang') {
                             <span class="text-xl font-black text-emerald-400">${match.result.away}</span>
                         </div>
                         <span class="text-[8px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/20 font-sans mt-1.5 font-bold tracking-wider">FT</span>
-                        ${scorersHTML}
                     </div>
                 `;
+                
+                // Đổ danh sách cầu thủ ghi bàn trải phẳng xuống dưới cùng của kèo đấu cho rộng rãi
                 bottomActionHTML = `
-                    <div class="mt-2 pt-2.5 border-t border-slate-900/60 text-center text-[10px] text-gray-500 italic font-medium">
+                    ${scorersHTML}
+                    <div class="mt-2.5 pt-2 border-t border-slate-900/40 text-center text-[10px] text-gray-500 italic font-medium">
                         🏁 Trận đấu đã kết thúc trực tuyến. Bộ nhớ cược đã đóng.
                     </div>
                 `;
@@ -516,10 +535,13 @@ function renderMatches(filterType = 'vong-bang') {
 
             card.innerHTML = `
                 <div>
+                    <!-- Vòng đấu & Địa điểm -->
                     <div class="flex justify-between items-center text-[10px] text-gray-400 font-mono mb-3">
                         <span class="truncate max-w-[170px]">📍 ${match.stadium}</span>
                         <span class="${match.isHot ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold'}">TRẬN ${match.id} — ${match.group}</span>
                     </div>
+                    
+                    <!-- Kèo đấu -->
                     <div class="flex items-center justify-between my-2 px-1">
                         <div class="flex flex-col items-center text-center w-4/12 gap-1.5">
                             ${getFlagImgHTML(match.codeA)}
@@ -538,7 +560,6 @@ function renderMatches(filterType = 'vong-bang') {
         });
     });
 }
-
 function renderGroups() {
     const container = document.getElementById('groups-container');
     if (!container) return;
@@ -660,8 +681,25 @@ async function fetchMyPredictions() {
             const haiLy = (block.match(/\[HẢI LY\]([\s\S]*?)$/i)?.[1] || "").trim();
 
             if (title) {
-                // Thay thế Đội A / Đội B thành tên gọi rành mạch cho giao diện trực quan
-                let cleanTitle = title
+                let cleanTitle = title;
+                
+                // Tìm kiếm số ID Trận đấu xuất hiện trong tiêu đề (Ví dụ: "Trận số 33")
+                const idMatch = title.match(/(?:Trận\s+số\s+|Trận\s+)(\d+)/i);
+                if (idMatch && idMatch[1]) {
+                    const targetId = idMatch[1].trim();
+                    // Lục tìm trong danh sách trận đấu online có sẵn của hệ thống sếp để lấy tên quốc gia chính xác
+                    const foundMatchInfo = officialMatches.find(m => String(m.id) === targetId);
+                    
+                    if (foundMatchInfo) {
+                        // Thay thế hoàn toàn "Đội A" và "Đội B" thành Tên Đội bóng thật bằng Tiếng Việt
+                        cleanTitle = title
+                            .replace(/Đội\s+A/gi, `🏠 ${foundMatchInfo.teamA}`)
+                            .replace(/Đội\s+B/gi, `✈️ ${foundMatchInfo.teamB}`);
+                    }
+                }
+
+                // Phòng hờ nếu không tìm thấy ID thì dùng nhãn chung rành mạch
+                cleanTitle = cleanTitle
                     .replace(/Đội\s+A/gi, "🏠 Đội nhà")
                     .replace(/Đội\s+B/gi, "✈️ Đội khách");
                 
@@ -677,11 +715,13 @@ async function fetchMyPredictions() {
         records.forEach((item, index) => {
             htmlContent += `
                 <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 shadow-sm hover:border-emerald-500/30 transition-all">
+                    <!-- Tiêu đề trận -->
                     <div class="text-emerald-400 font-bold text-sm mb-3 flex items-center gap-2">
                         <span class="bg-emerald-500/10 text-emerald-400 w-5 h-5 rounded-md flex items-center justify-center text-xs border border-emerald-500/20">${index + 1}</span>
                         ⚽ ${item.title}
                     </div>
                     
+                    <!-- Chi tiết thông tin -->
                     <div class="space-y-2.5 pl-3 border-l-2 border-slate-700">
                         <div class="text-xs text-gray-400 leading-relaxed">
                             <span class="text-amber-500 font-semibold">🗣️ Nhận định của sếp:</span> 
@@ -699,7 +739,6 @@ async function fetchMyPredictions() {
             `;
         });
     } else {
-        // Nếu AI trả về chuỗi văn bản tự do hoàn toàn không bóc tách được tag
         htmlContent += `
             <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 border-l-4 border-emerald-500 whitespace-pre-line text-sm leading-relaxed text-gray-300">
                 ${cauGayCuaHaiLy}
@@ -707,7 +746,6 @@ async function fetchMyPredictions() {
         `;
     }
 
-    // Nếu có phần tổng quan thì nạp vào dưới cùng
     if (tongQuanText) {
         htmlContent += `
             <div class="mt-6 bg-gradient-to-r from-emerald-950/40 to-slate-900/40 border border-emerald-500/30 rounded-xl p-4 shadow-md">
@@ -721,7 +759,6 @@ async function fetchMyPredictions() {
 
     htmlContent += `</div>`;
 
-    // 4. Tạo/Cập nhật cấu trúc Modal cửa sổ rộng lớn max-w-2xl
     let modal = document.getElementById('walrus-history-modal');
     if (!modal) {
         modal = document.createElement('div');

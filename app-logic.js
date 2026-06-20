@@ -371,7 +371,7 @@ function renderMatches(filterType = 'vong-bang') {
     const countBadge = document.getElementById('match-count');
     if (countBadge) countBadge.innerText = `${filtered.length} ${translations[currentLang].matchUnit}`;
 
-    // === CHUYỂN ĐỔI MÚI GIỜ GMT+7 VÀ PHÂN TÍCH TRẬN ĐẤU ===
+    // === 3. QUY HOẠCH SẮP XẾP: ÉP THỨ TỰ TRẬN ĐẤU TỪ BÉ ĐẾN LỚN THEO ID CHIỀU THỜI GIAN THỰC ===
     const processedMatches = filtered.map(match => {
         let rawDateTimeStr = `${match.date}T${match.time.split(" ")[0]}`;
         const utcMatch = match.time.match(/UTC([-+]\d+)/i);
@@ -402,13 +402,14 @@ function renderMatches(filterType = 'vong-bang') {
 
         return {
             ...match,
-            sortTimestamp: dateObj.getTime() || 0,
+            sortId: parseInt(match.id) || 0,
             vietnamDate: localDateStr,
             vietnamTime: localTimeStr
         };
     });
 
-    processedMatches.sort((a, b) => a.sortTimestamp - b.sortTimestamp);
+    // Sắp xếp chặt chẽ theo số ID Trận đấu tăng dần (Trận 1, 2, 3... 104) để không bao giờ bị xáo trộn ngày tháng
+    processedMatches.sort((a, b) => a.sortId - b.sortId);
 
     // GOM NHÓM CÁC TRẬN ĐẤU CÓ CÙNG NGÀY VIỆT NAM (GMT+7)
     const groupedByDate = {};
@@ -419,7 +420,7 @@ function renderMatches(filterType = 'vong-bang') {
         groupedByDate[match.vietnamDate].push(match);
     });
 
-    // VẼ GIA DIỆN HTML THEO ĐÚNG CẤU TRÚC QUY HOẠCH MỚI
+    // VẼ GIA DIỆN HTML THEO ĐÚNG CẤU TRÚC ĐÃ ĐƯỢC QUY HOẠCH
     Object.keys(groupedByDate).forEach(date => {
         const dateGroupContainer = document.createElement('div');
         dateGroupContainer.className = "col-span-full bg-slate-900/40 backdrop-blur-md border border-slate-800/80 rounded-3xl p-5 shadow-2xl mb-6 space-y-4";
@@ -439,43 +440,56 @@ function renderMatches(filterType = 'vong-bang') {
 
         groupedByDate[date].forEach(match => {
             const card = document.createElement('div');
-            
-            // Nếu trận đấu đã có kết quả online, đổi màu viền tối nhẹ nhàng hơn
             const isFinished = match.result && match.result.home !== null && match.result.away !== null;
             
             card.className = isFinished
-                ? "bg-slate-950/40 border border-slate-900 rounded-2xl p-5 shadow-inner opacity-85 flex flex-col justify-between"
+                ? "bg-slate-950/40 border border-slate-900 rounded-2xl p-5 shadow-inner flex flex-col justify-between"
                 : (match.isHot 
                     ? "bg-slate-950/90 border-2 border-amber-500 rounded-2xl p-5 shadow-2xl relative overflow-hidden flex flex-col justify-between"
                     : "bg-slate-950/70 border border-slate-800/80 rounded-2xl p-5 shadow-xl relative overflow-hidden flex flex-col justify-between hover:border-slate-700/60 transition-all");
 
-            // Phần hiển thị nội dung chi tiết trận đấu
+            // --- 1 & 2. VÁ LỖI CÂN ĐỐI TỶ SỐ & THÊM CẦU THỦ GHI BÀN ---
             let matchStatusHTML = "";
             let bottomActionHTML = "";
 
             if (isFinished) {
-                // LÚC ĐÃ ĐÁ XONG: Hiện tỷ số đậm, rõ ràng, ẩn nút cược
+                // Tạo danh sách cầu thủ ghi bàn nếu có dữ liệu online
+                let scorersHTML = "";
+                if (match.result.goals && match.result.goals.length > 0) {
+                    scorersHTML = `<div class="mt-2 text-[10px] text-gray-500 space-y-0.5 text-center bg-slate-900/30 p-1.5 rounded-lg border border-slate-900">`;
+                    match.result.goals.forEach(g => {
+                        const icon = g.team === 'home' ? '⚽' : '⚽';
+                        scorersHTML += `<div>${icon} ${g.scorer} (${g.minute}')</div>`;
+                    });
+                    scorersHTML += `</div>`;
+                }
+
+                // Cân đối tỷ số nằm ngang hàng chuẩn UI bóng đá chuyên nghiệp
                 matchStatusHTML = `
-                    <div class="text-center w-2/12 flex flex-col items-center justify-center">
-                        <div class="text-lg font-black text-emerald-400 tracking-wider font-mono">${match.result.home} - ${match.result.away}</div>
-                        <span class="text-[8px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/20 font-sans mt-1 font-bold">FT</span>
+                    <div class="flex flex-col items-center justify-center w-4/12">
+                        <div class="flex items-center gap-3 bg-slate-900/80 px-4 py-1.5 rounded-xl border border-slate-800 font-mono">
+                            <span class="text-xl font-black text-emerald-400">${match.result.home}</span>
+                            <span class="text-xs text-gray-600 font-bold">-</span>
+                            <span class="text-xl font-black text-emerald-400">${match.result.away}</span>
+                        </div>
+                        <span class="text-[8px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/20 font-sans mt-1.5 font-bold tracking-wider">FT</span>
+                        ${scorersHTML}
                     </div>
                 `;
                 bottomActionHTML = `
-                    <div class="mt-2 pt-2.5 border-t border-slate-900 text-center text-[11px] text-gray-500 italic font-medium">
+                    <div class="mt-2 pt-2.5 border-t border-slate-900/60 text-center text-[10px] text-gray-500 italic font-medium">
                         🏁 Trận đấu đã kết thúc trực tuyến. Bộ nhớ cược đã đóng.
                     </div>
                 `;
             } else {
-                // LÚC CHƯA ĐÁ: Hiện chữ VS và ô nhập cược như cũ
                 matchStatusHTML = `
-                    <div class="text-center w-2/12 flex flex-col items-center gap-1">
+                    <div class="text-center w-4/12 flex flex-col items-center justify-center gap-1">
                         <span class="text-[11px] font-mono font-black bg-slate-900 border border-slate-800 text-amber-400 px-2 py-0.5 rounded shadow-sm">${match.vietnamTime}</span>
                         <span class="text-[10px] text-gray-600 font-bold">VS</span>
                     </div>
                 `;
                 bottomActionHTML = `
-                    <div class="mt-2 pt-3 border-t border-slate-900/80 space-y-2">
+                    <div class="mt-2 pt-3 border-t border-slate-800/80 space-y-2">
                         <div class="flex gap-2 justify-center items-center">
                             <input type="number" id="scoreA-${match.id}" placeholder="0" class="w-12 h-8 bg-slate-950 border border-slate-800 rounded-lg text-center text-sm font-bold text-gray-200 focus:border-emerald-500 outline-none transition-all">
                             <span class="text-xs text-gray-600 font-bold">-</span>
@@ -492,20 +506,22 @@ function renderMatches(filterType = 'vong-bang') {
 
             card.innerHTML = `
                 <div>
+                    <!-- Vòng đấu & Địa điểm -->
                     <div class="flex justify-between items-center text-[10px] text-gray-400 font-mono mb-3">
-                        <span class="truncate max-w-[190px]">📍 ${match.stadium}</span>
+                        <span class="truncate max-w-[170px]">📍 ${match.stadium}</span>
                         <span class="${match.isHot ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold'}">TRẬN ${match.id} — ${match.group}</span>
                     </div>
                     
-                    <div class="flex items-center justify-between my-4 px-1">
-                        <div class="flex flex-col items-center text-center w-5/12 gap-1.5">
+                    <!-- Kèo đấu -->
+                    <div class="flex items-center justify-between my-2 px-1">
+                        <div class="flex flex-col items-center text-center w-4/12 gap-1.5">
                             ${getFlagImgHTML(match.codeA)}
-                            <div class="text-xs font-bold text-gray-200">${match.teamA}</div>
+                            <div class="text-xs font-bold text-gray-200 truncate max-w-[110px]">${match.teamA}</div>
                         </div>
                         ${matchStatusHTML}
-                        <div class="flex flex-col items-center text-center w-5/12 gap-1.5">
+                        <div class="flex flex-col items-center text-center w-4/12 gap-1.5">
                             ${getFlagImgHTML(match.codeB)}
-                            <div class="text-xs font-bold text-gray-200">${match.teamB}</div>
+                            <div class="text-xs font-bold text-gray-200 truncate max-w-[110px]">${match.teamB}</div>
                         </div>
                     </div>
                 </div>

@@ -481,58 +481,78 @@ async function fetchMyPredictions() {
         return;
     }
 
-    // Bộ xử lý bóc tách text của AI thành HTML Card chuyên nghiệp
-    const lines = cauGayCuaHaiLy.split('\n');
     let htmlContent = `<div class="space-y-4">`;
-    let inCard = false;
 
-    lines.forEach(line => {
-        let trimmed = line.trim();
-        if (!trimmed) return;
+    // KIỂM TRA: Nếu AI trả về văn bản tự do không có các tag cấu trúc hệ thống [TRẬN]
+    if (!cauGayCuaHaiLy.includes("[TRẬN]") && !cauGayCuaHaiLy.includes("• Trận")) {
+        // Tự động bọc toàn bộ câu trả lời của AI vào một chiếc Card thông báo lớn đồng bộ giao diện
+        htmlContent += `
+            <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 shadow-sm text-gray-300 leading-relaxed">
+                <div class="text-amber-400 font-bold text-sm mb-2 flex items-center gap-1.5">
+                    🦫 PHẢN HỒI TỪ HẢI LY TIÊN TRI:
+                </div>
+                <div class="text-sm bg-slate-900/40 p-3 rounded-lg border-l-2 border-emerald-500 font-sans text-emerald-300/90 whitespace-pre-line">
+                    ${cauGayCuaHaiLy}
+                </div>
+            </div>
+        `;
+    } else {
+        // NẾU CÓ CẤU TRÚC: Tiến hành bóc tách Card UI rành mạch
+        const lines = cauGayCuaHaiLy.split('\n');
+        let inCard = false;
 
-        if (trimmed.startsWith("[TRẬN]")) {
-            if (inCard) htmlContent += `</div></div>`; // Đóng card trước nếu có
-            htmlContent += `
-                <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 shadow-sm">
-                    <div class="text-emerald-400 font-bold text-sm mb-2 flex items-center gap-1">
-                        ⚽ ${trimmed.replace("[TRẬN]", "").trim()}
+        lines.forEach(line => {
+            let trimmed = line.trim();
+            if (!trimmed) return;
+
+            // Xử lý cả 2 trường hợp AI dùng dấu chấm tròn "• Trận" hoặc thẻ "[TRẬN]"
+            if (trimmed.startsWith("[TRẬN]") || trimmed.startsWith("• Trận") || trimmed.startsWith("Trận")) {
+                if (inCard) htmlContent += `</div></div>`;
+                let cleanTitle = trimmed.replace("[TRẬN]", "").replace("•", "").trim();
+                htmlContent += `
+                    <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 shadow-sm">
+                        <div class="text-emerald-400 font-bold text-sm mb-2 flex items-center gap-1">
+                            ⚽ ${cleanTitle}
+                        </div>
+                        <div class="space-y-2 pl-2 border-l-2 border-slate-700">
+                `;
+                inCard = true;
+            } else if (trimmed.startsWith("[CÂU GÁY]") || trimmed.toLowerCase().includes("câu gáy")) {
+                let cleanRoast = trimmed.replace("[CÂU GÁY]", "").trim();
+                htmlContent += `
+                    <div class="text-xs text-gray-400">
+                        <span class="text-amber-500 font-medium">🗣️ Câu gáy:</span> ${cleanRoast}
                     </div>
-                    <div class="space-y-1.5 pl-2 border-l-2 border-slate-700">
-            `;
-            inCard = true;
-        } else if (trimmed.startsWith("[CÂU GÁY]")) {
-            htmlContent += `
-                <div class="text-xs text-gray-400">
-                    <span class="text-amber-500 font-medium">🗣️ Câu gáy:</span> ${trimmed.replace("[CÂU GÁY]", "").trim()}
-                </div>
-            `;
-        } else if (trimmed.startsWith("[HẢI LY]")) {
-            htmlContent += `
-                <div class="text-sm text-gray-300 italic mt-1 bg-slate-900/40 p-2 rounded-lg text-emerald-300/90">
-                    <span class="not-italic">🦫</span> ${trimmed.replace("[HẢI LY]", "").trim()}
-                </div>
-            `;
-        } else if (trimmed.startsWith("[TỔNG QUAN]")) {
-            if (inCard) { htmlContent += `</div></div>`; inCard = false; }
-            htmlContent += `
-                <div class="mt-6 bg-emerald-950/30 border border-emerald-500/20 rounded-xl p-4">
-                    <div class="text-amber-400 font-bold text-sm mb-1">💬 NHẬN XÉT TỔNG QUAN:</div>
-                    <div class="text-sm text-gray-300 leading-relaxed">${trimmed.replace("[TỔNG QUAN]", "").trim()}</div>
-                </div>
-            `;
-        } else {
-            // Xử lý các dòng text tự do không gắn tag
-            if (!inCard) {
-                htmlContent += `<p class="text-sm text-gray-300 leading-relaxed mb-2">${trimmed}</p>`;
+                `;
+            } else if (trimmed.startsWith("[HẢI LY]") || trimmed.toLowerCase().includes("hải ly")) {
+                let cleanComment = trimmed.replace("[HẢI LY]", "").trim();
+                htmlContent += `
+                    <div class="text-sm text-gray-300 italic mt-1 bg-slate-900/40 p-2 rounded-lg text-emerald-300/90">
+                        <span class="not-italic">🦫</span> ${cleanComment}
+                    </div>
+                `;
+            } else if (trimmed.startsWith("[TỔNG QUAN]") || trimmed.toLowerCase().includes("tổng quan")) {
+                if (inCard) { htmlContent += `</div></div>`; inCard = false; }
+                let cleanTotal = trimmed.replace("[TỔNG QUAN]", "").trim();
+                htmlContent += `
+                    <div class="mt-6 bg-emerald-950/30 border border-emerald-500/20 rounded-xl p-4">
+                        <div class="text-amber-400 font-bold text-sm mb-1">💬 NHẬN XÉT TỔNG QUAN:</div>
+                        <div class="text-sm text-gray-300 leading-relaxed whitespace-pre-line">${cleanTotal}</div>
+                    </div>
+                `;
             } else {
-                htmlContent += `<div class="text-sm text-gray-300 mt-1">${trimmed}</div>`;
+                if (!inCard) {
+                    htmlContent += `<p class="text-sm text-gray-300 leading-relaxed mb-1 whitespace-pre-line">${trimmed}</p>`;
+                } else {
+                    htmlContent += `<div class="text-sm text-gray-300 mt-1">${trimmed}</div>`;
+                }
             }
-        }
-    });
-    if (inCard) htmlContent += `</div></div>`;
+        });
+        if (inCard) htmlContent += `</div></div>`;
+    }
     htmlContent += `</div>`;
 
-    // Cập nhật cấu trúc Modal (Nới rộng ra với max-w-2xl)
+    // Khởi tạo/Cập nhật cấu trúc Modal cửa sổ lớn max-w-2xl
     let modal = document.getElementById('walrus-history-modal');
     if (!modal) {
         modal = document.createElement('div');
@@ -551,12 +571,12 @@ async function fetchMyPredictions() {
                 <span class="text-xs text-gray-500 font-mono">WALRUS MEMORY SYNCED</span>
             </div>
             
-            <!-- Nội dung danh sách đã tách biệt -->
+            <!-- Nội dung -->
             <div class="max-h-[65vh] overflow-y-auto pr-2 custom-scrollbar">
                 ${htmlContent}
             </div>
             
-            <!-- Footer Close Button -->
+            <!-- Nút Đóng -->
             <div class="mt-5 flex justify-end">
                 <button onclick="document.getElementById('walrus-history-modal').classList.add('hidden')" 
                         class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium text-xs transition-all shadow-md shadow-emerald-900/40">

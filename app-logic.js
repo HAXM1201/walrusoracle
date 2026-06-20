@@ -42,22 +42,11 @@ if (!firebase.apps.length) {
 const auth = firebase.auth();
 
 function initFirebaseAuth() {
-    // 🎯 CHỐT CHẶN CHÍ MẠNG: Đón và giải mã Token tài khoản trả về sau khi quay lại từ Google Redirect
-    auth.getRedirectResult().then((result) => {
-        if (result && result.user) {
-            currentUser = result.user;
-            console.log("✅ [Vercel] Đăng nhập thành công qua Redirect:", currentUser.displayName);
-            updateUserUI();
-            triggerWalrusMemoryAgent(currentUser.email, currentUser.displayName);
-        }
-    }).catch((error) => {
-        console.error("❌ Lỗi luồng bắt token Redirect Google:", error);
-    });
-
-    // Lắng nghe thay đổi trạng thái tài khoản liên tục hệ thống
+    // Luồng lắng nghe trạng thái tài khoản thời gian thực (Giữ đăng nhập khi F5)
     auth.onAuthStateChanged(user => {
         currentUser = user;
         if (user) {
+            console.log("✅ Đăng nhập Popup thành công:", user.displayName);
             updateUserUI();
             triggerWalrusMemoryAgent(user.email, user.displayName);
         } else {
@@ -71,12 +60,15 @@ async function signInWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
     try {
-        console.log("🔄 [Vercel] Đang chuyển hướng xác thực tài khoản Google Redirect chống lỗi COOP...");
-        // Ép sử dụng luồng Chuyển hướng (Redirect) thay vì mở cửa sổ Popup
-        await auth.signInWithRedirect(provider);
+        console.log("🔄 Đang bật cửa sổ Popup xác thực Google...");
+        // Quay trở lại luồng mở ô vuông Popup theo ý sếp
+        const result = await auth.signInWithPopup(provider);
+        currentUser = result.user;
+        updateUserUI();
+        triggerWalrusMemoryAgent(currentUser.email, currentUser.displayName);
     } catch (error) {
-        console.error("❌ Lỗi kích hoạt luồng Redirect:", error);
-        alert(`Không thể kết nối dịch vụ Google: ${error.message}`);
+        console.error("❌ Lỗi đăng nhập hệ thống Popup:", error);
+        alert(`Đăng nhập thất bại: ${error.message}`);
     }
 }
 

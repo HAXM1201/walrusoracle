@@ -68,7 +68,7 @@ async function signInWithGoogle() {
         triggerWalrusMemoryAgent(currentUser.email, currentUser.displayName);
     } catch (error) {
         console.error("❌ Lỗi đăng nhập hệ thống Popup:", error);
-        showCyberToast(currentLang === "vi" ? `Đăng nhập thất bại: ${error.message}` : `Login failed: ${error.message}`, "error");
+        alert(`Đăng nhập thất bại: ${error.message}`);
     }
 }
 
@@ -128,7 +128,7 @@ function launchConfetti() {
 
 async function handleSubmissionWithEffects(matchId, homeScore, awayScore, analysis = "") {
     if (!currentUser) {
-        showCyberToast(currentLang === "vi" ? "Vui lòng đăng nhập Gmail trước khi nộp dự đoán!" : "Please login first!", "error");
+        alert(currentLang === "vi" ? "Vui lòng đăng nhập Gmail trước khi nộp dự đoán!" : "Please login first!");
         return;
     }
     launchConfetti();
@@ -154,14 +154,12 @@ async function handleSubmissionWithEffects(matchId, homeScore, awayScore, analys
         const aiAgentText = document.getElementById('ai-roast-text');
         if (aiAgentText) {
             // Hiển thị hiệu ứng loading giả lập Hải Ly đang suy nghĩ trong 1 giây
-            aiAgentText.innerHTML = currentLang === "vi" 
-                ? `<em>🦫 Hải Ly Tiên Tri đang đọc Blobs bộ nhớ và soạn văn gáy...</em>`
-                : `<em>🦫 Walrus Oracle is reading memory blobs and preparing a response...</em>`;
+            aiAgentText.innerHTML = `<em>🦫 Hải Ly Tiên Tri đang đọc Blobs bộ nhớ và soạn văn gáy...</em>`;
         }
         
-        showCyberToast(currentLang === "vi" ? `Dự đoán trận ${matchId} đã được ghi vào Walrus thành công!` : `Prediction saved on Walrus!`, "success");
+        alert(currentLang === "vi" ? `🎉 Dự đoán trận ${matchId} đã được ghi vào Walrus thành công!` : `🎉 Prediction saved on Walrus!`);
     } else {
-        showCyberToast(currentLang === "vi" ? "Có lỗi xảy ra khi truyền dữ liệu!" : "Connection error!", "error");
+        alert(currentLang === "vi" ? "❌ Có lỗi xảy ra khi truyền dữ liệu!" : "❌ Connection error!");
     }
 }
 
@@ -229,6 +227,7 @@ async function triggerWalrusMemoryAgent(email, displayName) {
 
             // 2. [THẦN TỐC & ĐA NGÔN NGỮ] Quét sạch dữ liệu thô để nạp mảng so sánh đối chiếu toán học
             if (data.botReply && window.userPredictionMemory.length === 0) {
+                // Chuẩn hóa chuỗi text dính liền bằng cách chèn dấu xuống dòng trước các thẻ tag hệ thống
                 let textChuanHoa = data.botReply
                     .replace(/\[TRẬN\]/gi, "\n[TRẬN]")
                     .replace(/\[MATCH\]/gi, "\n[TRẬN]");
@@ -238,7 +237,10 @@ async function triggerWalrusMemoryAgent(email, displayName) {
                 blocks.forEach(block => {
                     if (!block.trim()) return;
 
+                    // Dò tìm số ID trận đấu bất kể AI viết "Trận số X", "Trận X" hay "Match X"
                     const idMatch = block.match(/(?:Trận\s+số\s+|Trận\s+|Match\s+)(\d+)/i);
+                    
+                    // Dò tìm tỷ số cược: Chấp nhận mọi dạng X-Y, [X]-[Y], hoặc X - Y bất kỳ
                     const scoreMatch = block.match(/(?:dự\s+đoán|tỷ\s+số|:\s*|predict)\[?(\d+)\]?\s*-\s*\[?(\d+)\]?/i) || block.match(/\[?(\d+)\]?\s*-\s*\[?(\d+)\]?/);
 
                     if (idMatch && scoreMatch) {
@@ -246,6 +248,7 @@ async function triggerWalrusMemoryAgent(email, displayName) {
                         const hScore = parseInt(scoreMatch[1]);
                         const aScore = parseInt(scoreMatch[2]);
 
+                        // Kiểm tra trùng lặp để không push trùng trận đấu vào bộ nhớ RAM
                         const isExisted = window.userPredictionMemory.some(p => String(p.matchId) === String(mId) && p.ownerEmail === email);
                         
                         if (!isExisted) {
@@ -567,10 +570,13 @@ function renderMatches(filterType = 'vong-bang') {
 
             card.innerHTML = `
                 <div>
+                    <!-- Vòng đấu & Địa điểm -->
                     <div class="flex justify-between items-center text-[10px] text-gray-400 font-mono mb-3">
                         <span class="truncate max-w-[170px]">📍 ${match.stadium}</span>
                         <span class="${match.isHot ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold'}">${labelTran} ${match.id} — ${match.group}</span>
                     </div>
+                    
+                    <!-- Kèo đấu -->
                     <div class="flex items-center justify-between my-2 px-1">
                         <div class="flex flex-col items-center text-center w-4/12 gap-1.5">
                             ${getFlagImgHTML(match.codeA)}
@@ -589,7 +595,6 @@ function renderMatches(filterType = 'vong-bang') {
         });
     });
 }
-
 function renderGroups() {
     const container = document.getElementById('groups-container');
     if (!container) return;
@@ -670,60 +675,177 @@ function toggleLanguage() {
 let isWalletConnected = false;
 function toggleWallet() { isWalletConnected = !isWalletConnected; }
 
-// ==================== BẢN ĐÃ TỐI ƯU HÓA REGEX "LÌ ĐÒN" ====================
 async function fetchMyPredictions() {
     if (!currentUser) {
-        showCyberToast(currentLang === "en" ? "Please sign in with Gmail first!" : "Sếp vui lòng đăng nhập Gmail trước!", "warning");
+        alert(currentLang === "en" ? "Please sign in with Gmail first!" : "Sếp vui lòng đăng nhập Gmail trước!");
         return;
     }
 
     const aiAgentText = document.getElementById('ai-roast-text');
     let cauGayCuaHaiLy = "";
     if (aiAgentText) {
-        cauGayCuaHaiLy = aiAgentText.innerText.replace("Hải Ly Tiên Tri:", "").replace("Walrus Oracle:", "").trim();
+        cauGayCuaHaiLy = aiAgentText.innerText.replace("Hải Ly Tiên Tri:", "").trim();
     }
 
     if (!cauGayCuaHaiLy || cauGayCuaHaiLy.includes("Chào sếp") || cauGayCuaHaiLy.includes("Đang chờ") || cauGayCuaHaiLy.includes("Welcome")) {
-        showCyberToast(currentLang === "vi" 
+        alert(currentLang === "vi" 
             ? "🦫 Hải Ly báo: Bộ nhớ trống hoặc đang đồng bộ. Sếp thử cược 1 trận để kích hoạt lịch sử nhé!" 
-            : "No prediction history found on Walrus yet!", "warning");
+            : "No prediction history found on Walrus yet!");
         return;
     }
 
+    // --- BỘ QUY HOẠCH REGEX TOÀN DIỆN CHỐNG DÍNH CHỮ & QUỐC TẾ HÓA ---
     let records = [];
-    const tranMatches = cauGayCuaHaiLy.split(/\[TRẬN\]|\[MATCH\]/gi);
+    let tongQuanText = "";
 
-    tranMatches.forEach((block, index) => {
-        if (index === 0) return;
-        const idMatch = block.match(/(\d+)/);
-        const scoreMatch = block.match(/(\d+)\s*-\s*(\d+)/);
-        if (idMatch && scoreMatch) {
-            const mId = idMatch[1];
-            const haiLyMatch = block.split(/\[HẢI LY\]|\[COMMENT\]|\[🦫 HẢI LY\]/i);
-            const haiLy = haiLyMatch.length > 1 ? haiLyMatch[1].trim() : "Đang chờ phân tích...";
-            const matchInfo = officialMatches.find(m => String(m.id) === String(mId));
-            records.push({
-                title: matchInfo ? `Trận ${mId}: ${matchInfo.teamA} vs ${matchInfo.teamB}` : `Trận ${mId}`,
-                cauGay: `${scoreMatch[1]} - ${scoreMatch[2]}`,
-                haiLy: haiLy,
-                verification: matchInfo && matchInfo.result ? `<div class="mt-2 text-xs text-emerald-400">✅ Đã đối chiếu kết quả thực tế.</div>` : `<div class="mt-2 text-xs text-amber-400">⏳ Đang chờ kết quả...</div>`
-            });
-        }
-    });
+    // 1. Trích xuất phần [TỔNG QUAN] hoặc [SUMMARY] ra trước
+    const tongQuanMatch = cauGayCuaHaiLy.match(/\[TỔNG QUAN\]([\s\S]*)$/i) || cauGayCuaHaiLy.match(/\[SUMMARY\]([\s\S]*)$/i);
+    if (tongQuanMatch) {
+        tongQuanText = tongQuanMatch[1].trim();
+        cauGayCuaHaiLy = cauGayCuaHaiLy.replace(/\[TỔNG QUAN\]([\s\S]*)$/i, "").replace(/\[SUMMARY\]([\s\S]*)$/i, "");
+    }
 
+    // 2. Tự động chuẩn hóa dấu xuống dòng trước mỗi chữ [TRẬN] hoặc [MATCH]
+    let chuoiChuanHoa = cauGayCuaHaiLy
+        .replace(/\[TRẬN\]/gi, "\n[TRẬN]")
+        .replace(/\[MATCH\]/gi, "\n[TRẬN]");
+    
+    const tranMatches = chuoiChuanHoa.match(/\[TRẬN\][\s\S]*?(?=\[TRẬN\]|$)/gi);
+
+    if (tranMatches && tranMatches.length > 0) {
+        tranMatches.forEach(block => {
+            const title = (block.match(/\[TRẬN\]([\s\S]*?)(?=\[CÂU GÁY\]|\[🗣️ CÂU GÁY\]|\[ROAST\]|\[HẢI LY\]|\[🦫 HẢI LY\]|$)/i)?.[1] || "").trim();
+            const cauGay = (block.match(/(?:\[CÂU GÁY\]|\[🗣️ CÂU GÁY\]|\[ROAST\])([\s\S]*?)(?=\[HẢI LY\]|\[🦫 HẢI LY\]|$)/i)?.[1] || "Không có").trim();
+            const haiLy = (block.match(/(?:\[HẢI LY\]|\[🦫 HẢI LY\])([\s\S]*?)$/i)?.[1] || "").trim();
+
+            if (title) {
+                let cleanTitle = title;
+                let predictionVerificationHTML = "";
+
+                // Dò tìm số ID Trận đấu xuất hiện trong tiêu đề
+                const idMatch = title.match(/(?:Trận\s+số\s+|Trận\s+|Match\s+)(\d+)/i);
+                if (idMatch && idMatch[1]) {
+                    const targetId = idMatch[1].trim();
+                    const foundMatchInfo = officialMatches.find(m => String(m.id) === targetId);
+                    
+                    if (foundMatchInfo) {
+                        const isFinished = foundMatchInfo.result && foundMatchInfo.result.home !== null && foundMatchInfo.result.away !== null;
+                        const teamAName = currentLang === "vi" ? foundMatchInfo.teamA : foundMatchInfo.teamAEn;
+                        const teamBName = currentLang === "vi" ? foundMatchInfo.teamB : foundMatchInfo.teamBEn;
+
+                        // Tìm điểm số sếp cược
+                        const scoreMatch = block.match(/(?:dự\s+đoán|tỷ\s+số|:\s*|predict)\[?(\d+)\]?\s*-\s*\[?(\d+)\]?/i) || title.match(/\[?(\d+)\]?\s*-\s*\[?(\d+)\]?/);
+                        let predHome = 0;
+                        let predAway = 0;
+                        let hasValidPrediction = false;
+
+                        if (scoreMatch) {
+                            predHome = parseInt(scoreMatch[1]);
+                            predAway = parseInt(scoreMatch[2]);
+                            hasValidPrediction = true;
+                        }
+
+                        if (isFinished) {
+                            const realHome = parseInt(foundMatchInfo.result.home);
+                            const realAway = parseInt(foundMatchInfo.result.away);
+
+                            cleanTitle = currentLang === "vi"
+                                ? `Trận số ${targetId} — 🏠 ${teamAName} vs ${teamBName} ✈️ (Kết quả: ${realHome}-${realAway})`
+                                : `Match ${targetId} — 🏠 ${teamAName} vs ${teamBName} ✈️ (Result: ${realHome}-${realAway})`;
+
+                            if (hasValidPrediction) {
+                                const realSign = realHome > realAway ? 1 : (realHome < realAway ? -1 : 0);
+                                const predSign = predHome > predAway ? 1 : (predHome < predAway ? -1 : 0);
+
+                                if (realHome === predHome && realAway === predAway) {
+                                    predictionVerificationHTML = currentLang === "vi"
+                                        ? `<div class="mt-2 text-xs font-bold text-emerald-400 bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-500/30 flex items-center gap-2">🎯 <span>Thần sầu sếp ơi! Sếp dự đoán TRÚNG KHÍT TỶ SỐ <span class="underline">${predHome}-${predAway}</span> rồi. Tiên tri vũ trụ gọi tên sếp!</span></div>`
+                                        : `<div class="mt-2 text-xs font-bold text-emerald-400 bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-500/30 flex items-center gap-2">🎯 <span>Masterclass! You predicted the exact scoreline <span class="underline">${predHome}-${predAway}</span>!</span></div>`;
+                                } else if (realSign === predSign) {
+                                    predictionVerificationHTML = currentLang === "vi"
+                                        ? `<div class="mt-2 text-xs font-bold text-teal-400 bg-teal-950/40 p-2.5 rounded-xl border border-teal-500/20 flex items-center gap-2">👍 <span>Đẳng cấp sếp ơi! Sếp đoán ĐÚNG KẾT QUẢ trận đấu (Dự đoán: ${predHome}-${predAway} | Thực tế: ${realHome}-${realAway}). Suýt soát nổ hũ tỷ số!</span></div>`
+                                        : `<div class="mt-2 text-xs font-bold text-teal-400 bg-teal-950/40 p-2.5 rounded-xl border border-teal-500/20 flex items-center gap-2">👍 <span>Great reading! You got the CORRECT OUTCOME (Predicted: ${predHome}-${predAway} | Real: ${realHome}-${realAway})!</span></div>`;
+                                } else {
+                                    predictionVerificationHTML = currentLang === "vi"
+                                        ? `<div class="mt-2 text-xs font-bold text-rose-400 bg-rose-950/40 p-2.5 rounded-xl border border-rose-500/20 flex items-center gap-2">❌ <span>Lần này trật lất rồi sếp ơi (Dự đoán: ${predHome}-${predAway} | Kết quả: ${realHome}-${realAway}). Đề nghị sếp học thêm một khóa tiên tri cấp tốc nhé! 😄</span></div>`
+                                        : `<div class="mt-2 text-xs font-bold text-rose-400 bg-rose-950/40 p-2.5 rounded-xl border border-rose-500/20 flex items-center gap-2">❌ <span>Completely wrong (Predicted: ${predHome}-${predAway} | Real: ${realHome}-${realAway}). You need more oracle training! 😄</span></div>`;
+                                }
+                            }
+                        } else {
+                            cleanTitle = currentLang === "vi"
+                                ? `Trận số ${targetId} — 🏠 ${teamAName} vs ${teamBName} ✈️`
+                                : `Match ${targetId} — 🏠 ${teamAName} vs ${teamBName} ✈️`;
+                            
+                            predictionVerificationHTML = currentLang === "vi"
+                                ? `<div class="mt-2 text-xs text-amber-400 bg-amber-950/20 p-2 rounded-xl border border-amber-500/20 italic">⏳ Trận đấu chưa diễn ra. Đang chờ kết quả trực tuyến...</div>`
+                                : `<div class="mt-2 text-xs text-amber-400 bg-amber-950/20 p-2 rounded-xl border border-amber-500/20 italic">⏳ Match pending. Waiting for live result verification...</div>`;
+                        }
+
+                        let displayCauGay = hasValidPrediction ? `${predHome} - ${predAway} (${cauGay})` : cauGay;
+
+                        records.push({
+                            title: cleanTitle,
+                            cauGay: displayCauGay,
+                            haiLy: haiLy,
+                            verification: predictionVerificationHTML
+                        });
+                    }
+                }
+            }
+        });
+    }
+
+    // 3. DỰNG GIAO DIỆN HTML CARD UI
     let htmlContent = `<div class="space-y-4 font-sans text-gray-300">`;
+
     if (records.length > 0) {
         records.forEach((item, index) => {
-            htmlContent += `<div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4">
-                <div class="text-emerald-400 font-bold text-sm mb-3">⚽ ${item.title}</div>
-                <div class="text-xs text-gray-400">🗣️ Dự đoán: ${item.cauGay}</div>
-                <div class="text-sm text-emerald-100 italic mt-2">🦫 Hải Ly: ${item.haiLy}</div>
-                ${item.verification}
-            </div>`;
+            const labelNhanDinh = currentLang === "vi" ? "🗣️ Dự đoán của sếp:" : "🗣️ Your Prediction:";
+            const labelHaiLyPhan = currentLang === "vi" ? "HẢI LY BÌNH LUẬN GIẢI THÍCH:" : "WALRUS AGENT COMMENT:";
+            const fallbackComment = currentLang === "vi" ? "Hải Ly đang đồng bộ dữ liệu..." : "Walrus is recalling transaction memory...";
+
+            htmlContent += `
+                <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 shadow-sm hover:border-emerald-500/30 transition-all">
+                    <div class="text-emerald-400 font-bold text-sm mb-3 flex items-center gap-2">
+                        <span class="bg-emerald-500/10 text-emerald-400 w-5 h-5 rounded-md flex items-center justify-center text-xs border border-emerald-500/20">${index + 1}</span>
+                        ⚽ ${item.title}
+                    </div>
+                    
+                    <div class="space-y-2.5 pl-3 border-l-2 border-slate-700">
+                        <div class="text-xs text-gray-400 leading-relaxed">
+                            <span class="text-amber-500 font-semibold">${labelNhanDinh}</span> 
+                            <span class="bg-slate-900/30 px-2 py-0.5 rounded text-gray-200 font-mono font-bold">${item.cauGay}</span>
+                        </div>
+                        
+                        <div class="text-sm text-gray-200 bg-slate-900/50 p-2.5 rounded-lg border border-slate-800 flex gap-2 items-start">
+                            <span class="text-base leading-none mt-0.5">🦫</span>
+                            <div>
+                                <span class="text-emerald-300 font-medium text-xs block mb-0.5">${labelHaiLyPhan}</span>
+                                <span class="italic text-emerald-100/90">${item.haiLy || fallbackComment}</span>
+                            </div>
+                        </div>
+                        ${item.verification}
+                    </div>
+                </div>
+            `;
         });
     } else {
-        htmlContent += `<div class="text-gray-400">Không tìm thấy dữ liệu.</div>`;
+        let chuoiGiaMaForm = cauGayCuaHaiLy
+            .replace(/\[TRẬN\]/gi, `<br><br><span class="text-emerald-400 font-bold">⚽ [TRẬN]</span>`)
+            .replace(/\[MATCH\]/gi, `<br><br><span class="text-emerald-400 font-bold">⚽ [MATCH]</span>`)
+            .replace(/\[CÂU\s+GÁY\]/gi, `<br><span class="text-amber-500 font-medium">🗣️ [CÂU GÁY]</span>`)
+            .replace(/\[ROAST\]/gi, `<br><span class="text-amber-500 font-medium">🗣️ [ROAST]</span>`)
+            .replace(/\[HẢI\s+LY\]/gi, `<br><span class="text-teal-300 italic">🦫 [HẢI LY]</span>`)
+            .replace(/\[COMMENT\]/gi, `<br><span class="text-teal-300 italic">🦫 [COMMENT]</span>`);
+
+        htmlContent += `
+            <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 border-l-4 border-emerald-500 text-sm leading-relaxed text-gray-300 font-sans">
+                <span class="text-amber-400 font-bold block mb-2">${currentLang === "vi" ? "🔄 HẢI LY ĐANG ĐỒNG BỘ DỮ LIỆU CÙNG SẾP:" : "🔄 AGENT DATA MEMORY SYNCING:"}</span>
+                ${chuoiGiaMaForm}
+            </div>
+        `;
     }
+
     htmlContent += `</div>`;
 
     let modal = document.getElementById('walrus-history-modal');
@@ -733,59 +855,35 @@ async function fetchMyPredictions() {
         modal.className = "fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-[9999] p-4 hidden";
         document.body.appendChild(modal);
     }
+
+    const modalHeaderTitle = currentLang === "vi" ? "📜 BẢNG ĐỐI CHIẾU DỰ ĐOÁN & KẾT QUẢ THỰC TẾ" : "📜 PREDICTION VS REAL RESULT VERIFICATION";
+    const modalCloseBtnText = currentLang === "vi" ? "Đóng cửa sổ" : "Close Window";
+
     modal.innerHTML = `
-        <div class="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative">
-            <h3 class="text-emerald-400 font-bold mb-4">📜 BẢNG ĐỐI CHIẾU</h3>
-            <div class="max-h-[65vh] overflow-y-auto">${htmlContent}</div>
-            <button onclick="document.getElementById('walrus-history-modal').classList.add('hidden')" class="mt-5 w-full py-2 bg-emerald-600 text-white rounded-xl font-bold">Đóng</button>
+        <div class="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative text-gray-200 font-sans animate-fade-in">
+            <div class="flex items-center justify-between border-b border-gray-800 pb-3 mb-4">
+                <h3 class="text-emerald-400 font-bold text-base flex items-center gap-2 tracking-wide">
+                    ${modalHeaderTitle}
+                </h3>
+                <span class="text-[10px] bg-slate-800 text-gray-400 px-2 py-0.5 rounded font-mono border border-gray-700">WALRUS AGENT ONSCHAIN</span>
+            </div>
+            
+            <div class="max-h-[65vh] overflow-y-auto pr-2 space-y-4">
+                ${htmlContent}
+            </div>
+            
+            <div class="mt-5 flex justify-end border-t border-gray-800/60 pt-3">
+                <button onclick="document.getElementById('walrus-history-modal').classList.add('hidden')" 
+                        class="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium text-xs transition-all shadow-md shadow-emerald-900/40 tracking-wider">
+                    ${modalCloseBtnText}
+                </button>
+            </div>
         </div>
     `;
+
     modal.classList.remove('hidden');
 }
 window.showMyPredictions = fetchMyPredictions;
-
-
-// ==================== HỆ THỐNG CUSTOM TOAST NOTIFICATION CYBERPUNK THAY THẾ ALERT() ====================
-function showCyberToast(message, type = 'success') {
-    let container = document.getElementById('cyber-toast-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'cyber-toast-container';
-        container.className = "fixed bottom-5 right-5 z-[10000] flex flex-col gap-3 max-w-md w-full pointer-events-none p-4";
-        document.body.appendChild(container);
-    }
-
-    const toast = document.createElement('div');
-    toast.className = "pointer-events-auto transform translate-y-5 opacity-0 transition-all duration-300 font-sans p-4 rounded-xl shadow-2xl flex items-center gap-3 border text-xs font-bold tracking-wide";
-    
-    if (type === 'success') {
-        toast.className += " bg-slate-900/95 border-emerald-500/40 text-emerald-400 shadow-emerald-950/40";
-    } else if (type === 'error') {
-        toast.className += " bg-slate-900/95 border-rose-500/40 text-rose-400 shadow-rose-950/40";
-    } else {
-        toast.className += " bg-slate-900/95 border-amber-500/40 text-amber-400 shadow-amber-950/40";
-    }
-
-    toast.innerHTML = `
-        <div class="flex-1 flex items-center gap-2">
-            <span>${type === 'success' ? '🎉' : type === 'error' ? '❌' : '⚠️'}</span>
-            <span>${message}</span>
-        </div>
-        <button onclick="this.parentElement.remove()" class="text-gray-500 hover:text-gray-300 transition-all ml-2 font-black">×</button>
-    `;
-
-    container.appendChild(toast);
-
-    setTimeout(() => {
-        toast.classList.remove('translate-y-5', 'opacity-0');
-    }, 10);
-
-    setTimeout(() => {
-        toast.classList.add('translate-y-[-20px]', 'opacity-0');
-        setTimeout(() => toast.remove(), 300);
-    }, 3500);
-}
-window.showCyberToast = showCyberToast;
 
 function initApp() {
     updateUINonDynamicText();

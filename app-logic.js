@@ -652,7 +652,12 @@ async function fetchMyPredictions() {
             const haiLy = (block.match(/\[HẢI LY\]([\s\S]*?)$/i)?.[1] || "").trim();
 
             if (title) {
-                records.push({ title, cauGay, haiLy });
+                // Thay thế Đội A / Đội B thành tên gọi rành mạch cho giao diện trực quan
+                let cleanTitle = title
+                    .replace(/Đội\s+A/gi, "🏠 Đội nhà")
+                    .replace(/Đội\s+B/gi, "✈️ Đội khách");
+                
+                records.push({ title: cleanTitle, cauGay, haiLy });
             }
         });
     }
@@ -664,13 +669,11 @@ async function fetchMyPredictions() {
         records.forEach((item, index) => {
             htmlContent += `
                 <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 shadow-sm hover:border-emerald-500/30 transition-all">
-                    <!-- Tiêu đề trận -->
                     <div class="text-emerald-400 font-bold text-sm mb-3 flex items-center gap-2">
                         <span class="bg-emerald-500/10 text-emerald-400 w-5 h-5 rounded-md flex items-center justify-center text-xs border border-emerald-500/20">${index + 1}</span>
                         ⚽ ${item.title}
                     </div>
                     
-                    <!-- Chi tiết thông tin -->
                     <div class="space-y-2.5 pl-3 border-l-2 border-slate-700">
                         <div class="text-xs text-gray-400 leading-relaxed">
                             <span class="text-amber-500 font-semibold">🗣️ Nhận định của sếp:</span> 
@@ -721,7 +724,6 @@ async function fetchMyPredictions() {
 
     modal.innerHTML = `
         <div class="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative text-gray-200 font-sans animate-fade-in">
-            <!-- Header -->
             <div class="flex items-center justify-between border-b border-gray-800 pb-3 mb-4">
                 <h3 class="text-emerald-400 font-bold text-base flex items-center gap-2 tracking-wide">
                     📜 LỊCH SỬ DỰ ĐOÁN & TIÊN TRI
@@ -729,12 +731,10 @@ async function fetchMyPredictions() {
                 <span class="text-[10px] bg-slate-800 text-gray-400 px-2 py-0.5 rounded font-mono border border-gray-700">WALRUS AGENT ONSCHAIN</span>
             </div>
             
-            <!-- Danh sách các ô Card đã được quy hoạch rõ ràng -->
             <div class="max-h-[65vh] overflow-y-auto pr-2 space-y-4">
                 ${htmlContent}
             </div>
             
-            <!-- Footer Close Button -->
             <div class="mt-5 flex justify-end border-t border-gray-800/60 pt-3">
                 <button onclick="document.getElementById('walrus-history-modal').classList.add('hidden')" 
                         class="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium text-xs transition-all shadow-md shadow-emerald-900/40 tracking-wider">

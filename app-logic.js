@@ -470,13 +470,10 @@ async function fetchMyPredictions() {
 
     const aiAgentText = document.getElementById('ai-roast-text');
     let cauGayCuaHaiLy = "";
-    
     if (aiAgentText) {
-        // Lấy lại câu khịa đầy đủ của Hải Ly đang hiển thị trên khung chat
         cauGayCuaHaiLy = aiAgentText.innerText.replace("Hải Ly Tiên Tri:", "").trim();
     }
 
-    // Nếu Hải Ly chưa kịp load hoặc chưa có dữ liệu
     if (!cauGayCuaHaiLy || cauGayCuaHaiLy.includes("Chào sếp") || cauGayCuaHaiLy.includes("Đang chờ")) {
         alert(currentLang === "vi" 
             ? "🦫 Hải Ly báo: Bộ nhớ trống hoặc đang đồng bộ. Sếp thử cược 1 trận để kích hoạt lịch sử nhé!" 
@@ -484,15 +481,47 @@ async function fetchMyPredictions() {
         return;
     }
 
-    // Tự động định dạng câu gáy thành danh sách xuống dòng cho dễ đọc
+    // 1. Định dạng chuỗi văn bản thành danh sách thẻ HTML có icon đẹp mắt
     const lichSuDinhDang = cauGayCuaHaiLy
-        .replace(/-/g, "\n• Trận") // Xuống dòng ở mỗi trận
-        .replace(/Nhìn vào/g, "\n\n💬 Nhận xét tổng quan từ Hải Ly:\nNhìn vào"); // Tách biệt phần nhận xét
+        .replace(/-/g, `<br>• Trận`)
+        .replace(/Nhìn vào/g, `<br><br><span class="text-amber-400 font-bold">💬 Nhận xét tổng quan từ Hải Ly:</span><br>Nhìn vào`);
 
-    // Hiển thị hộp thoại lịch sử hoành tráng cho sếp
-    alert(`📜 LỊCH SỬ DỰ ĐOÁN & LỜI TIÊN TRI CỦA SẾP (ĐỒNG BỘ TỪ WALRUS)\n\n${lichSuDinhDang}`);
+    // 2. Tạo hoặc tái sử dụng cấu trúc Khung Modal đồng bộ giao diện Web tối (Walrus Theme)
+    let modal = document.getElementById('walrus-history-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'walrus-history-modal';
+        // Ép CSS bao phủ mờ toàn màn hình chuẩn UI chuyên nghiệp
+        modal.className = "fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 hidden";
+        document.body.appendChild(modal);
+    }
+
+    // 3. Bơm ruột HTML cấu trúc bo góc, viền neon, màu tối sâu thẳm khớp với app của sếp
+    modal.innerHTML = `
+        <div class="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative animate-fade-in text-gray-200 font-sans">
+            <div class="flex items-center justify-between border-b border-gray-800 pb-3 mb-4">
+                <h3 class="text-emerald-400 font-bold text-base flex items-center gap-2">
+                    📜 LỊCH SỬ DỰ ĐOÁN & LỜI TIÊN TRI
+                </h3>
+                <span class="text-xs text-gray-500 font-mono">WALRUS MEMORY SYNCED</span>
+            </div>
+            
+            <div class="text-sm leading-relaxed max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar text-gray-300">
+                ${lichSuDinhDang}
+            </div>
+            
+            <div class="mt-6 flex justify-end">
+                <button onclick="document.getElementById('walrus-history-modal').classList.add('hidden')" 
+                        class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium text-xs transition-all shadow-md shadow-emerald-900/40">
+                    Đóng cửa sổ
+                </button>
+            </div>
+        </div>
+    `;
+
+    // 4. Kích hoạt mở Popup bung lụa lên màn hình
+    modal.classList.remove('hidden');
 }
-window.showMyPredictions = fetchMyPredictions;
 window.showMyPredictions = fetchMyPredictions;
 
 function initApp() {

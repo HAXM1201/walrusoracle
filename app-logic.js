@@ -133,8 +133,11 @@ async function handleSubmissionWithEffects(matchId, homeScore, awayScore, analys
     }
     launchConfetti();
 
+    // 1. Gọi API sang Backend để vừa lưu Walrus vừa lấy câu trả lời của AI Hải Ly
     const success = await storePredictionOnWalrus(matchId, homeScore, awayScore, analysis);
+    
     if (success) {
+        // 2. Cập nhật lịch sử cục bộ trên trình duyệt
         window.userPredictionMemory.push({
             ownerEmail: currentUser.email,
             matchId: matchId,
@@ -143,8 +146,20 @@ async function handleSubmissionWithEffects(matchId, homeScore, awayScore, analys
             analysis: analysis,
             timestamp: new Date().toISOString()
         });
+        
+        // 3. Ép giao diện đồng bộ trạng thái ngay lập tức
         triggerWalrusMemoryAgent(currentUser.email, currentUser.displayName);
-        alert(currentLang === "vi" ? `🎉 Dự đoán trận ${matchId} thành công!` : `🎉 Prediction saved on Walrus!`);
+        
+        // 4. [NÂNG CẤP XỊN] Hiện luôn lời tiên tri trêu chọc của Hải Ly lên màn hình thay vì alert khô khan
+        const aiAgentText = document.getElementById('ai-roast-text');
+        if (aiAgentText) {
+            // Hiển thị hiệu ứng loading giả lập Hải Ly đang suy nghĩ trong 1 giây
+            aiAgentText.innerHTML = `<em>🦫 Hải Ly Tiên Tri đang đọc Blobs bộ nhớ và soạn văn gáy...</em>`;
+        }
+        
+        alert(currentLang === "vi" ? `🎉 Dự đoán trận ${matchId} đã được ghi vào Walrus thành công!` : `🎉 Prediction saved on Walrus!`);
+    } else {
+        alert(currentLang === "vi" ? "❌ Có lỗi xảy ra khi truyền dữ liệu!" : "❌ Connection error!");
     }
 }
 

@@ -73,7 +73,7 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         .animate-spin { animation: spin 1s linear infinite; }
 
-        /* CSS BẢNG VÀNG NẰM NGANG */
+        /* CSS BẢNG VÀNG TIÊN TRI (NẰM NGANG) */
         #leaderboard-container {
             display: flex;
             flex-direction: row;
@@ -90,8 +90,6 @@
     </style>
 </head>
 <body class="bg-walrus-dark text-gray-100 min-h-screen font-sans antialiased relative overflow-x-hidden">
-
-    <canvas id="effect-canvas" class="absolute top-0 left-0 w-full h-full pointer-events-none z-50"></canvas>
 
     <div id="loading-overlay" class="fixed inset-0 bg-black/90 flex items-center justify-center z-[9999] transition-opacity duration-500">
         <div class="text-center">
@@ -118,13 +116,12 @@
                     <span class="text-[10px] text-worldcup-gold block font-semibold tracking-wider uppercase">World Cup 2026 Edition</span>
                 </div>
             </div>
-
             <div class="flex items-center gap-3">
                 <button onclick="toggleLanguage()" id="langBtn" class="flex items-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-bold rounded-xl border border-gray-700 transition">
                     <img id="langFlag" src="https://flagcdn.com/w20/gb.png" class="w-5 h-3.5 object-cover rounded-sm" alt="English">
                     <span id="langText">EN</span>
                 </button>
-                <button id="googleBtn" onclick="signInWithGoogle()" class="flex items-center gap-3 px-5 py-2.5 bg-white hover:bg-gray-100 text-gray-900 font-semibold rounded-2xl border border-gray-300 transition-all duration-200 shadow-sm">
+                <button id="googleBtn" onclick="signInWithGoogle()" class="flex items-center gap-3 px-5 py-2.5 bg-white hover:bg-gray-100 text-gray-900 font-semibold rounded-2xl border border-gray-300 transition-all shadow-sm">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" class="w-5 h-5" alt="Google">
                     <span id="gmailText">Đăng nhập bằng Google</span>
                 </button>
@@ -132,40 +129,9 @@
                     <i class="fa-solid fa-wallet"></i>
                     <span id="walletText">Kết nối ví Slush</span>
                 </button>
-                <button onclick="window.showMyPredictions()" id="btn-history" class="bg-gray-800 text-walrus-aqua px-4 py-2.5 rounded-xl border border-walrus-aqua/30 text-sm font-bold transition hover:bg-walrus-aqua hover:text-walrus-dark">
-                    <i class="fa-solid fa-clock-rotate-left"></i> 
-                    <span id="btn-history-text">Lịch sử dự đoán</span>
-                </button>
             </div>
         </div>
     </header>
-
-    <section class="hero-bg relative py-16 sm:py-24 border-b border-gray-800/50 overflow-hidden">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                <div class="lg:col-span-5 text-left space-y-6">
-                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-walrus-aqua/10 text-walrus-aqua text-xs font-semibold uppercase tracking-wider border border-walrus-aqua/20">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Walrus Mainnet Connected
-                    </span>
-                    <h1 id="hero-title" class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
-                        Gáy Khét World Cup <br/>
-                        <span class="gradient-text">Nhận Thưởng Lớn</span>
-                    </h1>
-                    <p id="hero-desc" class="text-gray-300 text-sm sm:text-base leading-relaxed">
-                        Dự đoán kết quả từ 104 trận đấu chính thức của giải vô địch bóng đá thế giới FIFA World Cup 2026. Nhận định của bạn sẽ được lưu vĩnh viễn trên hạ tầng Walrus Blobs Storage.
-                    </p>
-                </div>
-                <div class="lg:col-span-7 flex justify-center">
-                    <div class="relative group max-w-2xl w-full">
-                        <div class="absolute -inset-1.5 bg-gradient-to-r from-walrus-aqua to-walrus-lightAqua rounded-2xl blur opacity-30 group-hover:opacity-70 transition duration-1000"></div>
-                        <div class="relative bg-walrus-dark rounded-2xl overflow-hidden shadow-2xl border border-gray-700/50">
-                            <img src="wc1.png" alt="Walrus World Cup 2026 Centerpiece" class="w-full h-auto object-cover">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
         <section class="space-y-6">

@@ -224,7 +224,7 @@ async function triggerWalrusMemoryAgent(email, displayName) {
     const aiAvatarBox = document.getElementById('ai-avatar-box');
     if (!aiStatusText || !aiAgentText) return;
 
-    aiStatusText.innerText = currentLang === "vi" ? "🧠 Đang đồng bộ bộ nhớ Walrus..." : "🧠 Syncing Walrus memory...";
+    aiStatusText.innerText = currentLang === "vi" ? "🧠 Đang đồng bộ..." : "🧠 Syncing...";
     if (aiAvatarBox) aiAvatarBox.innerText = "⏳";
 
     try {
@@ -233,60 +233,54 @@ async function triggerWalrusMemoryAgent(email, displayName) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 userIdentifier: email,
-                userText: "Tôi muốn kiểm tra lịch sử cược của mình",
+                userText: "Lịch sử dự đoán",
                 displayName: displayName,
-                lang: currentLang // <--- ĐỒNG BỘ TRUYỀN NGÔN NGỮ LÊN BACKEND ĐỂ AI PHẢN HỒI CHUẨN NGÔN NGỮ
+                lang: currentLang 
             })
         });
 
-        if (response.ok) {
-            const data = await response.json();
-            if (aiAvatarBox) aiAvatarBox.innerText = "🦫";
-            aiStatusText.innerText = currentLang === "vi" ? "✅ Bộ nhớ Walrus: Đã đồng bộ" : "✅ Walrus Memory: Synced";
+        if (!response.ok) throw new Error("Backend error");
+        const data = await response.json();
+        
+        // 1. Hiển thị lời gáy (Bất chấp ngôn ngữ)
+        aiAgentText.innerHTML = `<strong>${currentLang === "vi" ? "Hải Ly Tiên Tri" : "Walrus Oracle"}:</strong> ${data.botReply}`;
+        if (aiAvatarBox) aiAvatarBox.innerText = "🦫";
+        aiStatusText.innerText = currentLang === "vi" ? "✅ Bộ nhớ đã đồng bộ" : "✅ Walrus Memory: Synced";
+
+        // 2. [FIXED] Quét dữ liệu THẦN TỐC (Hỗ trợ song ngữ)
+        if (data.botReply) {
+            // Tách bằng bất kỳ dòng nào có chứa tiêu đề [TRẬN] hoặc [MATCH]
+            const blocks = data.botReply.split(/\[TRẬN\]|\[MATCH\]/i);
             
-            // 1. Hiển thị lời gáy của Hải Ly lên khung chat bên phải
-            aiAgentText.innerHTML = `<strong>${currentLang === "vi" ? "Hải Ly Tiên Tri" : "Walrus Oracle"}:</strong> ${data.botReply}`;
+            blocks.forEach(block => {
+                if (!block.trim()) return;
 
-            // 2. [THẦN TỐC & ĐA NGÔN NGỮ] Quét sạch dữ liệu thô để nạp mảng so sánh đối chiếu toán học
-            if (data.botReply && window.userPredictionMemory.length === 0) {
-                let textChuanHoa = data.botReply
-                    .replace(/\[TRẬN\]/gi, "\n[TRẬN]")
-                    .replace(/\[MATCH\]/gi, "\n[TRẬN]");
+                // Regex tìm ID trận và Tỷ số (Dùng dấu ngoặc đơn để bắt số)
+                const idMatch = block.match(/(\d+)/); 
+                const scoreMatch = block.match(/(\d+)\s*-\s*(\d+)/);
 
-                const blocks = textChuanHoa.split('\n');
-                
-                blocks.forEach(block => {
-                    if (!block.trim()) return;
+                if (idMatch && scoreMatch) {
+                    const mId = idMatch[1].trim();
+                    const hScore = parseInt(scoreMatch[1]);
+                    const aScore = parseInt(scoreMatch[2]);
 
-                    const idMatch = block.match(/(?:Trận\s+số\s+|Trận\s+|Match\s+)(\d+)/i);
-                    const scoreMatch = block.match(/(?:dự\s+đoán|tỷ\s+số|:\s*|predict)\[?(\d+)\]?\s*-\s*\[?(\d+)\]?/i) || block.match(/\[?(\d+)\]?\s*-\s*\[?(\d+)\]?/);
-
-                    if (idMatch && scoreMatch) {
-                        const mId = idMatch[1].trim();
-                        const hScore = parseInt(scoreMatch[1]);
-                        const aScore = parseInt(scoreMatch[2]);
-
-                        const isExisted = window.userPredictionMemory.some(p => String(p.matchId) === String(mId) && p.ownerEmail === email);
-                        
-                        if (!isExisted) {
-                            window.userPredictionMemory.push({
-                                ownerEmail: email,
-                                matchId: mId,
-                                homeScore: hScore,
-                                awayScore: aScore,
-                                analysis: currentLang === "vi" ? "Đồng bộ từ Walrus Agent" : "Synced from Walrus Agent",
-                                timestamp: new Date().toISOString()
-                            });
-                        }
+                    const isExisted = window.userPredictionMemory.some(p => String(p.matchId) === String(mId));
+                    if (!isExisted) {
+                        window.userPredictionMemory.push({
+                            ownerEmail: email,
+                            matchId: mId,
+                            homeScore: hScore,
+                            awayScore: aScore,
+                            analysis: "Synced from Oracle",
+                            timestamp: new Date().toISOString()
+                        });
                     }
-                });
-                console.log("🔄 [Walrus Memory Sync Success]:", window.userPredictionMemory);
-            }
-        } else {
-            throw new Error("Backend error");
+                }
+            });
+            console.log("🔄 [Walrus Memory Sync Success]:", window.userPredictionMemory);
         }
     } catch (error) {
-        console.error("Lỗi đồng bộ lịch sử:", error);
+        console.error("Lỗi đồng bộ:", error);
         if (aiAvatarBox) aiAvatarBox.innerText = "🦫";
         aiStatusText.innerText = currentLang === "vi" ? "⚠️ Lỗi đồng bộ" : "⚠️ Sync failed";
     }

@@ -248,37 +248,41 @@ async function triggerWalrusMemoryAgent(email, displayName) {
         aiStatusText.innerText = currentLang === "vi" ? "✅ Bộ nhớ đã đồng bộ" : "✅ Walrus Memory: Synced";
 
         // 2. [FIXED] Quét dữ liệu THẦN TỐC (Hỗ trợ song ngữ)
-        if (data.botReply) {
-            // Tách bằng bất kỳ dòng nào có chứa tiêu đề [TRẬN] hoặc [MATCH]
-            const blocks = data.botReply.split(/\[TRẬN\]|\[MATCH\]/i);
-            
-            blocks.forEach(block => {
-                if (!block.trim()) return;
+        // Thay đoạn quét blocks trong hàm triggerWalrusMemoryAgent bằng đoạn này:
+if (data.botReply) {
+    // Tách khối dựa trên các thẻ tiêu đề (dù là tiếng Anh hay Việt)
+    const blocks = data.botReply.split(/\[TRẬN\]|\[MATCH\]/i);
+    
+    blocks.forEach(block => {
+        if (!block.trim()) return;
 
-                // Regex tìm ID trận và Tỷ số (Dùng dấu ngoặc đơn để bắt số)
-                const idMatch = block.match(/(\d+)/); 
-                const scoreMatch = block.match(/(\d+)\s*-\s*(\d+)/);
+        // Tìm ID trận đấu: Chấp nhận mọi định dạng "Trận số 18", "Match 18", hoặc chỉ cần thấy số 18
+        const idMatch = block.match(/(?:Trận\s+số|Trận|Match)\s*(\d+)/i) || block.match(/(\d+)/);
+        // Tìm tỷ số: Tìm cặp số cách nhau bởi dấu gạch ngang
+        const scoreMatch = block.match(/(\d+)\s*-\s*(\d+)/);
 
-                if (idMatch && scoreMatch) {
-                    const mId = idMatch[1].trim();
-                    const hScore = parseInt(scoreMatch[1]);
-                    const aScore = parseInt(scoreMatch[2]);
+        if (idMatch && scoreMatch) {
+            const mId = idMatch[1].trim();
+            const hScore = parseInt(scoreMatch[1]);
+            const aScore = parseInt(scoreMatch[2]);
 
-                    const isExisted = window.userPredictionMemory.some(p => String(p.matchId) === String(mId));
-                    if (!isExisted) {
-                        window.userPredictionMemory.push({
-                            ownerEmail: email,
-                            matchId: mId,
-                            homeScore: hScore,
-                            awayScore: aScore,
-                            analysis: "Synced from Oracle",
-                            timestamp: new Date().toISOString()
-                        });
-                    }
-                }
-            });
-            console.log("🔄 [Walrus Memory Sync Success]:", window.userPredictionMemory);
+            // Lưu vào memory nếu chưa tồn tại
+            const isExisted = window.userPredictionMemory.some(p => String(p.matchId) === String(mId));
+            if (!isExisted) {
+                window.userPredictionMemory.push({
+                    ownerEmail: email,
+                    matchId: mId,
+                    homeScore: hScore,
+                    awayScore: aScore,
+                    analysis: data.botReply, // Lưu luôn cả comment của AI vào để hiện lên
+                    timestamp: new Date().toISOString()
+                });
+            }
         }
+    });
+    console.log("🔄 [Walrus Memory Sync Success]:", window.userPredictionMemory);
+}
+      
     } catch (error) {
         console.error("Lỗi đồng bộ:", error);
         if (aiAvatarBox) aiAvatarBox.innerText = "🦫";

@@ -221,49 +221,71 @@ function resetAiAgentUI() {
 async function triggerWalrusMemoryAgent(email, displayName) {
     const aiStatusText = document.getElementById('ai-status-text');
     const aiAgentText = document.getElementById('ai-roast-text');
+    const aiAvatarBox = document.getElementById('ai-avatar-box');
     if (!aiStatusText || !aiAgentText) return;
+
+    aiStatusText.innerText = currentLang === "vi" ? "🧠 Đang đồng bộ..." : "🧠 Syncing...";
+    if (aiAvatarBox) aiAvatarBox.innerText = "⏳";
 
     try {
         const response = await fetch(`${CUSTOM_PUBLISHER_URL}/api/ai-agent`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userIdentifier: email, userText: "Lịch sử dự đoán", displayName, lang: currentLang })
+            body: JSON.stringify({
+                userIdentifier: email,
+                userText: "Lịch sử dự đoán",
+                displayName: displayName,
+                lang: currentLang 
+            })
         });
 
+        if (!response.ok) throw new Error("Backend error");
         const data = await response.json();
+        
+        // 1. Hiển thị lời gáy (Bất chấp ngôn ngữ)
         aiAgentText.innerHTML = `<strong>${currentLang === "vi" ? "Hải Ly Tiên Tri" : "Walrus Oracle"}:</strong> ${data.botReply}`;
+        if (aiAvatarBox) aiAvatarBox.innerText = "🦫";
+        aiStatusText.innerText = currentLang === "vi" ? "✅ Bộ nhớ đã đồng bộ" : "✅ Walrus Memory: Synced";
 
-        // CƠ CHẾ QUÉT DỮ LIỆU CẢI TIẾN
+        // 2. [FIXED] Quét dữ liệu THẦN TỐC (Hỗ trợ song ngữ)
         if (data.botReply) {
-            // 1. Thử xem có phải là JSON không (dữ liệu lưu từ bản mới)
-            try {
-                const parsed = JSON.parse(data.botReply);
-                if (parsed.matchId) {
-                    window.userPredictionMemory.push(parsed);
-                }
-            } catch (e) {
-                // 2. Nếu không phải JSON, dùng Regex cũ (cho dữ liệu cũ)
-                const blocks = data.botReply.split(/\[TRẬN\]|\[MATCH\]/i);
-                blocks.forEach(block => {
-                    if (!block.trim()) return;
-                    const idMatch = block.match(/(\d+)/);
-                    const scoreMatch = block.match(/(\d+)\s*-\s*(\d+)/);
-                    if (idMatch && scoreMatch) {
+            // Tách bằng bất kỳ dòng nào có chứa tiêu đề [TRẬN] hoặc [MATCH]
+            const blocks = data.botReply.split(/\[TRẬN\]|\[MATCH\]/i);
+            
+            blocks.forEach(block => {
+                if (!block.trim()) return;
+
+                // Regex tìm ID trận và Tỷ số (Dùng dấu ngoặc đơn để bắt số)
+                const idMatch = block.match(/(\d+)/); 
+                const scoreMatch = block.match(/(\d+)\s*-\s*(\d+)/);
+
+                if (idMatch && scoreMatch) {
+                    const mId = idMatch[1].trim();
+                    const hScore = parseInt(scoreMatch[1]);
+                    const aScore = parseInt(scoreMatch[2]);
+
+                    const isExisted = window.userPredictionMemory.some(p => String(p.matchId) === String(mId));
+                    if (!isExisted) {
                         window.userPredictionMemory.push({
-                            matchId: idMatch[1],
-                            homeScore: scoreMatch[1],
-                            awayScore: scoreMatch[2],
-                            analysis: block
+                            ownerEmail: email,
+                            matchId: mId,
+                            homeScore: hScore,
+                            awayScore: aScore,
+                            analysis: "Synced from Oracle",
+                            timestamp: new Date().toISOString()
                         });
                     }
-                });
-            }
-            console.log("🔄 [Dữ liệu đã nạp]:", window.userPredictionMemory);
+                }
+            });
+            console.log("🔄 [Walrus Memory Sync Success]:", window.userPredictionMemory);
         }
     } catch (error) {
         console.error("Lỗi đồng bộ:", error);
+        if (aiAvatarBox) aiAvatarBox.innerText = "🦫";
+        aiStatusText.innerText = currentLang === "vi" ? "⚠️ Lỗi đồng bộ" : "⚠️ Sync failed";
     }
 }
+
 // ==================== FETCH DATA ĐỘNG GITHUB OPENFOOTBALL ====================
 async function fetchWorldCupData() {
     const aiStatusText = document.getElementById('ai-status-text');

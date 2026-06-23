@@ -680,20 +680,31 @@ function renderLeaderboard() {
 
 function updateUINonDynamicText() {
     const lang = translations[currentLang];
-    document.getElementById('btn-history-text').innerText = lang.btnHistory;
-    document.getElementById('hero-title').innerHTML = lang.heroTitle;
-    document.getElementById('hero-desc').innerText = lang.heroDesc;
-    document.getElementById('section-groups-title').innerHTML = lang.secGroups;
-    document.getElementById('section-matches-title').innerHTML = lang.secMatches;
-    document.getElementById('section-ai-title').innerHTML = lang.secAi;
-    document.getElementById('section-prizes-title').innerHTML = lang.secPrizes;
-    document.getElementById('section-leaderboard-title').innerHTML = lang.secLeaderboard;
-    document.getElementById('tab-vong-bang').innerText = lang.tabVongBang;
-    document.getElementById('tab-vong-32').innerText = lang.tabVong32;
-    document.getElementById('tab-vong-16').innerText = lang.tabVong16;
-    document.getElementById('tab-tu-ket').innerText = lang.tabTuKet;
-    document.getElementById('tab-ban-ket').innerText = lang.tabBanKet;
-    document.getElementById('tab-chung-ket').innerText = lang.tabChungKet;
+    
+    // Hàm helper để gán text an toàn
+    const setInner = (id, content) => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = content;
+    };
+    const setText = (id, content) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = content;
+    };
+
+    setText('btn-history-text', lang.btnHistory);
+    setInner('hero-title', lang.heroTitle);
+    setText('hero-desc', lang.heroDesc);
+    setInner('section-groups-title', lang.secGroups);
+    setInner('section-matches-title', lang.secMatches);
+    setInner('section-ai-title', lang.secAi);
+    setInner('section-prizes-title', lang.secPrizes);
+    setInner('section-leaderboard-title', lang.secLeaderboard);
+    setText('tab-vong-bang', lang.tabVongBang);
+    setText('tab-vong-32', lang.tabVong32);
+    setText('tab-vong-16', lang.tabVong16);
+    setText('tab-tu-ket', lang.tabTuKet);
+    setText('tab-ban-ket', lang.tabBanKet);
+    setText('tab-chung-ket', lang.tabChungKet);
 }
 
 function toggleLanguage() {

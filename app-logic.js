@@ -242,43 +242,45 @@ async function triggerWalrusMemoryAgent(email, displayName) {
         if (!response.ok) throw new Error("Backend error");
         const data = await response.json();
         
-        // 1. Hiển thị lời gáy (Bất chấp ngôn ngữ)
+        // 1. Hiển thị lời gáy
         aiAgentText.innerHTML = `<strong>${currentLang === "vi" ? "Hải Ly Tiên Tri" : "Walrus Oracle"}:</strong> ${data.botReply}`;
         if (aiAvatarBox) aiAvatarBox.innerText = "🦫";
         aiStatusText.innerText = currentLang === "vi" ? "✅ Bộ nhớ đã đồng bộ" : "✅ Walrus Memory: Synced";
 
-        // 2. [FIXED] Quét dữ liệu THẦN TỐC (Hỗ trợ song ngữ)
+        // 2. Quét dữ liệu và nạp mảng
         if (data.botReply) {
-            // Tách bằng bất kỳ dòng nào có chứa tiêu đề [TRẬN] hoặc [MATCH]
             const blocks = data.botReply.split(/\[TRẬN\]|\[MATCH\]/i);
             
             blocks.forEach(block => {
                 if (!block.trim()) return;
 
-                // Regex tìm ID trận và Tỷ số (Dùng dấu ngoặc đơn để bắt số)
-                const idMatch = block.match(/(\d+)/); 
+                const idMatch = block.match(/(?:Trận\s+số|Trận|Match)\s*(\d+)/i) || block.match(/(\d+)/);
                 const scoreMatch = block.match(/(\d+)\s*-\s*(\d+)/);
 
                 if (idMatch && scoreMatch) {
-                    const mId = idMatch[1].trim();
-                    const hScore = parseInt(scoreMatch[1]);
-                    const aScore = parseInt(scoreMatch[2]);
-
-                    const isExisted = window.userPredictionMemory.some(p => String(p.matchId) === String(mId));
+                    const mId = idMatch[1] || idMatch[0];
+                    const isExisted = window.userPredictionMemory.some(p => String(p.matchId) === String(mId.trim()));
+                    
                     if (!isExisted) {
                         window.userPredictionMemory.push({
                             ownerEmail: email,
-                            matchId: mId,
-                            homeScore: hScore,
-                            awayScore: aScore,
-                            analysis: "Synced from Oracle",
+                            matchId: mId.trim(),
+                            homeScore: parseInt(scoreMatch[1]),
+                            awayScore: parseInt(scoreMatch[2]),
+                            analysis: data.botReply,
                             timestamp: new Date().toISOString()
                         });
                     }
                 }
             });
             console.log("🔄 [Walrus Memory Sync Success]:", window.userPredictionMemory);
+            
+            // 3. GỌI NGAY HÀM CẬP NHẬT BẢNG VÀNG
+            if (typeof renderLeaderboardFromWalrus === 'function') {
+                renderLeaderboardFromWalrus();
+            }
         }
+        
     } catch (error) {
         console.error("Lỗi đồng bộ:", error);
         if (aiAvatarBox) aiAvatarBox.innerText = "🦫";
@@ -286,7 +288,42 @@ async function triggerWalrusMemoryAgent(email, displayName) {
     }
 }
 
-// ==================== FETCH DATA ĐỘNG GITHUB OPENFOOTBALL ====================
+function renderLeaderboardFromWalrus() {
+    const container = document.getElementById('leaderboard-container');
+    if (!container) return;
+    
+    // Lấy dữ liệu từ bộ nhớ của Walrus mà ta đã nạp vào trước đó
+    const data = window.userPredictionMemory; 
+    container.innerHTML = ''; // Làm sạch bảng
+
+    data.forEach((item, index) => {
+        const row = document.createElement('div');
+        row.className = "bg-slate-900/60 border border-slate-800 rounded-2xl p-4 mb-3";
+        
+        row.onclick = () => {
+        
+        alert("Chi tiết dự đoán: " + item.analysis);
+        };
+        
+        row.innerHTML = `
+            <div class="flex items-center gap-4">
+                <span class="text-xl font-black text-gray-500 w-8">${index + 1}</span>
+                <div class="w-10 h-10 rounded-full bg-emerald-900 flex items-center justify-center font-bold text-emerald-400 border border-emerald-500">
+                    ${item.ownerEmail ? item.ownerEmail.charAt(0).toUpperCase() : 'G'}
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm font-semibold text-gray-200">
+                        Dự đoán: ${item.matchId ? 'Trận ' + item.matchId : 'Thông tin trận'}
+                    </p>
+                    <p class="text-xs text-gray-400 italic">
+                        "${item.analysis.substring(0, 50)}..."
+                    </p>
+                </div>
+            </div>
+        `;
+        container.appendChild(row);
+    });
+}
 async function fetchWorldCupData() {
     const aiStatusText = document.getElementById('ai-status-text');
     if (aiStatusText) aiStatusText.innerText = translations[currentLang].aiConnecting;

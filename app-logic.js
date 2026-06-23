@@ -170,7 +170,6 @@ const CUSTOM_PUBLISHER_URL = "https://walrus-backend-production.up.railway.app";
 async function storePredictionOnWalrus(matchId, scoreA, scoreB, analysis) {
     if (!currentUser) return false;
     
-    // 1. Hiện popup ngay khi bắt đầu nộp
     showSuccessPopup("Đang chờ Hải Ly xử lý...");
 
     const userText = `Trận ${matchId} (Tỷ số dự đoán: ${scoreA}-${scoreB}). Nhận định: ${analysis || "Không có"}`;
@@ -179,23 +178,31 @@ async function storePredictionOnWalrus(matchId, scoreA, scoreB, analysis) {
         const response = await fetch(`${CUSTOM_PUBLISHER_URL}/api/ai-agent`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ /* ... dữ liệu như cũ ... */ })
+            body: JSON.stringify({
+                userIdentifier: currentUser.email,
+                userText: userText,
+                displayName: currentUser.displayName,
+                lang: currentLang
+            })
         });
+
+        if (!response.ok) throw new Error("Backend Error");
 
         const data = await response.json();
 
-        // 2. Cập nhật dữ liệu vào mảng local
-        window.userPredictionMemory.push({ /* ... */ });
+        // Cập nhật Local
+        window.userPredictionMemory.push({
+            ownerEmail: currentUser.email,
+            matchId: matchId,
+            analysis: data.botReply,
+            timestamp: new Date().toISOString()
+        });
 
-        // 3. Refresh giao diện
         triggerWalrusMemoryAgent(currentUser.email, currentUser.displayName);
-
-        // 4. Xóa popup ngay khi dữ liệu đã hiện xong trên màn hình
         hideSuccessPopup();
-        
         return true;
     } catch (error) {
-        hideSuccessPopup(); // Phải xóa cả khi lỗi
+        hideSuccessPopup();
         console.error("Publisher Error:", error);
         return false;
     }
@@ -629,7 +636,7 @@ function filterMatches(type) {
     });
     renderMatches(type);
 }
-
+window.filterMatches = filterMatches;
 function renderLeaderboard() {
     const container = document.getElementById('leaderboard-container');
     if (!container) return;

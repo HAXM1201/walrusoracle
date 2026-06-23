@@ -166,30 +166,47 @@ async function handleSubmissionWithEffects(matchId, homeScore, awayScore, analys
 }
 
 const CUSTOM_PUBLISHER_URL = "https://walrus-backend-production.up.railway.app";
+
 async function storePredictionOnWalrus(matchId, scoreA, scoreB, analysis) {
     if (!currentUser) return false;
+
     const userText = `Trận ${matchId} (Tỷ số dự đoán: ${scoreA}-${scoreB}). Nhận định: ${analysis || "Không có"}`;
+    
     try {
-        // Sau khi gửi dự đoán thành công cho Backend:
-const response = await fetch(`${CUSTOM_PUBLISHER_URL}/api/ai-agent`, { ... });
-const data = await response.json();
+        // Gửi dự đoán lên Backend
+        const response = await fetch(`${CUSTOM_PUBLISHER_URL}/api/ai-agent`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userIdentifier: currentUser.email,
+                userText: userText,
+                displayName: currentUser.displayName,
+                lang: "vi"
+            })
+        });
 
-// 1. Đẩy ngay dữ liệu mới vào mảng local để giao diện cập nhật ngay
-window.userPredictionMemory.push({
-    ownerEmail: currentUser.email,
-    matchId: userText.match(/\d+/)?.[0] || "X",
-    analysis: data.botReply
-}); 
-triggerWalrusMemoryAgent(currentUser.email, currentUser.displayName);
+        if (!response.ok) throw new Error("Gửi dự đoán thất bại");
 
+        const data = await response.json();
 
-        return response.ok;
+        // 1. Cập nhật vào mảng Local ngay lập tức
+        if (!window.userPredictionMemory) window.userPredictionMemory = [];
+        
+        window.userPredictionMemory.push({
+            ownerEmail: currentUser.email,
+            matchId: matchId,
+            analysis: data.botReply
+        });
+
+        // 2. Refresh lại giao diện ngay lập tức
+        triggerWalrusMemoryAgent(currentUser.email, currentUser.displayName);
+
+        return true;
     } catch (error) {
         console.error("Publisher Error:", error);
         return false;
     }
 }
-
 function resetAiAgentUI() {
     const aiStatusText = document.getElementById('ai-status-text');
     const aiAgentText = document.getElementById('ai-roast-text');

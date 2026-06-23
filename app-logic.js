@@ -292,36 +292,27 @@ function renderLeaderboardFromWalrus() {
     const container = document.getElementById('leaderboard-container');
     if (!container) return;
     
-    // Lấy dữ liệu từ bộ nhớ của Walrus mà ta đã nạp vào trước đó
     const data = window.userPredictionMemory; 
-    container.innerHTML = ''; // Làm sạch bảng
+    container.innerHTML = ''; 
 
     data.forEach((item, index) => {
-        const row = document.createElement('div');
-        row.className = "bg-slate-900/60 border border-slate-800 rounded-2xl p-4 mb-3";
+        const card = document.createElement('div');
+        // Thêm class 'prediction-card' để ăn CSS nằm ngang
+        card.className = "prediction-card bg-slate-900/80 border border-slate-700 rounded-xl p-3 cursor-pointer hover:border-emerald-500 transition-all";
         
-        row.onclick = () => {
-        
-        alert("Chi tiết dự đoán: " + item.analysis);
-        };
-        
-        row.innerHTML = `
-            <div class="flex items-center gap-4">
-                <span class="text-xl font-black text-gray-500 w-8">${index + 1}</span>
-                <div class="w-10 h-10 rounded-full bg-emerald-900 flex items-center justify-center font-bold text-emerald-400 border border-emerald-500">
+        card.innerHTML = `
+            <div class="flex items-center gap-2 mb-2">
+                <span class="text-xs font-bold text-gray-500">#${index + 1}</span>
+                <div class="w-6 h-6 rounded-full bg-emerald-900 flex items-center justify-center text-[10px] font-bold text-emerald-400">
                     ${item.ownerEmail ? item.ownerEmail.charAt(0).toUpperCase() : 'G'}
                 </div>
-                <div class="flex-1">
-                    <p class="text-sm font-semibold text-gray-200">
-                        Dự đoán: ${item.matchId ? 'Trận ' + item.matchId : 'Thông tin trận'}
-                    </p>
-                    <p class="text-xs text-gray-400 italic">
-                        "${item.analysis.substring(0, 50)}..."
-                    </p>
-                </div>
+                <span class="text-xs font-semibold text-gray-200 truncate">Trận ${item.matchId}</span>
             </div>
+            <p class="text-[11px] text-gray-300 italic truncate">"${item.analysis.substring(0, 40)}..."</p>
         `;
-        container.appendChild(row);
+
+        card.onclick = () => alert("Chi tiết: " + item.analysis);
+        container.appendChild(card);
     });
 }
 async function fetchWorldCupData() {

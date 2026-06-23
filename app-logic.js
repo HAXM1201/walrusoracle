@@ -179,11 +179,10 @@ window.userPredictionMemory.push({
     ownerEmail: currentUser.email,
     matchId: userText.match(/\d+/)?.[0] || "X",
     analysis: data.botReply
-});
-
-// 2. Gọi lại hàm load dữ liệu để nó refresh bảng lịch sử ngay lập tức
+}); 
 triggerWalrusMemoryAgent(currentUser.email, currentUser.displayName);
-// -------------------------
+
+
         return response.ok;
     } catch (error) {
         console.error("Publisher Error:", error);

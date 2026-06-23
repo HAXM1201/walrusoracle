@@ -242,45 +242,43 @@ async function triggerWalrusMemoryAgent(email, displayName) {
         if (!response.ok) throw new Error("Backend error");
         const data = await response.json();
         
-        // 1. Hiển thị lời gáy
+        // 1. Hiển thị lời gáy (Bất chấp ngôn ngữ)
         aiAgentText.innerHTML = `<strong>${currentLang === "vi" ? "Hải Ly Tiên Tri" : "Walrus Oracle"}:</strong> ${data.botReply}`;
         if (aiAvatarBox) aiAvatarBox.innerText = "🦫";
         aiStatusText.innerText = currentLang === "vi" ? "✅ Bộ nhớ đã đồng bộ" : "✅ Walrus Memory: Synced";
 
-        // 2. Quét dữ liệu và nạp mảng
+        // 2. [FIXED] Quét dữ liệu THẦN TỐC (Hỗ trợ song ngữ)
         if (data.botReply) {
+            // Tách bằng bất kỳ dòng nào có chứa tiêu đề [TRẬN] hoặc [MATCH]
             const blocks = data.botReply.split(/\[TRẬN\]|\[MATCH\]/i);
             
             blocks.forEach(block => {
                 if (!block.trim()) return;
 
-                const idMatch = block.match(/(?:Trận\s+số|Trận|Match)\s*(\d+)/i) || block.match(/(\d+)/);
+                // Regex tìm ID trận và Tỷ số (Dùng dấu ngoặc đơn để bắt số)
+                const idMatch = block.match(/(\d+)/); 
                 const scoreMatch = block.match(/(\d+)\s*-\s*(\d+)/);
 
                 if (idMatch && scoreMatch) {
-                    const mId = idMatch[1] || idMatch[0];
-                    const isExisted = window.userPredictionMemory.some(p => String(p.matchId) === String(mId.trim()));
-                    
+                    const mId = idMatch[1].trim();
+                    const hScore = parseInt(scoreMatch[1]);
+                    const aScore = parseInt(scoreMatch[2]);
+
+                    const isExisted = window.userPredictionMemory.some(p => String(p.matchId) === String(mId));
                     if (!isExisted) {
                         window.userPredictionMemory.push({
                             ownerEmail: email,
-                            matchId: mId.trim(),
-                            homeScore: parseInt(scoreMatch[1]),
-                            awayScore: parseInt(scoreMatch[2]),
-                            analysis: data.botReply,
+                            matchId: mId,
+                            homeScore: hScore,
+                            awayScore: aScore,
+                            analysis: "Synced from Oracle",
                             timestamp: new Date().toISOString()
                         });
                     }
                 }
             });
             console.log("🔄 [Walrus Memory Sync Success]:", window.userPredictionMemory);
-            
-            // 3. GỌI NGAY HÀM CẬP NHẬT BẢNG VÀNG
-            if (typeof renderLeaderboardFromWalrus === 'function') {
-                renderLeaderboardFromWalrus();
-            }
         }
-        
     } catch (error) {
         console.error("Lỗi đồng bộ:", error);
         if (aiAvatarBox) aiAvatarBox.innerText = "🦫";
@@ -288,33 +286,7 @@ async function triggerWalrusMemoryAgent(email, displayName) {
     }
 }
 
-function renderLeaderboardFromWalrus() {
-    const container = document.getElementById('leaderboard-container');
-    if (!container) return;
-    
-    const data = window.userPredictionMemory; 
-    container.innerHTML = ''; 
-
-    data.forEach((item, index) => {
-        const card = document.createElement('div');
-        // Thêm class 'prediction-card' để ăn CSS nằm ngang
-        card.className = "prediction-card bg-slate-900/80 border border-slate-700 rounded-xl p-3 cursor-pointer hover:border-emerald-500 transition-all";
-        
-        card.innerHTML = `
-            <div class="flex items-center gap-2 mb-2">
-                <span class="text-xs font-bold text-gray-500">#${index + 1}</span>
-                <div class="w-6 h-6 rounded-full bg-emerald-900 flex items-center justify-center text-[10px] font-bold text-emerald-400">
-                    ${item.ownerEmail ? item.ownerEmail.charAt(0).toUpperCase() : 'G'}
-                </div>
-                <span class="text-xs font-semibold text-gray-200 truncate">Trận ${item.matchId}</span>
-            </div>
-            <p class="text-[11px] text-gray-300 italic truncate">"${item.analysis.substring(0, 40)}..."</p>
-        `;
-
-        card.onclick = () => alert("Chi tiết: " + item.analysis);
-        container.appendChild(card);
-    });
-}
+// ==================== FETCH DATA ĐỘNG GITHUB OPENFOOTBALL ====================
 async function fetchWorldCupData() {
     const aiStatusText = document.getElementById('ai-status-text');
     if (aiStatusText) aiStatusText.innerText = translations[currentLang].aiConnecting;
@@ -631,19 +603,7 @@ function renderMatches(filterType = 'vong-bang') {
         });
     });
 }
-function createGroupCardHTML(groupName, teams) {
-    let teamsHTML = teams.map(t => `
-        <div class="flex items-center gap-2 py-1">
-            <img src="https://flagcdn.com/w20/${t.code}.png" class="w-5 h-3 object-cover rounded-sm">
-            <span class="truncate">${t.name}</span>
-        </div>
-    `).join('');
-    
-    return `
-        <div class="font-bold text-walrus-aqua mb-2 uppercase tracking-wider">${groupName}</div>
-        <div class="space-y-1">${teamsHTML}</div>
-    `;
-}
+
 function renderGroups() {
     const container = document.getElementById('groups-container');
     if (!container) return;
@@ -692,31 +652,20 @@ function renderLeaderboard() {
 
 function updateUINonDynamicText() {
     const lang = translations[currentLang];
-    
-    // Hàm helper để gán text an toàn
-    const setInner = (id, content) => {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = content;
-    };
-    const setText = (id, content) => {
-        const el = document.getElementById(id);
-        if (el) el.innerText = content;
-    };
-
-    setText('btn-history-text', lang.btnHistory);
-    setInner('hero-title', lang.heroTitle);
-    setText('hero-desc', lang.heroDesc);
-    setInner('section-groups-title', lang.secGroups);
-    setInner('section-matches-title', lang.secMatches);
-    setInner('section-ai-title', lang.secAi);
-    setInner('section-prizes-title', lang.secPrizes);
-    setInner('section-leaderboard-title', lang.secLeaderboard);
-    setText('tab-vong-bang', lang.tabVongBang);
-    setText('tab-vong-32', lang.tabVong32);
-    setText('tab-vong-16', lang.tabVong16);
-    setText('tab-tu-ket', lang.tabTuKet);
-    setText('tab-ban-ket', lang.tabBanKet);
-    setText('tab-chung-ket', lang.tabChungKet);
+    document.getElementById('btn-history-text').innerText = lang.btnHistory;
+    document.getElementById('hero-title').innerHTML = lang.heroTitle;
+    document.getElementById('hero-desc').innerText = lang.heroDesc;
+    document.getElementById('section-groups-title').innerHTML = lang.secGroups;
+    document.getElementById('section-matches-title').innerHTML = lang.secMatches;
+    document.getElementById('section-ai-title').innerHTML = lang.secAi;
+    document.getElementById('section-prizes-title').innerHTML = lang.secPrizes;
+    document.getElementById('section-leaderboard-title').innerHTML = lang.secLeaderboard;
+    document.getElementById('tab-vong-bang').innerText = lang.tabVongBang;
+    document.getElementById('tab-vong-32').innerText = lang.tabVong32;
+    document.getElementById('tab-vong-16').innerText = lang.tabVong16;
+    document.getElementById('tab-tu-ket').innerText = lang.tabTuKet;
+    document.getElementById('tab-ban-ket').innerText = lang.tabBanKet;
+    document.getElementById('tab-chung-ket').innerText = lang.tabChungKet;
 }
 
 function toggleLanguage() {

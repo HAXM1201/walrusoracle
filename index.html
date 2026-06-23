@@ -41,7 +41,7 @@
         }
     </script>
     <style>
-        /* TẠO LỚP NỀN TỔNG THỂ MỜ PHÍA SAU CHO TOÀN BỘ TRANG WEB */
+       
         body::before {
             content: "";
             position: fixed;
@@ -264,14 +264,14 @@
     <script src="app-logic.js"></script>
 
     <script>
-        // Khai báo gán hàm global cho sự kiện click độc lập chuẩn chỉnh
+      
         window.filterMatches = filterMatches;
         window.toggleLanguage = toggleLanguage;
         window.toggleWallet = toggleWallet;
         window.showMyPredictions = showMyPredictions;
         window.signInWithGoogle = signInWithGoogle;
         
-        // LUỒNG DUY NHẤT: Chỉ lắng nghe 1 sự kiện DOMContentLoaded để khởi chạy app
+       
         document.addEventListener("DOMContentLoaded", function() {
             initApp();
         });

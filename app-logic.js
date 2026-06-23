@@ -631,7 +631,19 @@ function renderMatches(filterType = 'vong-bang') {
         });
     });
 }
-
+function createGroupCardHTML(groupName, teams) {
+    let teamsHTML = teams.map(t => `
+        <div class="flex items-center gap-2 py-1">
+            <img src="https://flagcdn.com/w20/${t.code}.png" class="w-5 h-3 object-cover rounded-sm">
+            <span class="truncate">${t.name}</span>
+        </div>
+    `).join('');
+    
+    return `
+        <div class="font-bold text-walrus-aqua mb-2 uppercase tracking-wider">${groupName}</div>
+        <div class="space-y-1">${teamsHTML}</div>
+    `;
+}
 function renderGroups() {
     const container = document.getElementById('groups-container');
     if (!container) return;

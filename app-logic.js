@@ -170,16 +170,20 @@ async function storePredictionOnWalrus(matchId, scoreA, scoreB, analysis) {
     if (!currentUser) return false;
     const userText = `Trận ${matchId} (Tỷ số dự đoán: ${scoreA}-${scoreB}). Nhận định: ${analysis || "Không có"}`;
     try {
-        const response = await fetch(`${CUSTOM_PUBLISHER_URL}/api/ai-agent`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                userIdentifier: currentUser.email,
-                userText: userText,
-                displayName: currentUser.displayName,
-                lang: currentLang // <--- TRUYỀN NGÔN NGỮ HIỆN TẠI SANG BACKEND
-            })
-        });
+        // Sau khi gửi dự đoán thành công cho Backend:
+const response = await fetch(`${CUSTOM_PUBLISHER_URL}/api/ai-agent`, { ... });
+const data = await response.json();
+
+// 1. Đẩy ngay dữ liệu mới vào mảng local để giao diện cập nhật ngay
+window.userPredictionMemory.push({
+    ownerEmail: currentUser.email,
+    matchId: userText.match(/\d+/)?.[0] || "X",
+    analysis: data.botReply
+});
+
+// 2. Gọi lại hàm load dữ liệu để nó refresh bảng lịch sử ngay lập tức
+triggerWalrusMemoryAgent(currentUser.email, currentUser.displayName);
+// -------------------------
         return response.ok;
     } catch (error) {
         console.error("Publisher Error:", error);

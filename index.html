@@ -41,7 +41,6 @@
         }
     </script>
     <style>
-        /* TẠO LỚP NỀN TỔNG THỂ MỜ PHÍA SAU CHO TOÀN BỘ TRANG WEB */
         body::before {
             content: "";
             position: fixed;
@@ -65,33 +64,28 @@
             background: linear-gradient(to bottom, rgba(11, 21, 40, 0.85), rgba(11, 21, 40, 1)), url('wc1.png');
             background-size: cover; background-position: center;
         }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0b1528; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #162238; border: 1px solid rgba(0, 242, 254, 0.2); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #00f2fe; }
+        .hot-match-card { animation: border-glow 4s linear infinite; border-width: 2px !important; }
+        #loading-overlay { backdrop-filter: blur(8px); }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .animate-spin { animation: spin 1s linear infinite; }
+
+        /* CSS BẢNG VÀNG NẰM NGANG */
+        #leaderboard-container {
+            display: flex;
+            flex-direction: row;
+            overflow-x: auto;
+            gap: 1rem;
+            width: 100%;
+            padding: 1rem 0;
+            min-height: 120px;
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #0b1528;
-            border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #162238;
-            border: 1px solid rgba(0, 242, 254, 0.2);
-            border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #00f2fe;
-        }
-        .hot-match-card {
-            animation: border-glow 4s linear infinite;
-            border-width: 2px !important;
-        }
-        #loading-overlay {
-            backdrop-filter: blur(8px);
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        .animate-spin {
-            animation: spin 1s linear infinite;
+        .prediction-card {
+            min-width: 220px;
+            flex-shrink: 0;
         }
     </style>
 </head>
@@ -104,7 +98,6 @@
             <div class="w-16 h-16 border-4 border-walrus-aqua border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
             <h3 class="text-2xl font-bold text-white mb-2">Đang tải kết quả World Cup...</h3>
             <p id="loading-text" class="text-gray-400 text-sm">Đang đồng bộ dữ liệu từ Walrus & GitHub Online</p>
-            
             <div class="mt-8 text-xs text-gray-500 flex items-center justify-center gap-2">
                 <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
                 LIVE UPDATE
@@ -131,17 +124,15 @@
                     <img id="langFlag" src="https://flagcdn.com/w20/gb.png" class="w-5 h-3.5 object-cover rounded-sm" alt="English">
                     <span id="langText">EN</span>
                 </button>
-                <button id="googleBtn" onclick="signInWithGoogle()" 
-                      class="flex items-center gap-3 px-5 py-2.5 bg-white hover:bg-gray-100 text-gray-900 font-semibold rounded-2xl border border-gray-300 transition-all duration-200 shadow-sm">
+                <button id="googleBtn" onclick="signInWithGoogle()" class="flex items-center gap-3 px-5 py-2.5 bg-white hover:bg-gray-100 text-gray-900 font-semibold rounded-2xl border border-gray-300 transition-all duration-200 shadow-sm">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" class="w-5 h-5" alt="Google">
                     <span id="gmailText">Đăng nhập bằng Google</span>
                 </button>
-                <button id="walletBtn" onclick="toggleWallet()" class="flex items-center gap-2 px-4 py-2 bg-walrus-card hover:bg-opacity-80 text-walrus-aqua text-sm font-semibold rounded-xl border border-walrus-aqua/30 transition duration-200">
+                <button id="walletBtn" onclick="toggleWallet()" class="flex items-center gap-2 px-4 py-2 bg-walrus-card hover:bg-opacity-80 text-walrus-aqua text-sm font-semibold rounded-xl border border-walrus-aqua/30 transition">
                     <i class="fa-solid fa-wallet"></i>
                     <span id="walletText">Kết nối ví Slush</span>
                 </button>
-                <button onclick="window.showMyPredictions()" id="btn-history" 
-                    class="bg-gray-800 text-walrus-aqua px-4 py-2.5 rounded-xl border border-walrus-aqua/30 text-sm font-bold transition hover:bg-walrus-aqua hover:text-walrus-dark">
+                <button onclick="window.showMyPredictions()" id="btn-history" class="bg-gray-800 text-walrus-aqua px-4 py-2.5 rounded-xl border border-walrus-aqua/30 text-sm font-bold transition hover:bg-walrus-aqua hover:text-walrus-dark">
                     <i class="fa-solid fa-clock-rotate-left"></i> 
                     <span id="btn-history-text">Lịch sử dự đoán</span>
                 </button>
@@ -181,20 +172,18 @@
             <h2 id="section-groups-title" class="text-2xl font-bold text-white flex items-center gap-2">
                 <i class="fa-solid fa-users-rectangle text-walrus-aqua"></i> Cục Diện 48 Đội - Đường Đến World Cup 2026
             </h2>
-            <div id="groups-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            </div>
+            <div id="groups-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
         </section>
 
-        <div id="voting-section" class="grid grid-cols-1 lg:grid-cols-3 gap-8 scroll-mt-24">
+        <section id="voting-section" class="grid grid-cols-1 lg:grid-cols-3 gap-8 scroll-mt-24">
             <div class="lg:col-span-2 space-y-6">
                 <div class="flex flex-col gap-4 border-b border-gray-800 pb-4">
                     <div class="flex items-center justify-between">
                         <h2 id="section-matches-title" class="text-2xl font-bold text-white flex items-center gap-2">
-                            <i class="fa-regular fa-calendar-days text-worldcup-gold"></i> Lịch Trình Thi Đấu Chính Thức
+                            <i class="fa-regular fa-calendar-days text-worldcup-gold"></i> Lịch Trình Thi Đấu
                         </h2>
                         <span id="match-count" class="text-xs bg-gray-800 text-walrus-aqua border border-gray-700 px-2.5 py-1 rounded-lg font-mono font-bold">0 trận</span>
                     </div>
-                    
                     <div class="flex flex-wrap bg-gray-900 p-1.5 rounded-xl border border-gray-800 text-xs gap-1">
                         <button onclick="filterMatches('vong-bang')" id="tab-vong-bang" class="px-3 py-2 rounded-lg font-bold transition bg-walrus-aqua text-walrus-dark">Vòng Bảng</button>
                         <button onclick="filterMatches('vong-32')" id="tab-vong-32" class="px-3 py-2 rounded-lg font-bold text-gray-400 hover:text-white transition">Vòng 32 Đội</button>
@@ -204,9 +193,7 @@
                         <button onclick="filterMatches('chung-ket')" id="tab-chung-ket" class="px-3 py-2 rounded-lg font-bold text-gray-400 hover:text-white transition">Chung Kết</button>
                     </div>
                 </div>
-
-                <div id="match-list-container" class="space-y-6 max-h-[850px] overflow-y-auto pr-3 custom-scrollbar">
-                </div>
+                <div id="match-list-container" class="space-y-6 max-h-[850px] overflow-y-auto pr-3 custom-scrollbar"></div>
             </div>
 
             <div class="space-y-6">
@@ -215,44 +202,25 @@
                 </h2>
                 <div class="bg-gradient-to-br from-walrus-card to-walrus-dark border border-walrus-aqua/20 rounded-2xl p-5 space-y-4 shadow-xl">
                     <div class="flex items-center gap-3 border-b border-gray-800 pb-3">
-                        <div id="ai-avatar-box" class="w-12 h-12 rounded-xl bg-gradient-to-br from-walrus-aqua to-walrus-lightAqua flex items-center justify-center text-walrus-dark text-2xl font-black shadow-md shadow-walrus-aqua/10">
-                            🦫
-                        </div>
+                        <div id="ai-avatar-box" class="w-12 h-12 rounded-xl bg-gradient-to-br from-walrus-aqua to-walrus-lightAqua flex items-center justify-center text-walrus-dark text-2xl font-black">🦫</div>
                         <div>
                             <h4 class="font-bold text-white text-sm">Hải Ly Tiên Tri v1.0</h4>
-                            <span id="ai-status-text" class="text-[10px] text-emerald-400 font-mono">Đang đọc bộ nhớ Walrus Mainnet...</span>
+                            <span id="ai-status-text" class="text-[10px] text-emerald-400 font-mono">Đang đọc bộ nhớ Walrus...</span>
                         </div>
                     </div>
-                    <p id="ai-roast-text" class="text-xs text-gray-300 leading-relaxed italic bg-gray-950/60 p-3 rounded-xl border border-gray-800">
-                        "Chào sếp! Hãy kết nối ví Slush hoặc đăng nhập Gmail để tôi quét lịch sử gáy trận đấu của sếp trên mạng lưới Walrus nhé."
+                    <p id="ai-roast-text" class="text-xs text-gray-300 italic bg-gray-950/60 p-3 rounded-xl border border-gray-800">
+                        "Chào sếp! Đăng nhập để quét lịch sử gáy..."
                     </p>
                 </div>
-
-                <h2 id="section-leaderboard-title" class="text-2xl font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-ranking-star text-worldcup-gold"></i> Bảng Vàng Tiên Tri
-                </h2>
-                <div id="leaderboard-container" class="bg-walrus-card border border-gray-800 rounded-2xl p-4 space-y-3 shadow-xl">
-                </div>
-
-                <h2 id="section-prizes-title" class="text-2xl font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-trophy text-worldcup-gold"></i> Quỹ Giải Thưởng
-                </h2>
-                <div class="bg-gradient-to-br from-walrus-card to-walrus-dark border border-gray-800 rounded-2xl p-6 space-y-4">
-                    <div class="flex justify-between items-center border-b border-gray-800 pb-3">
-                        <span id="prize-1-title" class="text-sm font-semibold text-gray-300 flex items-center gap-2">
-                            <i class="fa-solid fa-award text-yellow-500"></i> Tiên Tri Tỷ Số Đúng
-                        </span>
-                        <span id="prize-1-val" class="text-sm font-bold text-walrus-aqua">500 WAL / Vòng</span>
-                    </div>
-                    <div class="flex justify-between items-center border-b border-gray-800 pb-3">
-                        <span id="prize-2-title" class="text-sm font-semibold text-gray-300 flex items-center gap-2">
-                            <i class="fa-solid fa-face-laugh-squint text-orange-400"></i> Phân Tích Hài Hước Nhất
-                        </span>
-                        <span id="prize-2-val" class="text-sm font-bold text-worldcup-gold">300 WAL / Trận</span>
-                    </div>
-                </div>
             </div>
-        </div>
+        </section>
+
+        <section class="mt-12 border-t border-gray-800 pt-8">
+            <h2 class="text-2xl font-bold text-white flex items-center gap-2 mb-4">
+                <i class="fa-solid fa-ranking-star text-worldcup-gold"></i> Bảng Vàng Tiên Tri (Live Feed)
+            </h2>
+            <div id="leaderboard-container"></div>
+        </section>
     </main>
 
     <footer class="border-t border-gray-800 bg-gray-950 py-8 text-center text-xs text-gray-500">
@@ -260,21 +228,9 @@
     </footer>
 
     <script src="data.js"></script>
-    <script src="ui-components.js"></script>
     <script src="app-logic.js"></script>
-
     <script>
-        // Khai báo gán hàm global cho sự kiện click độc lập chuẩn chỉnh
-        window.filterMatches = filterMatches;
-        window.toggleLanguage = toggleLanguage;
-        window.toggleWallet = toggleWallet;
-        window.showMyPredictions = showMyPredictions;
-        window.signInWithGoogle = signInWithGoogle;
-        
-        // LUỒNG DUY NHẤT: Chỉ lắng nghe 1 sự kiện DOMContentLoaded để khởi chạy app
-        document.addEventListener("DOMContentLoaded", function() {
-            initApp();
-        });
+        document.addEventListener("DOMContentLoaded", function() { initApp(); });
     </script>
 </body>
 </html>

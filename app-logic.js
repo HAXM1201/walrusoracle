@@ -169,40 +169,33 @@ const CUSTOM_PUBLISHER_URL = "https://walrus-backend-production.up.railway.app";
 
 async function storePredictionOnWalrus(matchId, scoreA, scoreB, analysis) {
     if (!currentUser) return false;
+    
+    // 1. Hiện popup ngay khi bắt đầu nộp
+    showSuccessPopup("Đang chờ Hải Ly xử lý...");
 
     const userText = `Trận ${matchId} (Tỷ số dự đoán: ${scoreA}-${scoreB}). Nhận định: ${analysis || "Không có"}`;
     
     try {
-        // Gửi dự đoán lên Backend
         const response = await fetch(`${CUSTOM_PUBLISHER_URL}/api/ai-agent`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                userIdentifier: currentUser.email,
-                userText: userText,
-                displayName: currentUser.displayName,
-                lang: "vi"
-            })
+            body: JSON.stringify({ /* ... dữ liệu như cũ ... */ })
         });
-
-        if (!response.ok) throw new Error("Gửi dự đoán thất bại");
 
         const data = await response.json();
 
-        // 1. Cập nhật vào mảng Local ngay lập tức
-        if (!window.userPredictionMemory) window.userPredictionMemory = [];
-        
-        window.userPredictionMemory.push({
-            ownerEmail: currentUser.email,
-            matchId: matchId,
-            analysis: data.botReply
-        });
+        // 2. Cập nhật dữ liệu vào mảng local
+        window.userPredictionMemory.push({ /* ... */ });
 
-        // 2. Refresh lại giao diện ngay lập tức
+        // 3. Refresh giao diện
         triggerWalrusMemoryAgent(currentUser.email, currentUser.displayName);
 
+        // 4. Xóa popup ngay khi dữ liệu đã hiện xong trên màn hình
+        hideSuccessPopup();
+        
         return true;
     } catch (error) {
+        hideSuccessPopup(); // Phải xóa cả khi lỗi
         console.error("Publisher Error:", error);
         return false;
     }
@@ -950,3 +943,26 @@ function initApp() {
     setInterval(fetchWorldCupData, 60000); 
 }
 window.initApp = initApp;
+
+
+function showSuccessPopup(message) {
+    const popup = document.createElement('div');
+    popup.id = "haili-popup"; // Đặt ID để dễ tìm và xóa
+    popup.className = "fixed bottom-5 right-5 bg-emerald-600 text-white p-4 rounded-lg shadow-2xl z-50 animate-bounce";
+    popup.innerHTML = `
+        <div class="flex items-center gap-2">
+            <span class="text-2xl">🦫</span>
+            <div>
+                <p class="font-bold">Đang gáy & Lưu Blockchain...</p>
+                <p class="text-sm">${message}</p>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(popup);
+}
+
+// Hàm này dùng để xóa popup
+function hideSuccessPopup() {
+    const popup = document.getElementById('haili-popup');
+    if (popup) popup.remove();
+}
